@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ACEMID AI Working Group — Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --surface-2: #f4f4f5;
+  --border: #e4e4e7;
+  --border-strong: #d4d4d8;
+  --text: #18181b;
+  --text-2: #52525b;
+  --text-3: #71717a;
+  --accent: #0f766e;
+  --accent-bg: #ccfbf1;
+  --purple: #6d28d9;
+  --purple-bg: #ede9fe;
+  --amber: #b45309;
+  --amber-bg: #fef3c7;
+  --green: #15803d;
+  --green-bg: #dcfce7;
+  --red: #b91c1c;
+  --red-bg: #fee2e2;
+  --blue: #1d4ed8;
+  --blue-bg: #dbeafe;
+  --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+  --shadow-lg: 0 10px 25px -5px rgba(0,0,0,0.08), 0 8px 10px -6px rgba(0,0,0,0.04);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #09090b; --surface: #18181b; --surface-2: #27272a;
+    --border: #27272a; --border-strong: #3f3f46;
+    --text: #fafafa; --text-2: #a1a1aa; --text-3: #71717a;
+    --accent: #2dd4bf; --accent-bg: #134e4a;
+    --purple: #a78bfa; --purple-bg: #2e1065;
+    --amber: #fbbf24; --amber-bg: #422006;
+    --green: #4ade80; --green-bg: #14532d;
+    --red: #f87171; --red-bg: #450a0a;
+    --blue: #60a5fa; --blue-bg: #1e3a8a;
+  }
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { font-family:'DM Sans',-apple-system,sans-serif; background:var(--bg); color:var(--text); line-height:1.6; font-size:17px; }
+body::before {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:-1;
+  background-image: radial-gradient(circle at 20% 0%, rgba(15,118,110,0.04), transparent 50%),
+                    radial-gradient(circle at 80% 100%, rgba(109,40,217,0.03), transparent 50%);
+}
+.container { max-width:1180px; margin:0 auto; padding:48px 24px; }
+
+.hdr { margin-bottom:32px; }
+.hdr h1 { font-size:32px; font-weight:700; letter-spacing:-0.5px; margin-bottom:6px; }
+.hdr .sub { font-size:15px; color:var(--text-2); }
+.hdr .date { font-size:12px; color:var(--text-3); font-family:'JetBrains Mono',monospace; margin-top:14px; }
+
+.tabs { display:flex; gap:4px; border-bottom:1px solid var(--border); margin-bottom:32px; overflow-x:auto; position:sticky; top:0; background:var(--bg); z-index:10; padding-top:8px; }
+.tab { padding:12px 22px; font-size:16px; font-weight:500; cursor:pointer; color:var(--text-3); border-bottom:2px solid transparent; transition:all .2s; white-space:nowrap; background:none; border:none; font-family:inherit; }
+.tab:hover { color:var(--text-2); }
+.tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+.page { display:none; }
+.page.active { display:block; animation:fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+/* Overview */
+.overview-hero { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:32px; box-shadow:var(--shadow); }
+.overview-hero h2 { font-size:22px; font-weight:500; margin-bottom:6px; }
+.overview-hero .sub { font-size:15px; color:var(--text-2); margin-bottom:28px; }
+.ecosystem { position:relative; height:520px; width:100%; }
+.eco-svg { width:100%; height:100%; position:absolute; inset:0; }
+.eco-node { position:absolute; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:10px 12px; cursor:pointer; transition:all 0.25s cubic-bezier(0.16, 1, 0.3, 1); box-shadow:var(--shadow); min-width:130px; text-align:center; }
+.eco-node:hover { transform:translateY(-2px); border-color:var(--accent); box-shadow:var(--shadow-lg); z-index:5; }
+.eco-node .n-name { font-size:12px; font-weight:500; line-height:1.3; }
+.eco-node .n-status { font-size:10px; color:var(--text-3); margin-top:2px; font-family:'JetBrains Mono',monospace; }
+.eco-node .n-tag { display:inline-block; font-size:9px; font-weight:500; padding:1px 6px; border-radius:8px; margin-bottom:3px; font-family:'JetBrains Mono',monospace; letter-spacing:0.3px; text-transform:uppercase; }
+.eco-hub { position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); background:linear-gradient(135deg, var(--accent), var(--purple)); color:white; padding:18px 24px; border-radius:14px; text-align:center; box-shadow:var(--shadow-lg); z-index:2; }
+.eco-hub .h-title { font-size:14px; font-weight:500; margin-bottom:3px; }
+.eco-hub .h-sub { font-size:11px; opacity:0.9; font-family:'JetBrains Mono',monospace; }
+.legend { display:flex; gap:16px; flex-wrap:wrap; margin-top:24px; padding-top:20px; border-top:1px solid var(--border); font-size:12px; color:var(--text-2); }
+.legend-item { display:flex; align-items:center; gap:6px; }
+.legend-dot { width:8px; height:8px; border-radius:50%; }
+
+/* Filters */
+.filters { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px; align-items:center; }
+.filter-label { font-size:12px; color:var(--text-3); font-weight:500; margin-right:6px; text-transform:uppercase; letter-spacing:0.6px; font-family:'JetBrains Mono',monospace; }
+.filter-chip { padding:6px 14px; font-size:13px; border-radius:16px; background:var(--surface); border:1px solid var(--border); cursor:pointer; color:var(--text-2); transition:all 0.2s; font-family:inherit; }
+.filter-chip:hover { border-color:var(--border-strong); transform:translateY(-1px); }
+.filter-chip.active { background:var(--text); color:var(--bg); border-color:var(--text); }
+
+/* Projects */
+.projects { display:grid; grid-template-columns:repeat(2, 1fr); gap:18px; }
+@media (max-width: 800px) { .projects { grid-template-columns:1fr; } }
+.proj { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px; cursor:pointer; transition:all 0.25s cubic-bezier(0.16, 1, 0.3, 1); position:relative; box-shadow:var(--shadow); }
+.proj:hover { border-color:var(--accent); transform:translateY(-2px); box-shadow:var(--shadow-lg); }
+.proj.expanded { grid-column:1 / -1; border-color:var(--accent); }
+.proj-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:8px; }
+.proj-name { font-size:19px; font-weight:500; line-height:1.3; }
+.proj-id { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-3); margin-bottom:4px; letter-spacing:0.5px; }
+.proj-lead { font-size:14px; color:var(--text-2); margin-bottom:12px; }
+.proj-desc { font-size:14px; color:var(--text-2); line-height:1.6; }
+.proj-footer { margin-top:14px; padding-top:14px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; }
+.proj-expand-cta { font-size:12px; color:var(--accent); transition:transform 0.2s; }
+.proj:hover .proj-expand-cta { transform:translateX(2px); }
+
+.pill { display:inline-block; font-size:11px; font-weight:500; padding:4px 12px; border-radius:12px; white-space:nowrap; }
+.pill-active { background:var(--green-bg); color:var(--green); }
+.pill-progress { background:var(--amber-bg); color:var(--amber); }
+.pill-new { background:var(--blue-bg); color:var(--blue); }
+.pill-design { background:var(--purple-bg); color:var(--purple); }
+.pill-blocked { background:var(--red-bg); color:var(--red); }
+
+.proj-detail { margin-top:18px; padding-top:18px; border-top:1px solid var(--border); display:none; animation:fadeUp 0.3s ease-out; }
+.proj.expanded .proj-detail { display:block; }
+.detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+@media (max-width: 800px) { .detail-grid { grid-template-columns:1fr; } }
+.detail-section h4 { font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-3); margin-bottom:10px; font-family:'JetBrains Mono',monospace; }
+.detail-section ul { list-style:none; }
+.detail-section li { font-size:14px; color:var(--text-2); padding:5px 0 5px 16px; position:relative; line-height:1.55; }
+.detail-section li::before { content:''; position:absolute; left:0; top:14px; width:5px; height:5px; border-radius:50%; background:var(--accent); }
+
+/* Sites */
+.sites { display:grid; grid-template-columns:1fr 1fr 1fr; gap:18px; }
+@media (max-width: 900px) { .sites { grid-template-columns:1fr; } }
+.site { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:24px; transition:transform 0.2s; box-shadow:var(--shadow); }
+.site:hover { transform:translateY(-2px); }
+.site-head { display:flex; align-items:center; gap:10px; margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--border); }
+.site-dot { width:14px; height:14px; border-radius:50%; flex-shrink:0; }
+.site-name { font-size:19px; font-weight:500; }
+.site-people { margin-bottom:18px; }
+.site-people h4 { font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-3); margin-bottom:12px; font-family:'JetBrains Mono',monospace; }
+.site-people .person { font-size:14px; color:var(--text); padding:4px 0; }
+.site-projects { padding-top:14px; border-top:1px solid var(--border); }
+.site-projects h4 { font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:0.8px; color:var(--text-3); margin-bottom:10px; font-family:'JetBrains Mono',monospace; }
+.site-projects .sp { font-size:13px; color:var(--text-2); padding:3px 0; }
+
+/* Pipeline */
+.pipeline-grid { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:28px; box-shadow:var(--shadow); }
+.pipeline-stage { padding:16px 0; border-bottom:1px dashed var(--border); transition:transform 0.2s; }
+.pipeline-stage:hover { transform:translateX(4px); }
+.pipeline-stage:last-child { border-bottom:none; padding-bottom:0; }
+.pipeline-stage h3 { font-size:15px; font-weight:500; margin-bottom:6px; display:flex; align-items:center; gap:10px; }
+.pipeline-stage h3 .step-num { background:var(--accent-bg); color:var(--accent); width:28px; height:28px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:13px; font-family:'JetBrains Mono',monospace; font-weight:500; flex-shrink:0; }
+.pipeline-stage p { font-size:14px; color:var(--text-2); line-height:1.6; padding-left:38px; }
+.pipeline-stage .meta { font-size:12px; color:var(--text-3); padding-left:38px; margin-top:6px; font-family:'JetBrains Mono',monospace; }
+
+/* Dependencies tab */
+.dep-section { margin-bottom:28px; }
+.dep-section h2 { font-size:20px; font-weight:500; margin-bottom:6px; }
+.dep-section .sub { font-size:14px; color:var(--text-2); margin-bottom:18px; }
+
+.eb-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:8px; }
+@media (max-width: 800px) { .eb-grid { grid-template-columns:1fr; } }
+.eb-card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px; box-shadow:var(--shadow); }
+.eb-card.enablers { border-left:3px solid var(--green); }
+.eb-card.blockers { border-left:3px solid var(--amber); }
+.eb-card h3 { font-size:15px; font-weight:500; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+.eb-card h3 .label { font-size:11px; padding:2px 8px; border-radius:10px; background:var(--surface-2); color:var(--text-3); font-weight:500; font-family:'JetBrains Mono',monospace; letter-spacing:0.5px; }
+.eb-list { list-style:none; }
+.eb-item { padding:9px 0; border-bottom:1px solid var(--border); font-size:14px; color:var(--text-2); line-height:1.55; }
+.eb-item:last-child { border-bottom:none; }
+.eb-item strong { color:var(--text); font-weight:500; }
+
+/* Dep matrix */
+.depmap { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:24px; box-shadow:var(--shadow); overflow-x:auto; }
+.depmap-title { font-size:15px; font-weight:500; margin-bottom:4px; }
+.depmap-sub { font-size:13px; color:var(--text-2); margin-bottom:20px; }
+.matrix { display:grid; gap:1px; background:var(--border); border:1px solid var(--border); border-radius:8px; overflow:hidden; min-width:780px; }
+.matrix-row { display:grid; grid-template-columns:200px repeat(7, 1fr); gap:1px; background:var(--border); }
+.matrix-cell { background:var(--surface); padding:10px 8px; font-size:12px; display:flex; align-items:center; justify-content:center; text-align:center; min-height:48px; }
+.matrix-cell.label { justify-content:flex-start; padding-left:14px; font-weight:500; font-size:13px; }
+.matrix-cell.header { background:var(--surface-2); font-size:11px; font-weight:500; color:var(--text-3); text-transform:uppercase; letter-spacing:0.5px; font-family:'JetBrains Mono',monospace; line-height:1.3; }
+.matrix-cell .dot { width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:500; }
+.dot-ready { background:var(--green); color:white; }
+.dot-progress { background:var(--amber); color:white; }
+.dot-blocked { background:var(--red); color:white; }
+.dot-pending { background:var(--surface-2); color:var(--text-3); border:1px solid var(--border); }
+.dot-na { color:var(--text-3); font-size:14px; }
+.matrix-legend { display:flex; gap:18px; flex-wrap:wrap; margin-top:16px; font-size:12px; color:var(--text-2); }
+.matrix-legend .li { display:flex; align-items:center; gap:6px; }
+
+/* Recent activity */
+.timeline { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:28px; box-shadow:var(--shadow); }
+.tl-item { display:grid; grid-template-columns:130px 1fr; gap:20px; padding:20px 0; border-bottom:1px solid var(--border); transition:transform 0.2s; }
+.tl-item:hover { transform:translateX(4px); }
+.tl-item:last-child { border-bottom:none; padding-bottom:0; }
+.tl-item:first-child { padding-top:0; }
+.tl-date { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-3); }
+.tl-content h4 { font-size:15px; font-weight:500; margin-bottom:6px; }
+.tl-content p { font-size:14px; color:var(--text-2); line-height:1.6; margin-bottom:6px; }
+.tl-content .tl-tags { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+.tl-tag { font-size:11px; padding:3px 10px; border-radius:10px; background:var(--surface-2); color:var(--text-2); border:1px solid var(--border); font-family:'JetBrains Mono',monospace; }
+@media (max-width: 600px) {
+  .tl-item { grid-template-columns:1fr; gap:8px; }
+}
+
+.footer { margin-top:60px; padding-top:24px; border-top:1px solid var(--border); text-align:center; }
+.footer p { font-size:13px; color:var(--text-3); }
+
+.disclaimer { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px 18px; margin-bottom:28px; font-size:14px; color:var(--text-2); line-height:1.6; }
+
+/* Analysis Design block (P06 expanded) */
+.analysis-design {
+  margin-top:22px; padding-top:18px; border-top:1px solid var(--border);
+}
+.analysis-design h3 {
+  font-size:14px; font-weight:500; text-transform:uppercase; letter-spacing:0.8px;
+  color:var(--text-3); margin-bottom:14px; font-family:'JetBrains Mono',monospace;
+}
+.models-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+@media (max-width:700px) { .models-grid { grid-template-columns:1fr; } }
+
+.model-card {
+  background:var(--surface-2); border:1px solid var(--border);
+  border-radius:10px; padding:14px 16px; cursor:pointer;
+  transition:all 0.25s cubic-bezier(0.16,1,0.3,1); position:relative; overflow:hidden;
+}
+.model-card:hover {
+  border-color:var(--accent); background:var(--surface);
+  box-shadow:0 4px 14px -4px rgba(0,0,0,0.08);
+}
+.model-card .mc-head {
+  display:flex; justify-content:space-between; align-items:center; gap:8px;
+}
+.model-card .mc-lbl {
+  font-size:13px; font-weight:600; color:var(--accent);
+  font-family:'JetBrains Mono',monospace; letter-spacing:0.5px;
+}
+.model-card .mc-arrow {
+  font-size:14px; color:var(--text-3); transition:transform 0.25s;
+}
+.model-card.open .mc-arrow { transform:rotate(90deg); }
+.model-card .mc-name { font-size:15px; font-weight:600; margin-top:4px; }
+.model-card .mc-desc { font-size:13px; color:var(--text-2); margin-top:2px; }
+.model-card .mc-expand {
+  max-height:0; overflow:hidden;
+  transition:max-height 0.4s ease, margin-top 0.3s ease, padding-top 0.3s ease;
+}
+.model-card.open .mc-expand {
+  max-height:800px; margin-top:14px; padding-top:14px;
+  border-top:1px dashed var(--border);
+}
+
+.schema-flow {
+  display:flex; align-items:center; gap:0; flex-wrap:wrap;
+  justify-content:center; margin:6px 0 12px;
+}
+.s-box {
+  border-radius:8px; padding:8px 12px; text-align:center; min-width:90px;
+  font-size:12px;
+}
+.s-box .s-title { font-weight:600; font-size:12px; }
+.s-box .s-sub { font-size:10px; margin-top:2px; opacity:0.85; }
+.s-box.baseline { background:var(--surface-2); border:1px solid var(--border-strong); color:var(--text-2); }
+.s-box.marker { background:var(--accent-bg); border:1px solid rgba(15,118,110,0.25); color:var(--accent); }
+.s-box.outcome { background:var(--amber-bg); border:1px solid rgba(180,83,9,0.25); color:var(--amber); }
+.s-box.result { background:var(--green-bg); border:1px solid rgba(21,128,61,0.25); color:var(--green); }
+.s-plus { font-size:16px; font-weight:600; color:var(--text-3); padding:0 7px; }
+.s-arrow { font-size:14px; color:var(--text-3); padding:0 8px; }
+
+.markers-row {
+  display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin:8px 0;
+}
+.marker-chip {
+  padding:4px 10px; border-radius:6px; background:var(--accent-bg);
+  border:1px solid rgba(15,118,110,0.15); font-size:11px; color:var(--accent);
+  font-family:'JetBrains Mono',monospace;
+}
+.marker-chip.dim { opacity:0.35; }
+
+.vs-box-row {
+  display:flex; align-items:center; justify-content:center;
+  gap:10px; margin:10px 0; flex-wrap:wrap;
+}
+.vs-box {
+  padding:10px 14px; border-radius:8px; text-align:center;
+  min-width:140px; max-width:200px;
+}
+.vs-box.old { background:var(--red-bg); border:1px solid rgba(185,28,28,0.15); }
+.vs-box.old .vs-title { color:var(--red); font-weight:600; font-size:12px; }
+.vs-box.new { background:var(--green-bg); border:1px solid rgba(21,128,61,0.15); }
+.vs-box.new .vs-title { color:var(--green); font-weight:600; font-size:12px; }
+.vs-box .vs-sub { font-size:10px; color:var(--text-2); margin-top:2px; line-height:1.4; }
+.vs-arrow { font-size:18px; color:var(--text-3); }
+
+.hypothesis-box {
+  font-size:12px; color:var(--accent); text-align:center; margin-top:10px;
+  padding:10px 14px; background:var(--accent-bg);
+  border:1px dashed rgba(15,118,110,0.25); border-radius:8px;
+  line-height:1.5;
+}
+.schema-label {
+  font-size:11px; color:var(--text-3); text-align:center; margin-top:8px;
+  line-height:1.5; font-style:italic;
+}
+
+.methods-row {
+  display:flex; gap:8px; flex-wrap:wrap; margin-top:18px;
+  padding-top:14px; border-top:1px solid var(--border);
+}
+.methods-row .m-tag {
+  font-size:12px; padding:4px 12px; border-radius:6px;
+  border:1px solid var(--border-strong); color:var(--text-2);
+  font-family:'JetBrains Mono',monospace; background:var(--surface);
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="hdr">
+  <h1>ACEMID AI Working Group</h1>
+  <p class="sub">A tracker for projects, status, and dependencies across the working group.</p>
+  <div class="date">Last updated: 11 May 2026</div>
+</div>
+
+<div class="disclaimer">
+  This tracker summarises the projects, dependencies, and status across the working group's current workstreams. Click any project for details. Click any node in the ecosystem diagram to jump to that project.
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showPage('overview', this)">Overview</button>
+  <button class="tab" onclick="showPage('projects', this)">Projects</button>
+  <button class="tab" onclick="showPage('sites', this)">By Site</button>
+  <button class="tab" onclick="showPage('pipeline', this)">Data Pipeline</button>
+  <button class="tab" onclick="showPage('dependencies', this)">Dependencies</button>
+  <button class="tab" onclick="showPage('activity', this)">Recent Activity</button>
+</div>
+
+<!-- OVERVIEW -->
+<div class="page active" id="p-overview">
+<div class="overview-hero">
+  <h2>Project ecosystem</h2>
+  <p class="sub">Eight projects organised around the shared imaging cohort. Click any node for project details.</p>
+  <div class="ecosystem">
+    <svg class="eco-svg" viewBox="0 0 1100 520" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#0f766e" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="#6d28d9" stop-opacity="0.2"/>
+        </linearGradient>
+      </defs>
+      <line x1="550" y1="260" x2="180" y2="80"  stroke="url(#lineGrad)" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <line x1="550" y1="260" x2="550" y2="80"  stroke="url(#lineGrad)" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <line x1="550" y1="260" x2="920" y2="80"  stroke="url(#lineGrad)" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <line x1="550" y1="260" x2="100" y2="260" stroke="url(#lineGrad)" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <line x1="550" y1="260" x2="1000" y2="260" stroke="url(#lineGrad)" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <line x1="550" y1="260" x2="180" y2="440" stroke="url(#lineGrad)" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <line x1="550" y1="260" x2="550" y2="440" stroke="url(#lineGrad)" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <line x1="550" y1="260" x2="920" y2="440" stroke="url(#lineGrad)" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <text x="120" y="30" fill="#71717a" font-size="11" font-family="JetBrains Mono" letter-spacing="1" font-weight="500">QLD · ALGORITHMS</text>
+      <text x="500" y="30" fill="#71717a" font-size="11" font-family="JetBrains Mono" letter-spacing="1" font-weight="500">CROSS-SITE</text>
+      <text x="850" y="30" fill="#71717a" font-size="11" font-family="JetBrains Mono" letter-spacing="1" font-weight="500">VIC · INFRASTRUCTURE</text>
+      <text x="120" y="510" fill="#71717a" font-size="11" font-family="JetBrains Mono" letter-spacing="1" font-weight="500">NSW · RISK PREDICTION</text>
+    </svg>
+    <div class="eco-hub"><div class="h-title">ACEMID first 2,000</div><div class="h-sub">3D imaging cohort</div></div>
+    <div class="eco-node" style="top:5%; left:8%;" onclick="goToProject('p1')"><span class="n-tag" style="background:var(--purple-bg);color:var(--purple);">P01 · Interim</span><div class="n-name">Interim Analysis Paper</div><div class="n-status">In progress</div></div>
+    <div class="eco-node" style="top:5%; left:42%;" onclick="goToProject('p4')"><span class="n-tag" style="background:var(--amber-bg);color:var(--amber);">P04 · Freckling</span><div class="n-name">Freckling Validation</div><div class="n-status">In progress</div></div>
+    <div class="eco-node" style="top:5%; left:78%;" onclick="goToProject('p2')"><span class="n-tag" style="background:var(--green-bg);color:var(--green);">P02 · Filter</span><div class="n-name">AI Filter Paper</div><div class="n-status">Active</div></div>
+    <div class="eco-node" style="top:48%; left:0%;" onclick="goToProject('p8')"><span class="n-tag" style="background:var(--amber-bg);color:var(--amber);">P08 · Spatial</span><div class="n-name">Spatial Distribution</div><div class="n-status">In progress</div></div>
+    <div class="eco-node" style="top:48%; left:84%;" onclick="goToProject('p7')"><span class="n-tag" style="background:var(--blue-bg);color:var(--blue);">P07 · Dexi 3.0</span><div class="n-name">Dexi 3.0 Evaluation</div><div class="n-status">New</div></div>
+    <div class="eco-node" style="top:80%; left:8%;" onclick="goToProject('p3')"><span class="n-tag" style="background:var(--amber-bg);color:var(--amber);">P03 · Photodamage</span><div class="n-name">Photodamage Application</div><div class="n-status">In progress</div></div>
+    <div class="eco-node" style="top:80%; left:42%;" onclick="goToProject('p6')"><span class="n-tag" style="background:var(--green-bg);color:var(--green);">P06 · Risk Interp.</span><div class="n-name">Incremental Risk Model</div><div class="n-status">Active</div></div>
+    <div class="eco-node" style="top:80%; left:78%;" onclick="goToProject('p5')"><span class="n-tag" style="background:var(--purple-bg);color:var(--purple);">P05 · Risk DL</span><div class="n-name">DL Phenotype Risk Model</div><div class="n-status">Design</div></div>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><span class="legend-dot" style="background:var(--green);"></span>Active</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--amber);"></span>In progress</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--purple);"></span>Design phase</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--blue);"></span>New</div>
+  </div>
+</div>
+</div>
+
+<!-- PROJECTS -->
+<div class="page" id="p-projects">
+<div class="filters">
+  <span class="filter-label">Filter</span>
+  <button class="filter-chip active" onclick="filterProjects('all', this)">All (8)</button>
+  <button class="filter-chip" onclick="filterProjects('active', this)">Active</button>
+  <button class="filter-chip" onclick="filterProjects('progress', this)">In progress</button>
+  <button class="filter-chip" onclick="filterProjects('design', this)">Design phase</button>
+  <button class="filter-chip" onclick="filterProjects('new', this)">New</button>
+</div>
+<div class="projects" id="projGrid">
+
+<div class="proj" id="p1" data-status="progress" onclick="toggleProj(this)">
+  <div class="proj-head"><div><div class="proj-id">P01 · INTERIM</div><div class="proj-name">Interim Analysis Paper</div></div><span class="pill pill-progress">In progress</span></div>
+  <div class="proj-lead">Dilki Jayasinghe · Tori Mar · Monika Janda</div>
+  <div class="proj-desc">Descriptive overview of the first 2,000 ACEMID participants. Focus on baseline naevus counts and melanoma location mapping.</div>
+  <div class="proj-footer"><span class="proj-expand-cta">Click for details →</span></div>
+  <div class="proj-detail"><div class="detail-grid">
+    <div class="detail-section"><h4>Current state</h4><ul>
+      <li>Script 1 distributed to sites</li>
+      <li>Preliminary naevus count figures presented from PA data (n=672)</li>
+      <li>Naevus categorisation issue identified for ~7% of participants (broad location labels rather than upper/lower)</li>
+      <li>Revised figure excluding uncategorised lesions resolves apparent asymmetry</li>
+    </ul></div>
+    <div class="detail-section"><h4>Dependencies</h4><ul>
+      <li>Baseline naevus extraction at remaining sites (HIRF, AH, SHI, BH, MIA, WMH)</li>
+      <li>Pathology review of ~100 outstanding melanoma slides</li>
+      <li>Skin colour extraction</li>
+      <li>Photodamage methodology resolution (see P03)</li>
+    </ul></div>
+  </div></div>
+</div>
+
+<div class="proj" id="p2" data-status="active" onclick="toggleProj(this)">
+  <div class="proj-head"><div><div class="proj-id">P02 · FILTER</div><div class="proj-name">AI Filter Paper</div></div><span class="pill pill-active">Active</span></div>
+  <div class="proj-lead">Zhen Yu · Tori Mar</div>
+  <div class="proj-desc">Evaluation of AI algorithms for identifying lesions that benefit from dermoscopic review from total body 3D images.</div>
+  <div class="proj-footer"><span class="proj-expand-cta">Click for details →</span></div>
+  <div class="proj-detail"><div class="detail-grid">
+    <div class="detail-section"><h4>Current state</h4><ul>
+      <li>ISIC tile extraction tool functional (resolved late March)</li>
+      <li>Extraction run on Alfred data</li>
+      <li>Filter paper dataset being curated based on pathology-reviewed cohort</li>
+    </ul></div>
+    <div class="detail-section"><h4>Dependencies</h4><ul>
+      <li>Pathology-reviewed cohort spreadsheet</li>
+      <li>Labelling definition (lesions for dermoscopy vs lesions for biopsy)</li>
+      <li>Algorithm comparison methodology</li>
+    </ul></div>
+  </div></div>
+</div>
+
+<div class="proj" id="p3" data-status="progress" onclick="toggleProj(this)">
+  <div class="proj-head"><div><div class="proj-id">P03 · PHOTODAMAGE</div><div class="proj-name">Photodamage Algorithm Application</div></div><span class="pill pill-progress">In progress</span></div>
+  <div class="proj-lead">Zhen Yu · Siyuan Yan · Adam Mothershaw</div>
+  <div class="proj-desc">Application of previously-published photodamage CNN to ACEMID interim cohort. Currently per-tile predictions; aggregation methodology under discussion.</div>
+  <div class="proj-footer"><span class="proj-expand-cta">Click for details →</span></div>
+  <div class="proj-detail"><div class="detail-grid">
+    <div class="detail-section"><h4>Current state</h4><ul>
+      <li>CR2 to PNG/JPEG conversion utility working (Canfield provided updated version)</li>
+      <li>AI model in preparation for sharing; integration with Script 2 to follow</li>
+      <li>Per-tile output confirmed; per-body-site aggregation methodology under discussion</li>
+    </ul></div>
+    <div class="detail-section"><h4>Dependencies</h4><ul>
+      <li>AI model sharing with the extraction team</li>
+      <li>Aggregation methodology design</li>
+      <li>Decision on local vs centralised algorithm execution per site</li>
+    </ul></div>
+  </div></div>
+</div>
+
+<div class="proj" id="p4" data-status="progress" onclick="toggleProj(this)">
+  <div class="proj-head"><div><div class="proj-id">P04 · FRECKLING</div><div class="proj-name">Freckling Algorithm Validation</div></div><span class="pill pill-progress">In progress</span></div>
+  <div class="proj-lead">Sam Kahler · Clare Primiero · Adam Mothershaw</div>
+  <div class="proj-desc">External validation of UQ-developed freckling CNN. Validation cohort: Alfred participants under 40 years.</div>
+  <div class="proj-footer"><span class="proj-expand-cta">Click for details →</span></div>
+  <div class="proj-detail"><div class="detail-grid">
+    <div class="detail-section"><h4>Current state</h4><ul>
+      <li>Segmented Alfred images being prepared for annotation</li>
+      <li>Transfer method to UQ being clarified</li>
+      <li>Annotation by clinical reviewers required after image transfer</li>
+    </ul></div>
+    <div class="detail-section"><h4>Dependencies</h4><ul>
+      <li>Image transfer Alfred → UQ for annotation</li>
+      <li>Annotator availability at UQ</li>
+      <li>Validated algorithm needed before downstream risk modelling uses freckling feature</li>
+    </ul></div>
+  </div></div>
+</div>
+
+<div class="proj" id="p5" data-status="design" onclick="toggleProj(this)">
+  <div class="proj-head"><div><div class="proj-id">P05 · RISK DL</div><div class="proj-name">Deep Learning Phenotype Risk Model</div></div><span class="pill pill-design">Design phase</span></div>
+  <div class="proj-lead">Zhen Yu · Zongyuan Ge</div>
+  <div class="proj-desc">Image-only deep learning model for melanoma risk prediction. End-to-end approach trained directly on 3D total body photography.</div>
+  <div class="proj-footer"><span class="proj-expand-cta">Click for details →</span></div>
+  <div class="proj-detail"><div class="detail-grid">
+    <div class="detail-section"><h4>Current state</h4><ul>
+      <li>Cohort definition: ~200 per risk group required</li>
+      <li>Initial truth labels under consideration: melanoma history, ≥100 naevi</li>
+      <li>Testing multiple label definitions to compare performance</li>
+      <li>Training cohort restricted to participants not continuing to Automate Me</li>
+    </ul></div>
+    <div class="detail-section"><h4>Dependencies</h4><ul>
+      <li>Identification of eligible training cohort</li>
+      <li>Resolution of truth label definition</li>
+      <li>External validation strategy</li>
+    </ul></div>
+  </div></div>
+</div>
+
+<div class="proj" id="p6" data-status="active" onclick="toggleProj(this)">
+  <div class="proj-head"><div><div class="proj-id">P06 · RISK INTERPRETABLE</div><div class="proj-name">Interpretable Incremental Risk Model</div></div><span class="pill pill-active">Active</span></div>
+  <div class="proj-lead">Anne Cust · Yagiz Aksoy</div>
+  <div class="proj-desc">Adds extracted phenotypic risk features to existing validated risk models to assess incremental AUC improvement. Maintains feature-level interpretability via SHAP and decision curve analysis.</div>
+  <div class="proj-footer"><span class="proj-expand-cta">Click for details →</span></div>
+  <div class="proj-detail"><div class="detail-grid">
+    <div class="detail-section"><h4>Current state</h4><ul>
+      <li>MIA access established</li>
+      <li>Original baseline risk data extraction in progress</li>
+      <li>Data to be shared with ACEMID risk-model teams</li>
+    </ul></div>
+    <div class="detail-section"><h4>Dependencies</h4><ul>
+      <li>Naevus count CSVs from QLD/VIC sites</li>
+      <li>Photodamage outputs (see P03)</li>
+      <li>Validated freckling algorithm (see P04)</li>
+      <li>Melanoma outcomes from pathology review</li>
+    </ul></div>
+  </div>
+
+  <div class="analysis-design">
+    <h3>Analysis design — click each model to explore</h3>
+    <div class="models-grid">
+
+      <div class="model-card" onclick="event.stopPropagation(); toggleModel(this);">
+        <div class="mc-head">
+          <span class="mc-lbl">MODEL A</span>
+          <span class="mc-arrow">▸</span>
+        </div>
+        <div class="mc-name">Baseline</div>
+        <div class="mc-desc">MIA/Vuong with published predictors</div>
+        <div class="mc-expand">
+          <div class="schema-flow">
+            <div class="s-box baseline"><div class="s-title">MIA/Vuong</div><div class="s-sub">Vuong et al. 2016</div></div>
+            <div class="s-arrow">→</div>
+            <div class="s-box outcome"><div class="s-title">Melanoma risk</div><div class="s-sub">5-year probability</div></div>
+            <div class="s-arrow">→</div>
+            <div class="s-box result"><div class="s-title">AUC ≈ 0.70</div><div class="s-sub">Current ceiling</div></div>
+          </div>
+          <div class="markers-row">
+            <div class="marker-chip">Age</div>
+            <div class="marker-chip">Sex</div>
+            <div class="marker-chip">Hair colour</div>
+            <div class="marker-chip">Nevus density</div>
+            <div class="marker-chip">Family history</div>
+            <div class="marker-chip">NMSC history</div>
+            <div class="marker-chip">Sunbed sessions</div>
+          </div>
+          <div class="schema-label">The baseline against which all image-augmented models are compared. External AUC matches development AUC (0.70) — robust but plateaued.</div>
+        </div>
+      </div>
+
+      <div class="model-card" onclick="event.stopPropagation(); toggleModel(this);">
+        <div class="mc-head">
+          <span class="mc-lbl">MODELS B1–B4</span>
+          <span class="mc-arrow">▸</span>
+        </div>
+        <div class="mc-name">Individual markers</div>
+        <div class="mc-desc">Add each image marker one at a time</div>
+        <div class="mc-expand">
+          <div class="schema-flow">
+            <div class="s-box baseline"><div class="s-title">MIA/Vuong</div><div class="s-sub">baseline</div></div>
+            <div class="s-plus">+</div>
+            <div class="s-box marker"><div class="s-title">1 image marker</div><div class="s-sub">added individually</div></div>
+            <div class="s-arrow">→</div>
+            <div class="s-box result"><div class="s-title">ΔAUC</div><div class="s-sub">per marker</div></div>
+          </div>
+          <div class="markers-row">
+            <div class="marker-chip">B1: Nevus count</div>
+            <div class="marker-chip">B2: UV damage</div>
+            <div class="marker-chip">B3: Freckling</div>
+            <div class="marker-chip">B4: Skin colour</div>
+          </div>
+          <div class="vs-box-row">
+            <div class="vs-box old">
+              <div class="vs-title">Self-reported</div>
+              <div class="vs-sub">4-level pictogram<br>"Few / Some / Many / Very many"</div>
+            </div>
+            <span class="vs-arrow">→</span>
+            <div class="vs-box new">
+              <div class="vs-title">AI-derived</div>
+              <div class="vs-sub">Continuous objective score<br>from 3D total-body photography</div>
+            </div>
+          </div>
+          <div class="schema-label">Isolates the incremental contribution of each marker. SHAP values show exactly which patients benefit most from each addition.</div>
+        </div>
+      </div>
+
+      <div class="model-card" onclick="event.stopPropagation(); toggleModel(this);">
+        <div class="mc-head">
+          <span class="mc-lbl">MODEL C</span>
+          <span class="mc-arrow">▸</span>
+        </div>
+        <div class="mc-name">Combined</div>
+        <div class="mc-desc">All image markers together</div>
+        <div class="mc-expand">
+          <div class="schema-flow">
+            <div class="s-box baseline"><div class="s-title">MIA/Vuong</div><div class="s-sub">baseline</div></div>
+            <div class="s-plus">+</div>
+            <div class="s-box marker"><div class="s-title">All 4 markers</div><div class="s-sub">combined</div></div>
+            <div class="s-arrow">→</div>
+            <div class="s-box result"><div class="s-title">Best AUC?</div><div class="s-sub">target &gt; 0.70</div></div>
+          </div>
+          <div class="markers-row">
+            <div class="marker-chip">Nevus count</div>
+            <div class="marker-chip">UV damage</div>
+            <div class="marker-chip">Freckling</div>
+            <div class="marker-chip">Skin colour</div>
+          </div>
+          <div class="hypothesis-box">Core hypothesis: the AUC 0.70 ceiling reflects the information limit of self-reported data, not the information limit of phenotype itself. Combining all objective measurements should break through.</div>
+          <div class="schema-label">Super Learner ensemble captures non-linear interactions between markers that traditional Cox models miss. Decision curve analysis shows net benefit at screening-relevant thresholds.</div>
+        </div>
+      </div>
+
+      <div class="model-card" onclick="event.stopPropagation(); toggleModel(this);">
+        <div class="mc-head">
+          <span class="mc-lbl">MODEL D</span>
+          <span class="mc-arrow">▸</span>
+        </div>
+        <div class="mc-name">Image-only</div>
+        <div class="mc-desc">No survey data at all</div>
+        <div class="mc-expand">
+          <div class="schema-flow">
+            <div class="s-box marker"><div class="s-title">Image markers</div><div class="s-sub">+ age + sex only</div></div>
+            <div class="s-arrow">→</div>
+            <div class="s-box outcome"><div class="s-title">Melanoma risk</div><div class="s-sub">no questionnaire</div></div>
+          </div>
+          <div class="markers-row">
+            <div class="marker-chip">Nevus count</div>
+            <div class="marker-chip">UV damage</div>
+            <div class="marker-chip">Freckling</div>
+            <div class="marker-chip">Skin colour</div>
+            <div class="marker-chip">Age</div>
+            <div class="marker-chip">Sex</div>
+            <div class="marker-chip dim">Questionnaire data</div>
+          </div>
+          <div class="hypothesis-box">If Model D approaches Model C performance, it suggests that a risk assessment could be derived from a single 3D photograph — no patient survey required. Major implications for scalability and screening program design.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="methods-row">
+      <span class="m-tag">Super Learner ensemble</span>
+      <span class="m-tag">SHAP decomposition</span>
+      <span class="m-tag">Decision curve analysis</span>
+      <span class="m-tag">Venn-ABERS calibration</span>
+    </div>
+  </div>
+
+  </div>
+</div>
+
+<div class="proj" id="p7" data-status="new" onclick="toggleProj(this)">
+  <div class="proj-head"><div><div class="proj-id">P07 · DEXI 3.0</div><div class="proj-name">Dexi 3.0 Evaluation</div></div><span class="pill pill-new">New</span></div>
+  <div class="proj-lead">Tori Mar · Canfield Scientific</div>
+  <div class="proj-desc">External evaluation of Canfield's Dexi 3.0 dermoscopy AI on ACEMID interim data with pathology-reviewed lesions.</div>
+  <div class="proj-footer"><span class="proj-expand-cta">Click for details →</span></div>
+  <div class="proj-detail"><div class="detail-grid">
+    <div class="detail-section"><h4>Current state</h4><ul>
+      <li>Existing ethics framework covers the evaluation</li>
+      <li>Canfield team to present to AIWG</li>
+      <li>MSK/Stanford clinical trial reportedly commencing mid-2026</li>
+    </ul></div>
+    <div class="detail-section"><h4>Dependencies</h4><ul>
+      <li>Centralisation of dermoscopy images for evaluation</li>
+      <li>Defined evaluation protocol</li>
+      <li>Engagement timeline with Canfield team</li>
+    </ul></div>
+  </div></div>
+</div>
+
+<div class="proj" id="p8" data-status="progress" onclick="toggleProj(this)">
+  <div class="proj-head"><div><div class="proj-id">P08 · SPATIAL</div><div class="proj-name">Spatial Distribution Analysis</div></div><span class="pill pill-progress">In progress</span></div>
+  <div class="proj-lead">Dilki Jayasinghe</div>
+  <div class="proj-desc">Naevus spatial distribution patterns from 3D coordinates. Satellite naevi as independent risk markers.</div>
+  <div class="proj-footer"><span class="proj-expand-cta">Click for details →</span></div>
+  <div class="proj-detail"><div class="detail-grid">
+    <div class="detail-section"><h4>Current state</h4><ul>
+      <li>Convex hull method tested on back area (PA data, n=672)</li>
+      <li>Clustered, dispersed, and regular distribution types identified</li>
+      <li>Limb feasibility under exploration</li>
+    </ul></div>
+    <div class="detail-section"><h4>Dependencies</h4><ul>
+      <li>Skin colour script coordination</li>
+      <li>Resolution of laterality and unclassified location coding</li>
+    </ul></div>
+  </div></div>
+</div>
+
+</div>
+</div>
+
+<!-- SITES -->
+<div class="page" id="p-sites">
+<div class="sites">
+
+<div class="site">
+  <div class="site-head"><div class="site-dot" style="background:#b45309;"></div><div class="site-name">QLD (UQ)</div></div>
+  <div class="site-people"><h4>Members</h4>
+    <div class="person">Peter Soyer</div>
+    <div class="person">Monika Janda</div>
+    <div class="person">Simone Goldinger</div>
+    <div class="person">Sam Kahler</div>
+    <div class="person">Clare Primiero</div>
+    <div class="person">Dilki Jayasinghe</div>
+    <div class="person">Nayomi Arachchige</div>
+    <div class="person">Chengbo Zheng</div>
+    <div class="person">Adam Mothershaw</div>
+  </div>
+  <div class="site-projects"><h4>Projects led</h4>
+    <div class="sp">Interim Analysis Paper</div>
+    <div class="sp">Freckling Validation</div>
+    <div class="sp">Extraction script development</div>
+  </div>
+</div>
+
+<div class="site">
+  <div class="site-head"><div class="site-dot" style="background:#6d28d9;"></div><div class="site-name">VIC (Monash)</div></div>
+  <div class="site-people"><h4>Members</h4>
+    <div class="person">Victoria Mar (AIWG chair)</div>
+    <div class="person">Zongyuan Ge</div>
+    <div class="person">Zhen Yu</div>
+    <div class="person">Siyuan Yan</div>
+    <div class="person">Sam Polkinghorne-Katz (operations)</div>
+  </div>
+  <div class="site-projects"><h4>Projects led</h4>
+    <div class="sp">AI Filter Paper</div>
+    <div class="sp">DL Risk Model</div>
+    <div class="sp">Photodamage Algorithm</div>
+    <div class="sp">Spatial Distribution (with QLD)</div>
+    <div class="sp">Dexi 3.0 Evaluation</div>
+    <div class="sp">Operations coordination</div>
+  </div>
+</div>
+
+<div class="site">
+  <div class="site-head"><div class="site-dot" style="background:#0f766e;"></div><div class="site-name">NSW (USyd / MIA)</div></div>
+  <div class="site-people"><h4>Members</h4>
+    <div class="person">Pablo Fernandez Penas (NSW lead, ACEMID)</div>
+    <div class="person">Linda Martin (MIA site lead)</div>
+    <div class="person">Anne Cust</div>
+    <div class="person">Yagiz Aksoy</div>
+    <div class="person">Grace Kwaan</div>
+  </div>
+  <div class="site-projects"><h4>Projects led</h4>
+    <div class="sp">Incremental Risk Model</div>
+    <div class="sp">NSW operational coordination</div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<!-- PIPELINE -->
+<div class="page" id="p-pipeline">
+<div class="pipeline-grid">
+  <div class="pipeline-stage">
+    <h3><span class="step-num">1</span>Source data capture (Vectra WB360)</h3>
+    <p>3D total body photography captured at each site. Output formats: CR2 (raw camera files, identifiable), JSON (de-identified lesion metadata), TOM (3D mesh files). Stored in site-local Vectra clinical database.</p>
+  </div>
+  <div class="pipeline-stage">
+    <h3><span class="step-num">2</span>Cleansed export from Vectra DB</h3>
+    <p>VectraDBTool + exporter runs locally at each site. Removes patient name, DOB, ID. Retains External ID for REDCap linkage. Output: per-patient .db file plus CR2, JSON, TOM folders.</p>
+    <div class="meta">runs site-local</div>
+  </div>
+  <div class="pipeline-stage">
+    <h3><span class="step-num">3a</span>Naevus burden processing (Script 1)</h3>
+    <p>Reads JSON files. Filters by confidence (≥80%) and major axis (≥2 mm). Outputs CSV of naevi per body site per participant. Broad location labels (e.g. "Left Leg" without upper/lower) affect ~7% of participants.</p>
+    <div class="meta">processing time ~minutes</div>
+  </div>
+  <div class="pipeline-stage">
+    <h3><span class="step-num">3b</span>Photodamage processing (Script 2)</h3>
+    <p>CR2 → JPEG conversion → tile into 9×5 grid → HSV/YCbCr skin filter → AI model inference per tile. Aggregation methodology to per-body-site and per-individual under discussion.</p>
+    <div class="meta">heavier processing · hours</div>
+  </div>
+  <div class="pipeline-stage">
+    <h3><span class="step-num">3c</span>Freckling processing</h3>
+    <p>7 body-location CR2 views → PNG conversion → region-specific extraction (arms rotated 90°, back ROI until skin >75%, face cheek crop via MediaPipe). Algorithm currently being externally validated.</p>
+    <div class="meta">~20h export per cohort</div>
+  </div>
+  <div class="pipeline-stage">
+    <h3><span class="step-num">4</span>Analysis-ready outputs → downstream projects</h3>
+    <p>Phenotype-specific CSVs feed into the eight downstream projects. Most analyses currently waiting on dataset completion across sites and pathology review of outcomes.</p>
+  </div>
+</div>
+</div>
+
+<!-- DEPENDENCIES -->
+<div class="page" id="p-dependencies">
+
+<div class="dep-section">
+  <h2>Enablers and blockers</h2>
+  <p class="sub">Forces currently supporting progress, and items awaiting resolution.</p>
+  <div class="eb-grid">
+
+    <div class="eb-card enablers">
+      <h3>Enablers <span class="label">supporting progress</span></h3>
+      <ul class="eb-list">
+        <li class="eb-item"><strong>ISIC tile extraction tool now functional.</strong> Filter paper progressing on Alfred data.</li>
+        <li class="eb-item"><strong>Updated Canfield CR2 conversion utility</strong> resolves earlier image format incompatibility.</li>
+        <li class="eb-item"><strong>Script 1 distributed</strong> across sites, with first extraction results from PA presented.</li>
+        <li class="eb-item"><strong>Existing ethics framework</strong> covers the Dexi 3.0 evaluation without requiring new submission.</li>
+        <li class="eb-item"><strong>Two risk-model workstreams formalised</strong> as distinct projects (deep learning vs interpretable incremental).</li>
+        <li class="eb-item"><strong>MIA access established for NSW</strong> work, enabling baseline risk data extraction and local script execution.</li>
+        <li class="eb-item"><strong>Operations coordination role</strong> centralised with Sam Polkinghorne-Katz across workstreams.</li>
+      </ul>
+    </div>
+
+    <div class="eb-card blockers">
+      <h3>Blockers <span class="label">awaiting resolution</span></h3>
+      <ul class="eb-list">
+        <li class="eb-item"><strong>Photodamage AI model distribution.</strong> Model being prepared for sharing with the wider extraction team for Script 2 integration.</li>
+        <li class="eb-item"><strong>Photodamage aggregation methodology.</strong> Per-tile outputs need translation to per-body-site and per-individual scores for analysis.</li>
+        <li class="eb-item"><strong>Pathology review of ~100 outstanding melanoma slides</strong> is a prerequisite for outcome-based analyses across multiple projects.</li>
+        <li class="eb-item"><strong>NSW cross-site data sharing pathway</strong> unresolved. No national repository yet. Working assumption: distributed extraction.</li>
+        <li class="eb-item"><strong>Freckling external validation</strong> awaiting Alfred image transfer to UQ and annotator capacity.</li>
+        <li class="eb-item"><strong>Filter paper labelling approach.</strong> Distinction between "lesions for dermoscopy" vs "lesions for biopsy" being defined.</li>
+        <li class="eb-item"><strong>Per-site sequential extraction.</strong> Image data must be cleaned at each site before scripts can run.</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<div class="dep-section">
+  <h2>Project × input dependency matrix</h2>
+  <p class="sub">What each project needs, and the current status of each input.</p>
+  <div class="depmap">
+    <div class="matrix">
+      <div class="matrix-row">
+        <div class="matrix-cell header label" style="text-align:left;justify-content:flex-start;">Project</div>
+        <div class="matrix-cell header">Naevus count</div>
+        <div class="matrix-cell header">Photodamage</div>
+        <div class="matrix-cell header">Freckling</div>
+        <div class="matrix-cell header">Skin colour</div>
+        <div class="matrix-cell header">Outcomes (path)</div>
+        <div class="matrix-cell header">Baseline risk data</div>
+        <div class="matrix-cell header">ISIC tiles</div>
+      </div>
+      <div class="matrix-row">
+        <div class="matrix-cell label">P01 · Interim</div>
+        <div class="matrix-cell"><div class="dot dot-progress">●</div></div>
+        <div class="matrix-cell"><div class="dot dot-blocked">●</div></div>
+        <div class="matrix-cell"><div class="dot dot-pending">●</div></div>
+        <div class="matrix-cell"><div class="dot dot-pending">●</div></div>
+        <div class="matrix-cell"><div class="dot dot-blocked">●</div></div>
+        <div class="matrix-cell dot-na">—</div>
+        <div class="matrix-cell dot-na">—</div>
+      </div>
+      <div class="matrix-row">
+        <div class="matrix-cell label">P02 · Filter</div>
+        <div class="matrix-cell dot-na">—</div>
+        <div class="matrix-cell dot-na">—</div>
+        <div class="matrix-cell dot-na">—</div>
+        <div class="matrix-cell dot-na">—</div>
+        <div class="matrix-cell"><div class="dot dot-progress">●</div></div>
+        <div class="matrix-cell dot-na">—</div>
+        <div class="matrix-cell"><div class="dot dot-ready">●</div></div>
+      </div>
+      <div class="matrix-row">
+        <div class="matrix-cell label">P03 · Photodamage</div>
+        <div class="matrix-cell dot-na">—</div>
+        <div class="matrix-cell"><div class="dot dot-blocked">●</div></div>
+        <div class="matrix-cell dot-na">—</div>
+        <div class="matrix-cell dot-na">—</div>
+        <div class="matrix-cell dot-na">—</div>
+        <div class="matrix-cell dot-na">—</div>
+        <div class="matrix-cell dot-na">—</div>
+      </div>
+      <div class="matrix-row">
+        <div class="matrix-cell label">P04 · Freckling</div>
+        <div class="matrix-cell dot-na">—</div>
+        <div class="matrix-cell dot-na">—</div>
+        <div class="matrix-cell"><div class="dot dot-progress">●</div></div>
+        <div class="matrix-cell dot-na">—</div>
+        <div class="matrix-cell dot-na">—</div>
+        <div class="matrix-cell dot-na">—</div>
+        <div class="matrix-cell dot-na">—</div>
+      </div>
+      <div class="matrix-row">
+        <div class="matrix-cell label">P05 · Risk DL</div>
+        <div class="matrix-cell"><div class="dot dot-progress">●</div></div>
+        <div class="matrix-cell"><div class="dot dot-blocked">●</div></div>
+        <div class="matrix-cell"><div class="dot dot-progress">●</div></div>
+        <div class="matrix-cell"><div class="dot dot-pending">●</div></div>
+        <div class="matrix-cell"><div class="dot dot-blocked">●</div></div>
+        <div class="matrix-cell dot-na">—</div>
+        <div class="matrix-cell dot-na">—</div>
+      </div>
+      <div class="matrix-row">
+        <div class="matrix-cell label">P06 · Risk Interpretable</div>
+        <div class="matrix-cell"><div class="dot dot-progress">●</div></div>
+        <div class="matrix-cell"><div class="dot dot-blocked">●</div></div>
+        <div class="matrix-cell"><div class="dot dot-progress">●</div></div>
+        <div class="matrix-cell"><div class="dot dot-pending">●</div></div>
+        <div class="matrix-cell"><div class="dot dot-blocked">●</div></div>
+        <div class="matrix-cell"><div class="dot dot-progress">●</div></div>
+        <div class="matrix-cell dot-na">—</div>
+      </div>
+      <div class="matrix-row">
+        <div class="matrix-cell label">P07 · Dexi 3.0</div>
+        <div class="matrix-cell dot-na">—</div>
+        <div class="matrix-cell dot-na">—</div>
+        <div class="matrix-cell dot-na">—</div>
+        <div class="matrix-cell dot-na">—</div>
+        <div class="matrix-cell"><div class="dot dot-progress">●</div></div>
+        <div class="matrix-cell dot-na">—</div>
+        <div class="matrix-cell"><div class="dot dot-pending">●</div></div>
+      </div>
+      <div class="matrix-row">
+        <div class="matrix-cell label">P08 · Spatial</div>
+        <div class="matrix-cell"><div class="dot dot-progress">●</div></div>
+        <div class="matrix-cell dot-na">—</div>
+        <div class="matrix-cell dot-na">—</div>
+        <div class="matrix-cell"><div class="dot dot-pending">●</div></div>
+        <div class="matrix-cell dot-na">—</div>
+        <div class="matrix-cell dot-na">—</div>
+        <div class="matrix-cell dot-na">—</div>
+      </div>
+    </div>
+    <div class="matrix-legend">
+      <div class="li"><span class="dot dot-ready">●</span>Available</div>
+      <div class="li"><span class="dot dot-progress">●</span>In progress</div>
+      <div class="li"><span class="dot dot-blocked">●</span>Pending resolution</div>
+      <div class="li"><span class="dot dot-pending">●</span>Awaited</div>
+      <div class="li" style="color:var(--text-3);">— Not required</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- ACTIVITY -->
+<div class="page" id="p-activity">
+<div class="timeline">
+<div class="tl-item">
+  <div class="tl-date">11 May 2026</div>
+  <div class="tl-content">
+    <h4>AIWG meeting</h4>
+    <p>Preliminary naevus count figures presented from PA data. Resolution of the naevus categorisation issue via exclusion of broad-category locations. Photodamage methodology and per-body-site aggregation discussed. MIA access for NSW work confirmed.</p>
+    <div class="tl-tags"><span class="tl-tag">Interim Analysis</span><span class="tl-tag">Photodamage</span><span class="tl-tag">Risk Model</span></div>
+  </div>
+</div>
+<div class="tl-item">
+  <div class="tl-date">30 March 2026</div>
+  <div class="tl-content">
+    <h4>AIWG meeting</h4>
+    <p>ISIC tile extraction confirmed working on Alfred data. Dexi 3.0 evaluation proposed. Two distinct risk model workstreams formalised in minutes.</p>
+    <div class="tl-tags"><span class="tl-tag">Filter Paper</span><span class="tl-tag">Dexi 3.0</span><span class="tl-tag">Risk Model</span></div>
+  </div>
+</div>
+<div class="tl-item">
+  <div class="tl-date">16 March 2026</div>
+  <div class="tl-content">
+    <h4>AIWG meeting</h4>
+    <p>Interpretable incremental risk model approach presented and endorsed. MIA affiliation discussed and supported.</p>
+    <div class="tl-tags"><span class="tl-tag">Risk Model</span><span class="tl-tag">Operations</span></div>
+  </div>
+</div>
+<div class="tl-item">
+  <div class="tl-date">2 March 2026</div>
+  <div class="tl-content">
+    <h4>AIWG meeting</h4>
+    <p>Spatial distribution work discussed. Statistical analysis plan for interim analysis reviewed.</p>
+    <div class="tl-tags"><span class="tl-tag">Spatial</span><span class="tl-tag">Interim Analysis</span></div>
+  </div>
+</div>
+</div>
+</div>
+
+
+<div class="footer">
+  <p>ACEMID AI Working Group</p>
+</div>
+
+</div>
+
+<script>
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('p-' + id).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function toggleProj(el) {
+  el.classList.toggle('expanded');
+}
+function filterProjects(status, btn) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#projGrid .proj').forEach(p => {
+    if (status === 'all') { p.style.display = 'block'; }
+    else { p.style.display = (p.dataset.status === status) ? 'block' : 'none'; }
+  });
+}
+function goToProject(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('p-projects').classList.add('active');
+  document.querySelectorAll('.tab')[1].classList.add('active');
+  setTimeout(() => {
+    const proj = document.getElementById(id);
+    if (proj) {
+      proj.classList.add('expanded');
+      proj.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, 100);
+}
+function toggleModel(el) {
+  el.classList.toggle('open');
+}
+</script>
+</body>
+</html>
