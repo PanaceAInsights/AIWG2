@@ -3,13 +3,15 @@ name: Deploy to GitHub Pages
 # Publishes the repository (static site: the ACEMID tracker at index.html and
 # the dermatology journal-club dashboard / reading list / CSV) to GitHub Pages.
 #
-# ONE-TIME SETUP: in the repo, go to Settings → Pages → "Build and deployment"
-# → Source: "GitHub Actions". After that this runs automatically on every push
-# to main (and can be run manually from the Actions tab).
+# SIMPLEST PUBLISH (no workflow needed): Settings → Pages → Source:
+#   "Deploy from a branch" → main / (root). Files (incl. .nojekyll) serve as-is
+#   and auto-update on every push.
+#
+# OPTIONAL (this workflow): Settings → Pages → Source: "GitHub Actions", then
+# run this manually from the Actions tab ("Run workflow"). Trigger is manual
+# only so it never produces a failing run before Pages is configured.
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
