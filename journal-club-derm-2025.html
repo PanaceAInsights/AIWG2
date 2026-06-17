@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POWH Dermatology Journal Club — Article Scan</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fafafa;--surface:#fff;--surface2:#f4f4f5;--border:#e4e4e7;--text:#18181b;--text2:#52525b;--text3:#71717a;--accent:#0f766e;--accent-bg:#ccfbf1;}
+@media (prefers-color-scheme:dark){:root{--bg:#09090b;--surface:#18181b;--surface2:#27272a;--border:#27272a;--text:#fafafa;--text2:#a1a1aa;--text3:#71717a;--accent:#2dd4bf;--accent-bg:#134e4a;}}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.55;font-size:16px;padding:40px 20px}
+.wrap{max-width:980px;margin:0 auto}
+h1{font-size:28px;font-weight:700;letter-spacing:-.4px;margin-bottom:4px}
+.sub{color:var(--text2);font-size:15px;margin-bottom:2px}
+.date{color:var(--text3);font-size:12.5px;font-family:ui-monospace,'JetBrains Mono',monospace;margin-top:10px}
+.summary{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin:24px 0}
+.summary h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:12px}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+.scard{background:var(--surface2);border-radius:9px;padding:12px 14px}
+.scard .n{font-size:24px;font-weight:700;color:var(--accent)}
+.scard .l{font-size:12.5px;color:var(--text2);margin-top:2px}
+section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 24px;margin-bottom:22px}
+section>h2{font-size:20px;font-weight:700;margin-bottom:2px}
+section>.scope{color:var(--text2);font-size:13.5px;margin-bottom:6px}
+.grp{font-size:14px;font-weight:700;color:var(--accent);margin:20px 0 8px;text-transform:uppercase;letter-spacing:.04em}
+.gcount{color:var(--text3);font-weight:500;text-transform:none;letter-spacing:0}
+ul.arts{list-style:none}
+li.art{padding:12px 0;border-top:1px solid var(--border)}
+li.art:first-child{border-top:none}
+.title{font-weight:600;color:var(--text);text-decoration:none;font-size:15.5px}
+.title:hover{color:var(--accent);text-decoration:underline}
+.meta{color:var(--text2);font-size:13.5px;margin-top:3px}
+.cite{font-family:ui-monospace,'JetBrains Mono',monospace;font-size:12.5px}
+.note{font-size:12.5px;color:var(--text3);margin-top:3px;font-style:italic}
+.links{font-size:12px;margin-top:5px}
+.links a{color:var(--accent);text-decoration:none}
+.links a:hover{text-decoration:underline}
+.links span{color:var(--text3)}
+.badge{display:inline-block;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:2px 7px;border-radius:5px;margin-right:7px;vertical-align:1px}
+.b-cme{background:#fef3c7;color:#b45309}.b-review{background:#ede9fe;color:#6d28d9}.b-meta{background:#dbeafe;color:#1d4ed8}
+.b-guide{background:#dcfce7;color:#15803d}.b-orig{background:var(--accent-bg);color:var(--accent)}.b-case{background:#f4f4f5;color:#52525b}
+.b-letter{background:#fee2e2;color:#b91c1c}.b-short{background:#f4f4f5;color:#71717a}
+@media (prefers-color-scheme:dark){.b-cme{background:#422006;color:#fbbf24}.b-review{background:#2e1065;color:#a78bfa}.b-meta{background:#1e3a8a;color:#60a5fa}.b-guide{background:#14532d;color:#4ade80}.b-letter{background:#450a0a;color:#f87171}.b-case,.b-short{background:#27272a;color:#a1a1aa}}
+.callout{background:var(--surface2);border-left:3px solid var(--accent);border-radius:6px;padding:11px 14px;font-size:13.5px;color:var(--text2);margin:10px 0 4px}
+footer{color:var(--text3);font-size:12.5px;line-height:1.7;margin-top:8px;padding:0 4px}
+footer code{font-family:ui-monospace,monospace;background:var(--surface2);padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Dermatology Journal Club — Article Scan</h1>
+    <div class="sub">Prince of Wales Hospital (POWH), Department of Dermatology</div>
+    <div class="sub">JAAD (Apr–May 2025) &middot; AJD (May 2025) &middot; BJD reviews (Feb–Mar 2025)</div>
+    <div class="date">Compiled 2026-06-17 &middot; Source: PubMed / NCBI (MEDLINE) &middot; 58 articles</div>
+  </header>
+
+  <div class="summary">
+    <h2>At a glance</h2>
+    <div class="sgrid">
+      <div class="scard"><div class="n">19</div><div class="l">JAAD — CME/review + original</div></div>
+      <div class="scard"><div class="n">31</div><div class="l">AJD — full May issue</div></div>
+      <div class="scard"><div class="n">2</div><div class="l">BJD — reviews in Feb &amp; Mar issues</div></div>
+      <div class="scard"><div class="n">6</div><div class="l">BJD — adjacent (suppl/Apr)</div></div>
+    </div>
+  </div>
+
+  <section>
+    <h2>1 · Journal of the American Academy of Dermatology (JAAD)</h2>
+    <div class="scope">April–May 2025 &middot; Volume 92, Issues 4 (Apr) &amp; 5 (May) &middot; scope: CME / original / review</div>
+    <div class="callout">CME designation is inferred from JAAD's multi-part review series (Sunscreens I/II, Psoriatic arthritis I/II); PubMed carries no explicit "CME" tag, so confirm against the issue contents page. The two issues also contained ≈149 research letters, correspondence, case reports, editorials and errata, which fall outside the requested CME/original/review scope and are not listed here.</div>
+      <h3 class="grp">CME &amp; Review articles <span class="gcount">(9)</span></h3>
+      <ul class="arts">
+        <li class="art">
+          <span class="badge b-cme">CME / Review</span>
+          <a class="title" href="https://doi.org/10.1016/j.jaad.2024.02.065" target="_blank" rel="noopener">Sunscreens part 1: Mechanisms and efficacy.</a>
+          <div class="meta">Abdel Azim S, et al. &middot; <span class="cite">J Am Acad Dermatol. 2025;92(4):677-686</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1016/j.jaad.2024.02.065" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/38772426/" target="_blank" rel="noopener">PubMed 38772426</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-cme">CME / Review</span>
+          <a class="title" href="https://doi.org/10.1016/j.jaad.2024.02.066" target="_blank" rel="noopener">Sunscreens part 2: Regulation and safety.</a>
+          <div class="meta">Abdel Azim S, et al. &middot; <span class="cite">J Am Acad Dermatol. 2025;92(4):689-698</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1016/j.jaad.2024.02.066" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/38777185/" target="_blank" rel="noopener">PubMed 38777185</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-review">Review</span>
+          <a class="title" href="https://doi.org/10.1016/j.jaad.2024.10.081" target="_blank" rel="noopener">Diagnosis and management of subungual and periungual verruca: A clinical review.</a>
+          <div class="meta">Curtis KL, et al. &middot; <span class="cite">J Am Acad Dermatol. 2025;92(4):861-871</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1016/j.jaad.2024.10.081" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39549844/" target="_blank" rel="noopener">PubMed 39549844</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-guide">Guideline</span>
+          <a class="title" href="https://doi.org/10.1016/j.jaad.2024.11.071" target="_blank" rel="noopener">North American clinical practice guidelines for the medical management of hidradenitis suppurativa in special patient populations.</a>
+          <div class="meta">Alhusayen R, et al. &middot; <span class="cite">J Am Acad Dermatol. 2025;92(4):825-852</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1016/j.jaad.2024.11.071" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39725212/" target="_blank" rel="noopener">PubMed 39725212</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-guide">Consensus</span>
+          <a class="title" href="https://doi.org/10.1016/j.jaad.2024.12.016" target="_blank" rel="noopener">The association between obesity and efficacy of psoriasis therapies: An expert consensus panel.</a>
+          <div class="meta">Burshtein J, et al. &middot; <span class="cite">J Am Acad Dermatol. 2025;92(4):807-815</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1016/j.jaad.2024.12.016" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39709077/" target="_blank" rel="noopener">PubMed 39709077</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-meta">Meta-analysis</span>
+          <a class="title" href="https://doi.org/10.1016/j.jaad.2024.11.050" target="_blank" rel="noopener">A genome-wide association meta-analysis links hidradenitis suppurativa to common and rare sequence variants causing disruption of the Notch and Wnt/&#x3b2;-catenin signaling pathways.</a>
+          <div class="meta">Kj&#xe6;rsgaard Andersen R, et al. &middot; <span class="cite">J Am Acad Dermatol. 2025;92(4):761-772</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1016/j.jaad.2024.11.050" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39645042/" target="_blank" rel="noopener">PubMed 39645042</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-cme">CME / Review</span>
+          <a class="title" href="https://doi.org/10.1016/j.jaad.2024.03.058" target="_blank" rel="noopener">Psoriatic arthritis: A comprehensive review for the dermatologist part I: Epidemiology, comorbidities, pathogenesis, and diagnosis.</a>
+          <div class="meta">Perez-Chada LM, et al. &middot; <span class="cite">J Am Acad Dermatol. 2025;92(5):969-982</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1016/j.jaad.2024.03.058" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/38857765/" target="_blank" rel="noopener">PubMed 38857765</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-cme">CME / Review</span>
+          <a class="title" href="https://doi.org/10.1016/j.jaad.2024.03.059" target="_blank" rel="noopener">Psoriatic arthritis: A comprehensive review for the dermatologist-Part II: Screening and management.</a>
+          <div class="meta">Elman SA, et al. &middot; <span class="cite">J Am Acad Dermatol. 2025;92(5):985-998</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1016/j.jaad.2024.03.059" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/38857766/" target="_blank" rel="noopener">PubMed 38857766</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-meta">Systematic review</span>
+          <a class="title" href="https://doi.org/10.1016/j.jaad.2024.11.082" target="_blank" rel="noopener">Prevalence of poor outcomes in cutaneous squamous cell carcinoma by AJCC and BWH tumor stages: A systematic review and meta-analysis.</a>
+          <div class="meta">Zakhem GA, et al. &middot; <span class="cite">J Am Acad Dermatol. 2025;92(5):1064-1071</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1016/j.jaad.2024.11.082" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39889854/" target="_blank" rel="noopener">PubMed 39889854</a></div>
+        </li>
+      </ul>
+      <h3 class="grp">Original articles <span class="gcount">(10)</span></h3>
+      <ul class="arts">
+        <li class="art">
+          <span class="badge b-orig">Original</span>
+          <a class="title" href="https://doi.org/10.1016/j.jaad.2024.11.043" target="_blank" rel="noopener">Evaluating cancer risk in a large cohort of 25,008 patients with vitiligo: Insights from a comprehensive cohort population-based study.</a>
+          <div class="meta">Schonmann Y, et al. &middot; <span class="cite">J Am Acad Dermatol. 2025;92(4):741-752</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1016/j.jaad.2024.11.043" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39631697/" target="_blank" rel="noopener">PubMed 39631697</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-orig">Original</span>
+          <a class="title" href="https://doi.org/10.1016/j.jaad.2024.11.047" target="_blank" rel="noopener">Race and appointment availability influence continuity of care for chronic inflammatory skin disease: A cross-sectional study of United States practice data.</a>
+          <div class="meta">Nicholas A, et al. &middot; <span class="cite">J Am Acad Dermatol. 2025;92(4):753-760</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1016/j.jaad.2024.11.047" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39637987/" target="_blank" rel="noopener">PubMed 39637987</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-orig">Original</span>
+          <a class="title" href="https://doi.org/10.1016/j.jaad.2024.11.057" target="_blank" rel="noopener">Cost-utility analysis of clinic-based deroofing versus local excision for hidradenitis suppurativa.</a>
+          <div class="meta">Hundal S, et al. &middot; <span class="cite">J Am Acad Dermatol. 2025;92(4):773-780</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1016/j.jaad.2024.11.057" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39657847/" target="_blank" rel="noopener">PubMed 39657847</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-orig">Original</span>
+          <a class="title" href="https://doi.org/10.1016/j.jaad.2024.11.066" target="_blank" rel="noopener">Early diagnosis of type 2 diabetes mellitus in patients with psoriasis: Construction of a multifactorial diagnostic model.</a>
+          <div class="meta">Gao P, et al. &middot; <span class="cite">J Am Acad Dermatol. 2025;92(4):790-800</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1016/j.jaad.2024.11.066" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39709076/" target="_blank" rel="noopener">PubMed 39709076</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-orig">Original</span>
+          <a class="title" href="https://doi.org/10.1016/j.jaad.2024.11.067" target="_blank" rel="noopener">Oncologic outcomes for invasive squamous cell carcinoma with a clinically resolved biopsy site managed by watchful waiting: A retrospective cohort study.</a>
+          <div class="meta">Boudreaux B, et al. &middot; <span class="cite">J Am Acad Dermatol. 2025;92(4):801-806</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1016/j.jaad.2024.11.067" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39706528/" target="_blank" rel="noopener">PubMed 39706528</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-orig">Original</span>
+          <a class="title" href="https://doi.org/10.1016/j.jaad.2024.09.086" target="_blank" rel="noopener">Long-term evolution of prepubertal-onset anogenital lichen sclerosus: A 35-year retrospective and cross-sectional study from a single tertiary care maternal and pediatric center.</a>
+          <div class="meta">Vall&#xe9;e S, et al. &middot; <span class="cite">J Am Acad Dermatol. 2025;92(5):1010-1014</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1016/j.jaad.2024.09.086" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39637982/" target="_blank" rel="noopener">PubMed 39637982</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-orig">Original</span>
+          <a class="title" href="https://doi.org/10.1016/j.jaad.2024.12.041" target="_blank" rel="noopener">Interferon-&#x3b1; biological activity is associated with disease activity and risk of flare in cutaneous lupus erythematosus: A monocentric study of 184 patients.</a>
+          <div class="meta">Murat de Montai Q, et al. &middot; <span class="cite">J Am Acad Dermatol. 2025;92(5):1039-1048</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1016/j.jaad.2024.12.041" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39855347/" target="_blank" rel="noopener">PubMed 39855347</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-orig">Original</span>
+          <a class="title" href="https://doi.org/10.1016/j.jaad.2025.01.052" target="_blank" rel="noopener">A 96-week real-world outcome of upadacitinib treatment for atopic dermatitis: Systemic therapy-naive versus -experienced patients.</a>
+          <div class="meta">Hagino T, et al. &middot; <span class="cite">J Am Acad Dermatol. 2025;92(5):1049-1055</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1016/j.jaad.2025.01.052" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39880172/" target="_blank" rel="noopener">PubMed 39880172</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-orig">Original</span>
+          <a class="title" href="https://doi.org/10.1016/j.jaad.2024.12.043" target="_blank" rel="noopener">Predictors of perceived stress, perceived stigmatization, and body dysmorphia in patients with chronic prurigo/prurigo nodularis: Results from an observational cross-sectional multicenter European study in 17 countries.</a>
+          <div class="meta">Ficheux AS, et al. &middot; <span class="cite">J Am Acad Dermatol. 2025;92(5):1056-1063</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1016/j.jaad.2024.12.043" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39884581/" target="_blank" rel="noopener">PubMed 39884581</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-orig">Original</span>
+          <a class="title" href="https://doi.org/10.1016/j.jaad.2024.11.078" target="_blank" rel="noopener">Nail unit melanoma treated with Mohs micrographic surgery: Technique, local recurrence rate, and surgical outcomes.</a>
+          <div class="meta">Valdes Morales KL, et al. &middot; <span class="cite">J Am Acad Dermatol. 2025;92(5):1072-1079</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1016/j.jaad.2024.11.078" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39848587/" target="_blank" rel="noopener">PubMed 39848587</a></div>
+        </li>
+      </ul>
+  </section>
+
+  <section>
+    <h2>2 · Australasian Journal of Dermatology (AJD)</h2>
+    <div class="scope">May 2025 &middot; Volume 66, Issue 3 (cover date May 2025) &middot; scope: complete issue</div>
+      <h3 class="grp">Reviews, systematic reviews &amp; viewpoints <span class="gcount">(9)</span></h3>
+      <ul class="arts">
+        <li class="art">
+          <span class="badge b-review">Review</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14429" target="_blank" rel="noopener">Paediatric Hypotrichosis: A Clinical and Algorithmic Approach to Diagnosis.</a>
+          <div class="meta">So N, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):e109-e119</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14429" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39992008/" target="_blank" rel="noopener">PubMed 39992008</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-review">Review</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14454" target="_blank" rel="noopener">High-Intensity Focused Ultrasound-Application, Effects and Complications.</a>
+          <div class="meta">Welc N, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):e120-e125</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14454" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/40095285/" target="_blank" rel="noopener">PubMed 40095285</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-review">Review</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14451" target="_blank" rel="noopener">Targeted Therapies for Slow-Flow Vascular Malformations.</a>
+          <div class="meta">Li GX, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):142-151</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14451" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/40095204/" target="_blank" rel="noopener">PubMed 40095204</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-meta">Systematic review</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14432" target="_blank" rel="noopener">Prevention of Post-Inflammatory Hyperpigmentation in Skin of Colour: A Systematic Review.</a>
+          <div class="meta">Mar K, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):119-126</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14432" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39953770/" target="_blank" rel="noopener">PubMed 39953770</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-meta">Systematic review</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14424" target="_blank" rel="noopener">Systematic Review of Rare Major Adverse Cardiovascular Events Associated With the Treatment of Acne With Isotretinoin.</a>
+          <div class="meta">Cowan TL, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):e97-e108</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14424" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39927601/" target="_blank" rel="noopener">PubMed 39927601</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-meta">Systematic review / Meta-analysis</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14428" target="_blank" rel="noopener">Spironolactone for the Treatment of Moderate to Severe Acne in Adult Women: A Systematic Review and Meta-Analysis of Randomised Controlled Trials.</a>
+          <div class="meta">Kow CS, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):165-168</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14428" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39912292/" target="_blank" rel="noopener">PubMed 39912292</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-review">Review</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14423" target="_blank" rel="noopener">Australian Sunscreens: The Price of Protection for Skin of Colour With Pigmentary Disorders.</a>
+          <div class="meta">Hang X, Lim DS &middot; <span class="cite">Australas J Dermatol. 2025;66(3):e80-e96</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14423" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39907196/" target="_blank" rel="noopener">PubMed 39907196</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-review">Review</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14426" target="_blank" rel="noopener">Laryngeal Squamous Cell Carcinoma and Diathermy Plume.</a>
+          <div class="meta">Warren LJ, Krishnan S &middot; <span class="cite">Australas J Dermatol. 2025;66(3):162-164</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14426" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39895543/" target="_blank" rel="noopener">PubMed 39895543</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-review">Viewpoint</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14427" target="_blank" rel="noopener">Biosimilars for Australian Dermatologists.</a>
+          <div class="meta">Li GX, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):152-156</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14427" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39907175/" target="_blank" rel="noopener">PubMed 39907175</a></div>
+        </li>
+      </ul>
+      <h3 class="grp">Original &amp; research articles <span class="gcount">(9)</span></h3>
+      <ul class="arts">
+        <li class="art">
+          <span class="badge b-orig">Original</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14449" target="_blank" rel="noopener">Clinical Characteristics, Management and Long-Term Outcomes of 180 Patients With Early-Stage Mycosis Fungoides at a Tertiary Centre-A 34-Year Retrospective Study.</a>
+          <div class="meta">Mendi BI, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):e126-e139</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14449" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/40071648/" target="_blank" rel="noopener">PubMed 40071648</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-orig">Original</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14453" target="_blank" rel="noopener">Comparison of Keratinocyte Cancer Tumour and Defect Sizes Treated by Mohs Micrographic Surgery: Sydney Versus Outside Metropolitan Sydney.</a>
+          <div class="meta">Johns M, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):e148-e154</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14453" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/40066906/" target="_blank" rel="noopener">PubMed 40066906</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-orig">Original</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14450" target="_blank" rel="noopener">Drug Survival of Biological Therapies in Smokers and Non-Smokers With Psoriasis: A Retrospective Cohort Study Using Data From the Australasian Psoriasis Registry.</a>
+          <div class="meta">May F, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):e140-e147</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14450" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/40028779/" target="_blank" rel="noopener">PubMed 40028779</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-orig">Original</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14433" target="_blank" rel="noopener">#Acne: A Thematic Qualitative Analysis of Acne Content on TikTok.</a>
+          <div class="meta">Iyengar L, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):127-134</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14433" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/40008491/" target="_blank" rel="noopener">PubMed 40008491</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-orig">Original</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14442" target="_blank" rel="noopener">Treatment of Benign Adnexal Tumours With Mohs Micrographic Surgery: An Australian Retrospective Analysis.</a>
+          <div class="meta">Tran A, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):e163-e166</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14442" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/40008490/" target="_blank" rel="noopener">PubMed 40008490</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-orig">Original</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14434" target="_blank" rel="noopener">A Guide to Screening for Autoimmune Diseases in Patients With Vulvar Lichen Sclerosus.</a>
+          <div class="meta">Guttentag A, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):135-141</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14434" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39953774/" target="_blank" rel="noopener">PubMed 39953774</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-orig">Original</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14435" target="_blank" rel="noopener">Ergonomics in Dermatological Surgery: An International Survey Among Dermatologists.</a>
+          <div class="meta">Lim PN, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):e155-e159</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14435" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39976264/" target="_blank" rel="noopener">PubMed 39976264</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-orig">Original (RCT)</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14444" target="_blank" rel="noopener">Efficacy of Topical Oxytocin With Micro-Needling in the Treatment of Facial Skin Ageing: A Randomised, Placebo-Controlled, Split-Face Study.</a>
+          <div class="meta">Eassa BI, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):172-174</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14444" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/40019052/" target="_blank" rel="noopener">PubMed 40019052</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-short">Short report</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14448" target="_blank" rel="noopener">Rural Exposure and Future Intent of Australian Dermatology Trainees.</a>
+          <div class="meta">Yap M, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):e176-e178</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14448" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/40040562/" target="_blank" rel="noopener">PubMed 40040562</a></div>
+        </li>
+      </ul>
+      <h3 class="grp">Case reports &amp; case series <span class="gcount">(11)</span></h3>
+      <ul class="arts">
+        <li class="art">
+          <span class="badge b-review">Case series / Review</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14425" target="_blank" rel="noopener">Acneiform Eruption Secondary to Deucravacitinib: A Case Series and Review of the Literature.</a>
+          <div class="meta">Tran V, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):157-161</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14425" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39891469/" target="_blank" rel="noopener">PubMed 39891469</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-case">Case report</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14431" target="_blank" rel="noopener">Upadacitinib for Chronic Actinic Dermatitis: A Case Report and Literature Review of JAK Inhibitor Use for Recalcitrant Disease.</a>
+          <div class="meta">Holmes Z, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):169-171</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14431" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39921367/" target="_blank" rel="noopener">PubMed 39921367</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-case">Case report</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14456" target="_blank" rel="noopener">Case Report of Dermatomyositis With Features of the Wong Variant Developing Post-Trastuzumab Therapy for Breast Cancer.</a>
+          <div class="meta">LaMonica LC, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):183-185</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14456" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/40189739/" target="_blank" rel="noopener">PubMed 40189739</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-case">Case report</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14430" target="_blank" rel="noopener">A Case of Squamous Cell Carcinoma Clinically Thought to be Arising From Bursa of Knee Joint.</a>
+          <div class="meta">Sakamoto S, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):175-177</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14430" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/40110971/" target="_blank" rel="noopener">PubMed 40110971</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-case">Case report</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14458" target="_blank" rel="noopener">Successful Photodynamic Treatment of a Pigmented Nodular BCC Using a Biphasic Activation Protocol.</a>
+          <div class="meta">Stephens R, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):e179-e181</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14458" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/40110948/" target="_blank" rel="noopener">PubMed 40110948</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-case">Case report</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14459" target="_blank" rel="noopener">Treating Inverse Lichen Planus With Upadacitinib: A Case Study.</a>
+          <div class="meta">Ying Y, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):e182-e184</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14459" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/40110935/" target="_blank" rel="noopener">PubMed 40110935</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-case">Case report</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14455" target="_blank" rel="noopener">Similar Molecular Features in Two Cases of CARD14-Associated Papulosquamous Eruption.</a>
+          <div class="meta">Wang Y, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):e171-e175</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14455" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/40084598/" target="_blank" rel="noopener">PubMed 40084598</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-case">Case report</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14443" target="_blank" rel="noopener">Novel Compound Heterozygous Mutations in ILNEB Syndrome.</a>
+          <div class="meta">Wu H, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):e167-e170</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14443" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/40019062/" target="_blank" rel="noopener">PubMed 40019062</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-case">Case report</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14441" target="_blank" rel="noopener">Segmental Congenital Vascular Anomaly With Atrophy, Ulceration and Scarring With Complications in Pregnancy.</a>
+          <div class="meta">Halbert AR, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):e160-e162</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14441" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/40019051/" target="_blank" rel="noopener">PubMed 40019051</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-case">Case report</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14437" target="_blank" rel="noopener">Resolution of Severe Hidradenitis Suppurativa Following Kidney Transplantation.</a>
+          <div class="meta">Balan K, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):178-179</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14437" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39985234/" target="_blank" rel="noopener">PubMed 39985234</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-case">Case report</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14438" target="_blank" rel="noopener">Pellagra and Scurvy in a Patient With Relapsed Schizophrenia.</a>
+          <div class="meta">Tran V, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):180-182</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14438" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39985229/" target="_blank" rel="noopener">PubMed 39985229</a></div>
+        </li>
+      </ul>
+      <h3 class="grp">Letters / correspondence <span class="gcount">(2)</span></h3>
+      <ul class="arts">
+        <li class="art">
+          <span class="badge b-letter">Letter</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14439" target="_blank" rel="noopener">Faster Diagnosis, Faster Therapy: Dermoscopy as a Valuable Tool in Difficult Cases of Herpes Zoster.</a>
+          <div class="meta">Corio A, et al. &middot; <span class="cite">Australas J Dermatol. 2025;66(3):186-187</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14439" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/40138186/" target="_blank" rel="noopener">PubMed 40138186</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-letter">Letter</span>
+          <a class="title" href="https://doi.org/10.1111/ajd.14457" target="_blank" rel="noopener">The Place of the Full Skin Examination in the Digital Landscape.</a>
+          <div class="meta">O'Malley S, Hambly R &middot; <span class="cite">Australas J Dermatol. 2025;66(3):e185-e186</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1111/ajd.14457" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/40138172/" target="_blank" rel="noopener">PubMed 40138172</a></div>
+        </li>
+      </ul>
+  </section>
+
+  <section>
+    <h2>3 · British Journal of Dermatology (BJD)</h2>
+    <div class="scope">Review articles &middot; February–March 2025 &middot; Volume 192, Issues 2 (Feb) &amp; 3 (Mar)</div>
+    <div class="callout">The <b>February issue (192/2) contained no review-type articles</b> (verified by issue-level search). The March issue (192/3) contained the two reviews below. For completeness, reviews that appeared online during Feb–Mar but belong to the February HS-themed supplement and the April issue are listed separately — include or drop these depending on how you define the window.</div>
+      <h3 class="grp">Reviews — March issue (192/3) <span class="gcount">(2)</span></h3>
+      <ul class="arts">
+        <li class="art">
+          <span class="badge b-review">Review</span>
+          <a class="title" href="https://doi.org/10.1093/bjd/ljae457" target="_blank" rel="noopener">Tailored bioengineering and nanomedicine strategies for sex-specific healing of chronic wounds.</a>
+          <div class="meta">Mahmoudi N, et al. &middot; <span class="cite">Br J Dermatol. 2025;192(3):390-401</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1093/bjd/ljae457" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39565404/" target="_blank" rel="noopener">PubMed 39565404</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-review">Review</span>
+          <a class="title" href="https://doi.org/10.1093/bjd/ljae441" target="_blank" rel="noopener">Haematogenous seeding in mycosis fungoides and S&#xe9;zary syndrome: current evidence and clinical implications.</a>
+          <div class="meta">Gniadecki R, et al. &middot; <span class="cite">Br J Dermatol. 2025;192(3):381-389</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1093/bjd/ljae441" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39545505/" target="_blank" rel="noopener">PubMed 39545505</a></div>
+        </li>
+      </ul>
+      <h3 class="grp">Adjacent — February HS supplement (192/S1) <span class="gcount">(3)</span> <span class="gcount">optional</span></h3>
+      <ul class="arts">
+        <li class="art">
+          <span class="badge b-review">Review (HS suppl, Feb)</span>
+          <a class="title" href="https://doi.org/10.1093/bjd/ljae238" target="_blank" rel="noopener">Unravelling the complex pathogenesis of hidradenitis suppurativa.</a>
+          <div class="meta">Frew JW &middot; <span class="cite">Br J Dermatol. 2025;192(Suppl 1):i3-i14</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1093/bjd/ljae238" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39895594/" target="_blank" rel="noopener">PubMed 39895594</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-review">Review (HS suppl, Feb)</span>
+          <a class="title" href="https://doi.org/10.1093/bjd/ljae399" target="_blank" rel="noopener">Leveraging genotypes and phenotypes to implement precision medicine in hidradenitis suppurativa management.</a>
+          <div class="meta">Petukhova L, et al. &middot; <span class="cite">Br J Dermatol. 2025;192(Suppl 1):i22-i29</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1093/bjd/ljae399" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39895593/" target="_blank" rel="noopener">PubMed 39895593</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-review">Review (HS suppl, Feb)</span>
+          <a class="title" href="https://doi.org/10.1093/bjd/ljae318" target="_blank" rel="noopener">An evolutionary tale on clinical trials in hidradenitis suppurativa.</a>
+          <div class="meta">Sayed CJ, et al. &middot; <span class="cite">Br J Dermatol. 2025;192(Suppl 1):i15-i21</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1093/bjd/ljae318" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39895591/" target="_blank" rel="noopener">PubMed 39895591</a></div>
+        </li>
+      </ul>
+      <h3 class="grp">Adjacent — April issue (192/4), online in Feb–Mar <span class="gcount">(3)</span> <span class="gcount">optional</span></h3>
+      <ul class="arts">
+        <li class="art">
+          <span class="badge b-guide">Systematic review / Consensus (Apr)</span>
+          <a class="title" href="https://doi.org/10.1093/bjd/ljae491" target="_blank" rel="noopener">Global Delphi consensus on treatment goals for generalized pustular psoriasis.</a>
+          <div class="meta">Barker JN, et al. &middot; <span class="cite">Br J Dermatol. 2025;192(4):706-716</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1093/bjd/ljae491" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39844356/" target="_blank" rel="noopener">PubMed 39844356</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-review">Review (Apr)</span>
+          <a class="title" href="https://doi.org/10.1093/bjd/ljae456" target="_blank" rel="noopener">Evolution of long scalp hair in humans.</a>
+          <div class="meta">Chang LY, et al. &middot; <span class="cite">Br J Dermatol. 2025;192(4):574-584</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1093/bjd/ljae456" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39841178/" target="_blank" rel="noopener">PubMed 39841178</a></div>
+        </li>
+        <li class="art">
+          <span class="badge b-review">Review (Apr)</span>
+          <a class="title" href="https://doi.org/10.1093/bjd/ljae443" target="_blank" rel="noopener">Disabling pansclerotic morphoea: a century of discovery.</a>
+          <div class="meta">Hua VK, et al. &middot; <span class="cite">Br J Dermatol. 2025;192(4):585-596</span></div>
+          
+          <div class="links"><a href="https://doi.org/10.1093/bjd/ljae443" target="_blank" rel="noopener">DOI</a> <span>&middot;</span> <a href="https://pubmed.ncbi.nlm.nih.gov/39520387/" target="_blank" rel="noopener">PubMed 39520387</a></div>
+        </li>
+      </ul>
+  </section>
+
+  <footer>
+    <p><b>Method.</b> Articles were retrieved from PubMed/NCBI and scoped by <code>journal + volume + issue</code> rather than raw publication-date ranges, because PubMed mixes online-first and print-issue dates (a naive date search over-returns later-issue content and misses issue articles posted online earlier). Issue→month mapping was verified against PubMed citation strings.</p>
+    <p><b>Attribution.</b> Bibliographic data &copy; the respective publishers, indexed by the U.S. National Library of Medicine (PubMed). Every entry links to its DOI and PubMed record. Always cite the primary source.</p>
+    <p>Regenerate with <code>python3 journal-club/generate_report.py</code>.</p>
+  </footer>
+</div>
+</body>
+</html>
