@@ -1,0 +1,54 @@
+{
+  "_comment": "Scope for the POWH dermatology journal club. Each query is run against PubMed/NCBI by fetch_pubmed.py. Edit the volume/issue numbers (and section labels) for a new journal club, then run: python3 journal-club/fetch_pubmed.py && python3 journal-club/generate_report.py. Section labels must match JOURNAL_META in generate_report.py. Issue->month for these journals: JAAD vol92 iss4=Apr/iss5=May 2025; AJD vol66 iss3=May 2025; BJD vol192 iss2=Feb/iss3=Mar/iss4=Apr 2025.",
+  "queries": [
+    {
+      "journal_short": "JAAD",
+      "term": "\"J Am Acad Dermatol\"[Journal] AND 92[Volume] AND (4[Issue] OR 5[Issue]) AND (Review[pt] OR \"Systematic Review\"[pt] OR \"Meta-Analysis\"[pt] OR \"Practice Guideline\"[pt] OR Guideline[pt])",
+      "mode": "fixed",
+      "section": "CME & Review articles"
+    },
+    {
+      "journal_short": "JAAD",
+      "term": "\"J Am Acad Dermatol\"[Journal] AND 92[Volume] AND (4[Issue] OR 5[Issue]) NOT Review[pt] NOT \"Systematic Review\"[pt] NOT \"Meta-Analysis\"[pt] NOT \"Practice Guideline\"[pt] NOT Guideline[pt] NOT Letter[pt] NOT Editorial[pt] NOT Comment[pt] NOT \"Published Erratum\"[pt] NOT \"Case Reports\"[pt] NOT News[pt] NOT Biography[pt]",
+      "mode": "original",
+      "section": "Original articles",
+      "min_abstract": 400
+    },
+    {
+      "journal_short": "AJD",
+      "term": "\"Australas J Dermatol\"[Journal] AND 66[Volume] AND 3[Issue]",
+      "mode": "issue",
+      "sections": {
+        "review": "Reviews, systematic reviews & viewpoints",
+        "original": "Original & research articles",
+        "case": "Case reports & case series",
+        "letter": "Letters / correspondence"
+      }
+    },
+    {
+      "journal_short": "BJD",
+      "term": "\"Br J Dermatol\"[Journal] AND 192[Volume] AND 3[Issue] AND (Review[pt] OR \"Systematic Review\"[pt])",
+      "mode": "fixed",
+      "section": "Reviews — March issue (192/3)"
+    },
+    {
+      "journal_short": "BJD",
+      "term": "\"Br J Dermatol\"[Journal] AND 192[Volume] AND 2[Issue] AND (Review[pt] OR \"Systematic Review\"[pt])",
+      "mode": "fixed",
+      "section": "Reviews — February issue (192/2)"
+    },
+    {
+      "journal_short": "BJD",
+      "term": "\"Br J Dermatol\"[Journal] AND 192[Volume] AND 4[Issue] AND (Review[pt] OR \"Systematic Review\"[pt])",
+      "mode": "fixed",
+      "section": "Reviews — April issue (192/4), online in Feb–Mar"
+    },
+    {
+      "journal_short": "BJD",
+      "pmids": ["39895594", "39895593", "39895591"],
+      "mode": "fixed",
+      "section": "Reviews — February HS supplement (192/S1)",
+      "_comment": "BJD vol 192 Suppl 1 (HS themed, Feb 2025); supplements are hard to address by [Issue], so pinned by PMID."
+    }
+  ]
+}
