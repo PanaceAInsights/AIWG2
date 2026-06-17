@@ -17,7 +17,7 @@ from articles.json. Update JOURNAL_META only when the scope changes.
 Run:  python3 journal-club/generate_report.py
 """
 
-import os, re, csv, json, html
+import os, re, csv, json, html, argparse
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, ".."))
@@ -27,6 +27,12 @@ with open(os.path.join(HERE, "articles.json"), encoding="utf-8") as fh:
 ARTICLES = _DATA["articles"]
 GENERATED = _DATA.get("generated", "")
 SOURCE = _DATA.get("source", "PubMed/NCBI (MEDLINE)")
+
+# Output filenames (overridden by --site to build a standalone Pages bundle
+# whose home page is index.html).
+DASH_FILE = "journal-club-dashboard.html"
+LIST_FILE = "journal-club-derm-2025.html"
+CSV_FILE = "journal-club-derm-2025.csv"
 
 # Presentation metadata. `sections` fixes the order papers are grouped in the
 # reading list; any section label used in articles.json must appear here.
@@ -203,7 +209,7 @@ footer{color:var(--text3);font-size:12.5px;line-height:1.7;margin-top:8px;paddin
     <h1>Dermatology Journal Club — Reading List</h1>
     <div class="sub">Prince of Wales Hospital (POWH), Department of Dermatology</div>
     <div class="date">Compiled {GENERATED} · Source: {SOURCE} · {len(RECORDS)} articles, {sum(1 for r in RECORDS if r['abstract'])} with abstracts</div>
-    <div class="tools">↪ <a href="journal-club-dashboard.html">Interactive dashboard</a> · <a href="journal-club-derm-2025.csv">Download CSV</a></div>
+    <div class="tools">↪ <a href="{DASH_FILE}">Interactive dashboard</a> · <a href="{CSV_FILE}">Download CSV</a></div>
   </header>
   <div class="summary"><h2>At a glance</h2><div class="sgrid">
     <div class="scard"><div class="n">{counts.get('JAAD',0)}</div><div class="l">JAAD — CME/review + original</div></div>
@@ -335,7 +341,7 @@ stats();chips();render();
   <header>
     <h1>Dermatology Journal Club — Dashboard</h1>
     <div class="sub">POWH Dept of Dermatology · JAAD (Apr–May 2025) · AJD (May 2025) · BJD reviews (Feb–Mar 2025)</div>
-    <div class="date">Compiled {GENERATED} · Source: {SOURCE} · {len(RECORDS)} papers · {n_abs} with abstracts · <a href="journal-club-derm-2025.html">reading list</a> · <a href="journal-club-derm-2025.csv">CSV</a></div>
+    <div class="date">Compiled {GENERATED} · Source: {SOURCE} · {len(RECORDS)} papers · {n_abs} with abstracts · <a href="{LIST_FILE}">reading list</a> · <a href="{CSV_FILE}">CSV</a></div>
   </header>
   <div class="stats" id="stats"></div>
   <div class="controls">
@@ -352,11 +358,25 @@ stats();chips();render();
 
 # ----------------------------------------------------------------- main ------
 if __name__ == "__main__":
-    with open(os.path.join(ROOT, "journal-club-derm-2025.html"), "w", encoding="utf-8") as f:
+    ap = argparse.ArgumentParser(description="Build the journal-club dashboard, reading list and CSV.")
+    ap.add_argument("--site", metavar="DIR",
+                    help="build a standalone GitHub Pages bundle (dashboard as index.html, "
+                         "plus reading-list.html and CSV) into DIR")
+    args = ap.parse_args()
+
+    if args.site:
+        DASH_FILE, LIST_FILE = "index.html", "reading-list.html"
+        outdir = args.site
+        os.makedirs(outdir, exist_ok=True)
+        open(os.path.join(outdir, ".nojekyll"), "w").close()
+    else:
+        outdir = ROOT
+
+    with open(os.path.join(outdir, LIST_FILE), "w", encoding="utf-8") as f:
         f.write(build_report())
-    build_csv(os.path.join(ROOT, "journal-club-derm-2025.csv"))
-    with open(os.path.join(ROOT, "journal-club-dashboard.html"), "w", encoding="utf-8") as f:
+    build_csv(os.path.join(outdir, CSV_FILE))
+    with open(os.path.join(outdir, DASH_FILE), "w", encoding="utf-8") as f:
         f.write(build_dashboard())
     n_abs = sum(1 for r in RECORDS if r["abstract"])
-    print(f"{len(RECORDS)} papers · {n_abs} abstracts")
-    print("wrote: journal-club-derm-2025.html, journal-club-derm-2025.csv, journal-club-dashboard.html")
+    print(f"{len(RECORDS)} papers · {n_abs} abstracts -> {outdir}")
+    print(f"wrote: {DASH_FILE}, {LIST_FILE}, {CSV_FILE}" + (", .nojekyll" if args.site else ""))
