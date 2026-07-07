@@ -1,0 +1,294 @@
+/* ACD Research Intelligence Platform — Global Styles */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --deep-aubergine: #1B1424;
+  --dark-plum: #3D3149;
+  --mauve-purple: #814C7E;
+  --muted-violet: #553E51;
+  --copper: #C27D4E;
+  --burnt-copper: #AD6A3C;
+  --light-copper: #D99561;
+  --warm-cream: #ECE7DF;
+  --white: #FFFFFE;
+  --blue-violet: #575571;
+  --bg-card: #2A1F33;
+  --text-muted: #A89DB8;
+  --border: #553E51;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background-color: var(--deep-aubergine) !important;
+  color: var(--warm-cream) !important;
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif !important;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Scrollbar ─────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--deep-aubergine); }
+::-webkit-scrollbar-thumb { background: var(--muted-violet); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--mauve-purple); }
+
+/* ── Navigation links ──────────────────────────────────────────────────── */
+.acd-nav-link { display: block; }
+.acd-nav-link:hover > div {
+  background-color: var(--muted-violet) !important;
+  color: var(--white) !important;
+}
+.acd-nav-link.active > div {
+  background-color: var(--mauve-purple) !important;
+  color: var(--white) !important;
+}
+
+/* ── Cards ─────────────────────────────────────────────────────────────── */
+.acd-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  margin-bottom: 16px;
+}
+
+.acd-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+/* ── KPI cards ─────────────────────────────────────────────────────────── */
+.acd-kpi-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--copper);
+  line-height: 1.1;
+}
+
+.acd-kpi-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ── Tables ────────────────────────────────────────────────────────────── */
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner table {
+  background-color: var(--bg-card) !important;
+  color: var(--warm-cream) !important;
+  border: none !important;
+}
+
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner th {
+  background-color: var(--dark-plum) !important;
+  color: var(--copper) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  border-bottom: 1px solid var(--border) !important;
+  padding: 10px 12px !important;
+}
+
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner td {
+  background-color: var(--bg-card) !important;
+  color: var(--warm-cream) !important;
+  border-bottom: 1px solid var(--border) !important;
+  font-size: 13px !important;
+  padding: 8px 12px !important;
+}
+
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner tr:hover td {
+  background-color: var(--dark-plum) !important;
+}
+
+/* ── Dropdowns ─────────────────────────────────────────────────────────── */
+.Select-control {
+  background-color: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 6px !important;
+  color: var(--warm-cream) !important;
+}
+
+.Select-menu-outer {
+  background-color: var(--dark-plum) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 6px !important;
+}
+
+.Select-option {
+  background-color: var(--dark-plum) !important;
+  color: var(--warm-cream) !important;
+}
+
+.Select-option:hover, .Select-option.is-focused {
+  background-color: var(--muted-violet) !important;
+  color: var(--white) !important;
+}
+
+.Select-value-label { color: var(--warm-cream) !important; }
+.Select-placeholder { color: var(--text-muted) !important; }
+
+/* ── Inputs ────────────────────────────────────────────────────────────── */
+input[type="text"], textarea {
+  background-color: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 6px !important;
+  color: var(--warm-cream) !important;
+  padding: 8px 12px !important;
+}
+
+input[type="text"]:focus, textarea:focus {
+  border-color: var(--copper) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(194,125,78,0.25) !important;
+}
+
+/* ── Buttons ───────────────────────────────────────────────────────────── */
+.btn-copper {
+  background-color: var(--copper) !important;
+  border-color: var(--copper) !important;
+  color: var(--white) !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.btn-copper:hover {
+  background-color: var(--burnt-copper) !important;
+  border-color: var(--burnt-copper) !important;
+}
+
+.btn-outline-copper {
+  background-color: transparent !important;
+  border: 1px solid var(--copper) !important;
+  color: var(--copper) !important;
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-outline-copper:hover {
+  background-color: var(--copper) !important;
+  color: var(--white) !important;
+}
+
+/* ── Confidence badges ─────────────────────────────────────────────────── */
+.badge-high     { background-color: #4CAF50; color: #fff; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
+.badge-review   { background-color: #FF9800; color: #fff; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
+.badge-low      { background-color: #F44336; color: #fff; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
+.badge-notfound { background-color: #9E9E9E; color: #fff; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
+
+/* ── Chatbot ───────────────────────────────────────────────────────────── */
+.chat-bubble-user {
+  background-color: var(--mauve-purple);
+  color: var(--white);
+  border-radius: 12px 12px 4px 12px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  max-width: 80%;
+  margin-left: auto;
+  font-size: 14px;
+}
+
+.chat-bubble-assistant {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--warm-cream);
+  border-radius: 12px 12px 12px 4px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  max-width: 90%;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.chat-input-area {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+/* ── Tabs ──────────────────────────────────────────────────────────────── */
+.tab--selected {
+  border-bottom: 2px solid var(--copper) !important;
+  color: var(--copper) !important;
+  background-color: transparent !important;
+}
+
+.tab {
+  color: var(--text-muted) !important;
+  background-color: transparent !important;
+  border: none !important;
+  padding: 10px 16px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+}
+
+.tab:hover { color: var(--warm-cream) !important; }
+
+/* ── Tooltips ──────────────────────────────────────────────────────────── */
+.dash-tooltip {
+  background-color: var(--dark-plum) !important;
+  border: 1px solid var(--copper) !important;
+  color: var(--warm-cream) !important;
+  border-radius: 6px !important;
+  font-size: 12px !important;
+}
+
+/* ── Section headers ───────────────────────────────────────────────────── */
+.acd-section-header {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── Ambiguity flag chips ──────────────────────────────────────────────── */
+.flag-chip {
+  display: inline-block;
+  background-color: var(--muted-violet);
+  color: var(--warm-cream);
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-size: 10px;
+  font-weight: 600;
+  margin-right: 4px;
+  letter-spacing: 0.5px;
+}
+
+.flag-chip.COMMON_NAME   { background-color: #F44336; }
+.flag-chip.HIGH_VOLUME   { background-color: #FF9800; }
+.flag-chip.WEAK_TOPIC    { background-color: #9C27B0; }
+.flag-chip.LLM_UNCERTAIN { background-color: #2196F3; }
+.flag-chip.COUNTRY_MISMATCH { background-color: #795548; }
+.flag-chip.NAME_ONLY     { background-color: #607D8B; }
+
+/* ── Loading spinner ───────────────────────────────────────────────────── */
+._dash-loading-callback {
+  background-color: rgba(27,20,36,0.8) !important;
+}
+
+/* ── Plotly modebar ────────────────────────────────────────────────────── */
+.modebar { background-color: transparent !important; }
+.modebar-btn path { fill: var(--text-muted) !important; }
+.modebar-btn:hover path { fill: var(--copper) !important; }
+
+/* ── Report incorrect match modal ─────────────────────────────────────── */
+.modal-content {
+  background-color: var(--dark-plum) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--warm-cream) !important;
+}
+.modal-header { border-bottom: 1px solid var(--border) !important; }
+.modal-footer { border-top: 1px solid var(--border) !important; }

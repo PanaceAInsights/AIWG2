@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment variables
+.env
+
+# Data files (large / sensitive — do not commit)
+data/input/*.xlsx
+data/input/*.csv
+data/processed/
+data/cache/
+!data/input/manual_resolver_overrides.csv
+!data/input/manual_fp_overrides.csv
+!data/input/manual_resolver_blacklist.csv
+!data/input/derm_institutions_au_nz.csv
+
+# Checkpoints
+scripts/checkpoints/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
