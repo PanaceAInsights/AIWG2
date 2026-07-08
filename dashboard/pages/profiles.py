@@ -167,7 +167,7 @@ def _roster_grid() -> dag.AgGrid:
             "sortable": True,
             "filter": True,
             "floatingFilter": True,
-            "suppressMenu": False,
+
         },
         dashGridOptions={
             "rowSelection": {"mode": "singleRow", "checkboxes": False,
@@ -175,8 +175,9 @@ def _roster_grid() -> dag.AgGrid:
             "animateRows": True,
             "pagination": True,
             "paginationPageSize": 25,
+            "paginationPageSizeSelector": [25, 50, 100],
             "rowHeight": 40,
-            "suppressCellFocus": True,
+            "suppressCellFocus": False,
             "headerHeight": 40,
             "floatingFiltersHeight": 36,
         },
@@ -636,13 +637,19 @@ def _scope_btn(label: str, value: str, active: bool) -> html.Button:
 @callback(
     Output("profile-detail", "children"),
     Input("roster-grid", "selectedRows"),
+    Input("roster-grid", "cellClicked"),
     prevent_initial_call=True,
 )
-def profile_selected(selected):
-    if not selected:
-        return no_update
-    row = selected[0]
-    name = row.get("acd_name")
+def profile_selected(selected_rows, cell_clicked):
+    from dash import ctx
+    # Prefer selectedRows (works in most versions); fall back to cellClicked
+    triggered = ctx.triggered_id
+    name = None
+    if triggered == "roster-grid" and selected_rows:
+        name = selected_rows[0].get("acd_name")
+    elif cell_clicked:
+        row = cell_clicked.get("rowData", {})
+        name = row.get("acd_name")
     if not name:
         return no_update
     return build_profile_card(name)
