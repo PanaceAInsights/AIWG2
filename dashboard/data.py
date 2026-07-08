@@ -58,13 +58,29 @@ def load_publications() -> pd.DataFrame:
     df = _safe_read(_PROCESSED / "publications_clean.csv")
     if df.empty:
         return df
-    if "Year" in df.columns:
+    # Normalise year column name
+    if "Publication_Year" in df.columns and "Year" not in df.columns:
+        df["Year"] = pd.to_numeric(df["Publication_Year"], errors="coerce")
+    elif "Year" in df.columns:
         df["Year"] = pd.to_numeric(df["Year"], errors="coerce")
-    for col in ("CitedByCount", "cited_by_count"):
+    # Normalise author column name
+    if "RAMS_Author" in df.columns and "acd_name" not in df.columns:
+        df["acd_name"] = df["RAMS_Author"]
+    # Normalise citations column name
+    for col in ("Citations", "CitedByCount", "cited_by_count"):
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
+            if col != "CitedByCount":
+                df["CitedByCount"] = df[col]
+            break
     if "is_derm_relevant" in df.columns:
         df["is_derm_relevant"] = df["is_derm_relevant"].astype(str).str.lower().isin(("true", "1", "yes"))
+    # Join state from authors if not present
+    if "state" not in df.columns and "acd_name" in df.columns:
+        authors = _safe_read(_PROCESSED / "authors_resolved.csv")
+        if not authors.empty and "state" in authors.columns:
+            state_map = authors.set_index("acd_name")["state"].to_dict()
+            df["state"] = df["acd_name"].map(state_map)
     return df
 
 
@@ -92,12 +108,32 @@ def load_clinical_trials() -> pd.DataFrame:
 
 @lru_cache(maxsize=1)
 def load_stats() -> pd.DataFrame:
-    return _safe_read(_PROCESSED / "member_stats.csv")
+    # Try both filenames for backward compatibility
+    p1 = _PROCESSED / "author_summary_stats.csv"
+    p2 = _PROCESSED / "member_stats.csv"
+    df = _safe_read(p1 if p1.exists() else p2)
+    if df.empty:
+        return df
+    # Add column aliases for backward compatibility with dashboard pages
+    if "citation_count" in df.columns and "total_citations" not in df.columns:
+        df["total_citations"] = df["citation_count"]
+    if "pub_count" in df.columns and "total_works" not in df.columns:
+        df["total_works"] = df["pub_count"]
+    # Join state from authors if not present
+    if "state" not in df.columns and "acd_name" in df.columns:
+        authors = _safe_read(_PROCESSED / "authors_resolved.csv")
+        if not authors.empty and "state" in authors.columns:
+            state_map = authors.set_index("acd_name")["state"].to_dict()
+            df["state"] = df["acd_name"].map(state_map)
+    return df
 
 
 @lru_cache(maxsize=1)
 def load_search_index() -> pd.DataFrame:
-    return _safe_read(_PROCESSED / "search_index.csv")
+    # Try both filenames for backward compatibility
+    p1 = _PROCESSED / "publications_search_index.csv"
+    p2 = _PROCESSED / "search_index.csv"
+    return _safe_read(p1 if p1.exists() else p2)
 
 
 # ---------------------------------------------------------------------------
@@ -184,9 +220,9 @@ def get_summary_kpis() -> dict:
 
     total_citations = 0
     if not pubs.empty:
-        for col in ("CitedByCount", "cited_by_count"):
+        for col in ("Citations", "CitedByCount", "cited_by_count"):
             if col in pubs.columns:
-                total_citations = int(pubs[col].sum())
+                total_citations = int(pubs[col].fillna(0).sum())
                 break
 
     return {

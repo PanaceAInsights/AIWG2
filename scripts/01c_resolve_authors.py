@@ -402,15 +402,23 @@ def _all_country_codes(c: dict) -> set[str]:
 
 
 def _lk_country_codes(c: dict) -> set[str]:
-    cc = (c.get("last_known_institution") or {}).get("country_code") or ""
-    return {cc.upper()} if cc else set()
+    # last_known_institutions is a list in the filter endpoint response
+    lk_list = c.get("last_known_institutions") or []
+    codes = set()
+    for lk in lk_list:
+        cc = (lk or {}).get("country_code") or ""
+        if cc:
+            codes.add(cc.upper())
+    return codes
 
 
 def _all_inst_names(c: dict) -> list[str]:
     names: list[str] = []
-    lk = c.get("last_known_institution") or {}
-    if lk.get("display_name"):
-        names.append(lk["display_name"])
+    # last_known_institutions is a list
+    for lk in (c.get("last_known_institutions") or []):
+        dn = (lk or {}).get("display_name") or ""
+        if dn:
+            names.append(dn)
     for aff in c.get("affiliations") or []:
         dn = (aff.get("institution") or {}).get("display_name") or ""
         if dn:
@@ -703,7 +711,9 @@ Respond ONLY with valid JSON:
 
 
 def _build_llm_prompt(ctx: MemberContext, candidate: dict, top_titles: list[str]) -> str:
-    lk = candidate.get("last_known_institution") or {}
+    # last_known_institutions is a list; take the first entry as current
+    lk_list = candidate.get("last_known_institutions") or []
+    lk = lk_list[0] if lk_list else {}
     all_codes = _all_country_codes(candidate)
     topic_labels_list = _topic_labels(candidate, n=5)
     return f"""DERMATOLOGIST RECORD (from AHPRA + HealthShare):
@@ -720,7 +730,6 @@ OPENALEX CANDIDATE:
   Current institution: {lk.get('display_name', 'N/A')} ({lk.get('country_code', 'N/A')})
   All country history: {', '.join(sorted(all_codes)) or 'N/A'}
   Works count: {candidate.get('works_count', 'N/A')}
-  h-index: {candidate.get('summary_stats', {}).get('h_index', 'N/A')}
   Top topics: {'; '.join(topic_labels_list[:5]) or 'N/A'}
   Top publications:
 {chr(10).join(f'    - {t}' for t in top_titles[:5]) if top_titles else '    (none available)'}
@@ -728,7 +737,7 @@ OPENALEX CANDIDATE:
 Is this OpenAlex profile the same person as the dermatologist listed above?"""
 
 
-def _call_llm(system: str, prompt: str, model: str = "claude-sonnet-4-5") -> dict[str, Any]:
+def _call_llm(system: str, prompt: str, model: str = "claude-sonnet-4-6") -> dict[str, Any]:
     try:
         from openai import OpenAI
         oai = OpenAI(
@@ -763,7 +772,7 @@ def llm_adjudicate(
     Pass 3 LLM adjudication with optional adversarial double-verification.
     Returns merged verdict dict.
     """
-    model = os.environ.get("LLM_DISAMBIG_MODEL", "claude-sonnet-4-5")
+    model = os.environ.get("LLM_DISAMBIG_MODEL", "claude-sonnet-4-6")
     prompt = _build_llm_prompt(ctx, candidate, top_titles)
 
     # First call: standard adjudication
@@ -818,37 +827,83 @@ def llm_adjudicate(
 # ---------------------------------------------------------------------------
 # Search
 # ---------------------------------------------------------------------------
+def _name_to_filter_value(name: str) -> str:
+    """
+    Convert a full name to a search term for display_name.search filter.
+    OpenAlex only stores first + last name (not middle names), so we always
+    extract just the first token (given name) and last token (surname).
+    This gives the best recall — full middle names return 0 results.
+    The full name is still used for fuzzy scoring after candidates are fetched.
+    """
+    clean = name.strip().replace(",", " ")
+    # Normalise multiple spaces
+    tokens = [t for t in clean.split() if t]
+    if len(tokens) <= 2:
+        return clean
+    # Use first given name + last surname only
+    return f"{tokens[0]} {tokens[-1]}"
+
+
+_SELECT_FIELDS = "id,display_name,last_known_institutions,affiliations,works_count,topics,cited_by_count,orcid,ids"
+
+
+def _build_raw_query(filter_str: str, per_page: int = 10, api_key: str = "") -> str:
+    """Build a raw query string for OpenAlex filter= requests.
+    NOTE: api_key is intentionally NOT included — filter-based searches are free
+    and rate-limit-free without the key. Including the key routes through the
+    paid quota system and triggers 429 errors.
+    The filter value contains colons and commas which must NOT be URL-encoded.
+    The select fields also use commas which must remain unencoded.
+    The api_key is required for display_name.search (costs $0.001/call).
+    """
+    # Do NOT include api_key — filter searches are free and unlimited without it.
+    # Including the key routes through the paid quota and causes 429 rate limits.
+    return f"filter={filter_str}&per-page={per_page}&select={_SELECT_FIELDS}"
+
+
 def _search_aunz(client: OpenAlexClient, name: str) -> list[dict]:
-    """Pass 1: single search with AU|NZ filter combined."""
+    """
+    Pass 1: AU/NZ targeted search using free filter=display_name.search: endpoint.
+    Uses raw_query to avoid URL-encoding the colon in filter values (400 error).
+    Strategy:
+      - AU last_known_institutions filter
+      - NZ fallback
+      - Historical AU affiliations fallback
+    """
     if not name:
         return []
+    fv = _name_to_filter_value(name)
+    # Replace spaces with + for URL compatibility in raw query
+    fv_url = fv.replace(" ", "+")
     try:
-        # Try combined OR filter first
-        payload = client.get(
-            "/authors",
-            params={
-                "search": name,
-                "filter": "last_known_institutions.country_code:AU|NZ",
-                "per-page": _CANDIDATES_PER_SEARCH,
-                "select": "id,display_name,last_known_institution,affiliations,works_count,topics,x_concepts,summary_stats",
-            },
-            allow_404=True,
+        # AU-filtered search (no api_key = free, unlimited)
+        rq = _build_raw_query(
+            f"display_name.search:{fv_url},last_known_institutions.country_code:AU",
+            per_page=_CANDIDATES_PER_SEARCH,
         )
+        payload = client.get("/authors", allow_404=True, raw_query=rq)
         results = (payload or {}).get("results") or []
         if results:
             return results
-        # Fallback: try AU only
-        payload = client.get(
-            "/authors",
-            params={
-                "search": name,
-                "filter": "last_known_institutions.country_code:AU",
-                "per-page": _CANDIDATES_PER_SEARCH,
-                "select": "id,display_name,last_known_institution,affiliations,works_count,topics,x_concepts,summary_stats",
-            },
-            allow_404=True,
+
+        # NZ fallback
+        rq = _build_raw_query(
+            f"display_name.search:{fv_url},last_known_institutions.country_code:NZ",
+            per_page=_CANDIDATES_PER_SEARCH,
         )
+        payload = client.get("/authors", allow_404=True, raw_query=rq)
+        results = (payload or {}).get("results") or []
+        if results:
+            return results
+
+        # Historical AU affiliation fallback
+        rq = _build_raw_query(
+            f"display_name.search:{fv_url},affiliations.institution.country_code:AU",
+            per_page=_CANDIDATES_PER_SEARCH,
+        )
+        payload = client.get("/authors", allow_404=True, raw_query=rq)
         return (payload or {}).get("results") or []
+
     except BudgetExhausted:
         raise
     except Exception as exc:
@@ -857,19 +912,21 @@ def _search_aunz(client: OpenAlexClient, name: str) -> list[dict]:
 
 
 def _search_global(client: OpenAlexClient, name: str) -> list[dict]:
-    """Pass 2: global search, no country filter."""
+    """
+    Pass 2: global search using filter=display_name.search: endpoint.
+    No country restriction. Returns top _CANDIDATES_PER_SEARCH candidates.
+    The scoring rubric applies a -30 penalty for no AU/NZ history (Pass 2 only).
+    """
     if not name:
         return []
+    fv = _name_to_filter_value(name)
+    fv_url = fv.replace(" ", "+")
     try:
-        payload = client.get(
-            "/authors",
-            params={
-                "search": name,
-                "per-page": _CANDIDATES_PER_SEARCH,
-                "select": "id,display_name,last_known_institution,affiliations,works_count,topics,x_concepts,summary_stats",
-            },
-            allow_404=True,
+        rq = _build_raw_query(
+            f"display_name.search:{fv_url}",
+            per_page=_CANDIDATES_PER_SEARCH,
         )
+        payload = client.get("/authors", allow_404=True, raw_query=rq)
         return (payload or {}).get("results") or []
     except BudgetExhausted:
         raise
@@ -900,7 +957,7 @@ def resolve_member(
         try:
             payload = client.get(
                 f"/authors/{forced_id}",
-                params={"select": "id,display_name,last_known_institution,affiliations,works_count,topics,x_concepts,summary_stats"},
+                params={"select": "id,display_name,last_known_institutions,affiliations,works_count,topics,cited_by_count,orcid,ids"},
                 allow_404=True,
             )
             if payload:
@@ -1044,8 +1101,8 @@ def run_pass3_llm(
         # Reconstruct candidate dict from row
         candidate = {
             "display_name": row.get("openalex_display_name", ""),
-            "last_known_institution": {"display_name": row.get("last_known_institution", ""),
-                                       "country_code": row.get("institution_country", "")},
+            "last_known_institutions": [{"display_name": row.get("last_known_institution", ""),
+                                         "country_code": row.get("institution_country", "")}],
             "affiliations": [],
             "works_count": int(row.get("works_count") or 0),
             "summary_stats": {"h_index": int(row.get("h_index") or 0)},
@@ -1193,7 +1250,8 @@ def _build_row(
     llm_reasoning: str,
     search_pass: str,
 ) -> dict[str, Any]:
-    lk = candidate.get("last_known_institution") or {}
+    lk_list = candidate.get("last_known_institutions") or []
+    lk = lk_list[0] if lk_list else {}
     all_codes = _all_country_codes(candidate)
     lk_codes  = _lk_country_codes(candidate)
     aunz_ever = bool((all_codes | lk_codes) & _LOCAL_COUNTRIES)
@@ -1341,7 +1399,7 @@ def run(
         csv_path=out_csv, columns=OUTPUT_COLUMNS,
         key_column="acd_name", progress_log=logs_dir / "resolution_progress.csv",
     )
-    already_done = accepted_writer.seen_keys()
+    already_done = accepted_writer._seen  # set of acd_name strings already written
     logger.info("Resuming: %d already resolved, %d remaining",
                 len(already_done), len(df) - len(already_done))
 

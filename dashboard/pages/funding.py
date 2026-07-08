@@ -91,7 +91,7 @@ def update_top_bar(state):
 )
 def update_source_pie(_):
     df = load_funding()
-    funder_col = next((c for c in ["funder", "Funder", "source", "agency"] if c in df.columns), None)
+    funder_col = next((c for c in ["funder_name", "funder", "Funder", "source", "agency"] if c in df.columns), None)
     if df.empty or not funder_col:
         return go.Figure()
     counts = df[funder_col].fillna("Unknown").value_counts().head(10).reset_index()
@@ -111,7 +111,7 @@ def update_table(state):
     df = load_funding()
     if df.empty:
         return html.Div("No funding data loaded.", style={"color": TEXT_MUTED, "padding": "20px"})
-    display_cols = [c for c in ["acd_name", "title", "funder", "amount", "year", "grant_id"] if c in df.columns]
+    display_cols = [c for c in ["acd_name", "funder_name", "award_id", "award_name", "title", "funder", "amount", "year", "grant_id"] if c in df.columns]
     return dash_table.DataTable(
         data=df[display_cols].head(500).to_dict("records"),
         columns=[{"name": c.replace("_", " ").title(), "id": c} for c in display_cols],

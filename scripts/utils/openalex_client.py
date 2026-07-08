@@ -8,6 +8,9 @@ pass a ``MagicMock`` and never touch the network.
 """
 from __future__ import annotations
 
+import http.client
+import json as _json
+import ssl
 import time
 from dataclasses import dataclass, field
 from typing import Any, Callable, Iterator, Optional
@@ -25,6 +28,10 @@ _MAX_BACKOFF = 30.0
 # Initial backoff delay for retryable errors (seconds)
 _INITIAL_BACKOFF = 2.0
 
+# Polite-pool inter-request sleep for raw_query (filter=) calls.
+# OpenAlex free tier allows ~10 req/s; 0.6s keeps us at ~1.6 req/s.
+_POLITE_SLEEP = 0.6
+
 
 @dataclass
 class OpenAlexClient:
@@ -34,7 +41,7 @@ class OpenAlexClient:
     ----------
     email, api_key:
         OpenAlex polite-pool credentials. Email goes into ``User-Agent``,
-        api_key rides on the query string.
+        api_key rides on the query string (paid search= endpoint only).
     session:
         Injected for testability. Defaults to a fresh ``requests.Session``
         per instance via ``field(default_factory=...)``.
@@ -67,8 +74,15 @@ class OpenAlexClient:
 
     def _params(self, extra: Optional[dict[str, Any]]) -> dict[str, Any]:
         p = dict(extra or {})
-        if self.api_key:  # Only add api_key if non-empty (polite pool uses email only)
+        # Only inject api_key for paid search= endpoint.
+        # filter=display_name.search: is free and rejects api_key param (400 error).
+        # We detect paid-search usage by checking for a bare 'search' key (not inside 'filter').
+        uses_paid_search = "search" in p and "filter" not in p
+        if self.api_key and uses_paid_search:
             p["api_key"] = self.api_key
+        # Always add mailto for polite pool (rate-limit leniency)
+        if self.email and "mailto" not in p:
+            p["mailto"] = self.email
         return p
 
     @staticmethod
@@ -101,20 +115,32 @@ class OpenAlexClient:
         path: str,
         params: Optional[dict[str, Any]] = None,
         allow_404: bool = False,
+        raw_query: Optional[str] = None,
     ) -> dict[str, Any]:
         """GET ``{base_url}{path}`` with auth and retries.
+
+        Parameters
+        ----------
+        raw_query:
+            If provided, appended verbatim to the URL as a query string
+            (e.g. ``"filter=display_name.search:peter+soyer&per-page=10"``)
+            without any URL-encoding. Use this for OpenAlex filter= params
+            that contain colons, which requests would otherwise percent-encode
+            causing 400 errors. ``params`` is ignored when ``raw_query`` is set.
+            NOTE: api_key is NOT included in raw_query calls — filter-based
+            searches are free and rate-limit-free without the key. Including
+            the key routes through the paid quota and triggers 429 errors.
 
         Returns the parsed JSON dict on 2xx. On 404 the default behaviour
         is to raise (via ``resp.raise_for_status()``) — callers fetching a
         single entity by id should treat a 404 as a hard error rather than
         silently dropping the record. Passing ``allow_404=True`` opts into
-        the soft-skip behaviour (returns ``{"results": [], "meta": {}}``),
-        which is used internally by :meth:`paginate` for zero-result
-        queries.
+        the soft-skip behaviour (returns ``{"results": [], "meta": {}}``)
+        which is used internally by :meth:`paginate` for zero-result queries.
 
         Raises on any other non-retryable status or exhausted retries.
         """
-        url = f"{self.base_url}{path}"
+        base_url = f"{self.base_url}{path}"
         delay = _INITIAL_BACKOFF
         last_resp: Any = None
 
@@ -122,12 +148,43 @@ class OpenAlexClient:
             if attempt > 0:
                 # Small inter-retry sleep to avoid hammering the API
                 self.sleep_fn(0.5)
-            resp = self.session.get(
-                url,
-                params=self._params(params),
-                headers=self._headers(),
-                timeout=(8, 15),  # (connect_timeout, read_timeout)
-            )
+
+            if raw_query is not None:
+                # Use http.client directly — it sends the URL path verbatim
+                # without any percent-encoding (unlike requests/urllib3).
+                # Small polite-pool sleep on first attempt to stay under IP rate limit.
+                if attempt == 0:
+                    self.sleep_fn(_POLITE_SLEEP)
+
+                mailto_suffix = f"&mailto={self.email}" if self.email else ""
+                # Include api_key — OpenAlex now charges for all search endpoints.
+                api_key_suffix = f"&api_key={self.api_key}" if self.api_key else ""
+                url_path = f"/authors?{raw_query}{mailto_suffix}{api_key_suffix}"
+
+                ctx = ssl.create_default_context()
+                conn = http.client.HTTPSConnection(
+                    "api.openalex.org", timeout=15, context=ctx
+                )
+                conn.request("GET", url_path, headers=self._headers())
+                raw = conn.getresponse()
+                body = raw.read()
+                conn.close()
+
+                # Wrap in a requests-compatible response object
+                resp = requests.Response()
+                resp.status_code = raw.status
+                resp._content = body
+                resp.headers = dict(raw.getheaders())
+                resp.encoding = "utf-8"
+            else:
+                url = base_url
+                resp = self.session.get(
+                    url,
+                    params=self._params(params),
+                    headers=self._headers(),
+                    timeout=(8, 15),  # (connect_timeout, read_timeout)
+                )
+
             last_resp = resp
             status = resp.status_code
 
@@ -157,10 +214,9 @@ class OpenAlexClient:
             resp.raise_for_status()
 
         # Retries exhausted on a retryable status that didn't raise above
-        # (e.g. a mocked 5xx without raise_for_status configured).
         if last_resp is not None:
             last_resp.raise_for_status()
-        raise RuntimeError(f"Exhausted retries for {url}")
+        raise RuntimeError(f"Exhausted retries for {base_url}")
 
     def paginate(
         self,

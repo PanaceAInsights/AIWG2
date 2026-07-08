@@ -121,7 +121,7 @@ def update_year_chart(topic, year_range, derm_only):
 )
 def update_oa_pie(topic, year_range, derm_only):
     pubs = _filter_pubs(topic, year_range, derm_only)
-    oa_col = next((c for c in ["OA_Status", "open_access_status", "is_oa"] if c in pubs.columns), None)
+    oa_col = next((c for c in ["OA_Type", "Open_Access", "OA_Status", "open_access_status", "is_oa"] if c in pubs.columns), None)
     if pubs.empty or not oa_col:
         return go.Figure()
     counts = pubs[oa_col].fillna("Unknown").value_counts().reset_index()

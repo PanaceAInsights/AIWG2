@@ -195,7 +195,7 @@ def _process_author(
     ):
         works_seen += 1
         mapped = map_work_with_awards(
-            work, acd_name=acd_name, rams_author_id=bare_id
+            work, rams_name=acd_name, rams_author_id=bare_id
         )
         row = mapped.row
         work_id = row["Unique ID"]
