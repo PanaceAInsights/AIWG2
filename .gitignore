@@ -22,12 +22,26 @@ ENV/
 # Data files (large / sensitive — do not commit)
 data/input/*.xlsx
 data/input/*.csv
-data/processed/
 data/cache/
 !data/input/manual_resolver_overrides.csv
 !data/input/manual_fp_overrides.csv
 !data/input/manual_resolver_blacklist.csv
 !data/input/derm_institutions_au_nz.csv
+
+# Use per-file globs inside data/processed/ so negation patterns work.
+# Dashboard runtime data — the CSVs Render needs to serve the app.
+data/processed/*
+!data/processed/.gitkeep
+!data/processed/authors_resolved.csv
+!data/processed/author_summary_stats.csv
+!data/processed/author_works_link.csv
+!data/processed/publications_clean.csv
+!data/processed/funding.csv
+!data/processed/clinical_trials.csv
+!data/processed/review_queue.csv
+!data/processed/resolution_rejects.csv
+!data/processed/common_name_review.csv
+!data/processed/publications_search_index.csv
 
 # Checkpoints
 scripts/checkpoints/

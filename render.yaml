@@ -1,14 +1,22 @@
 services:
   - type: web
-    name: acd-research-intelligence
-    env: python
-    region: singapore
+    name: acd-dashboard
+    runtime: python
     plan: starter
+    region: singapore
+    branch: main
+    rootDir: .
     buildCommand: pip install -r dashboard/requirements.txt
-    startCommand: gunicorn dashboard.app:server --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    # Single gunicorn worker with threads — the Render starter tier
+    # cannot hold two copies of the pandas DataFrames in 512 MB, so
+    # threading is how we get concurrency instead of multi-process.
+    startCommand: gunicorn dashboard.app:server --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 180
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: WEB_CONCURRENCY
+        value: 1
       - key: ANTHROPIC_API_KEY
         sync: false
-      - key: DASH_DEBUG
-        value: "false"
     healthCheckPath: /
+    autoDeploy: true
