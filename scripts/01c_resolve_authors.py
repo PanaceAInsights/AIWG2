@@ -1,109 +1,89 @@
-"""Phase 1 — Advanced ML-assisted entity resolver for ACD dermatologists.
+"""
+ACD Dermatologist Entity Resolver — v2
+======================================
 
-Architecture
-============
-This resolver replaces the RMSANZ co-authorship bootstrap (which caused
-false-positive merges) with a multi-signal Bayesian-style scoring engine
-augmented by three ML/AI layers:
+Architecture (approved design v2, 2026-07-08)
+----------------------------------------------
 
-  Layer A — Deterministic signals (7 independent evidence signals)
-  Layer B — Semantic similarity (TF-IDF cosine over HealthShare bio/interests
-             vs OpenAlex abstract corpus for each candidate)
-  Layer C — LLM-assisted disambiguation (Claude claude-haiku-4-20250514 called only
-             for borderline cases where deterministic score is 55–89, to
-             adjudicate with chain-of-thought reasoning)
+4-pass sequential pipeline. Each pass processes only members not yet resolved.
 
-Uncertainty & manual-review flagging
-=====================================
-Every accepted match receives one of four confidence tiers:
-  HIGH        — score ≥ 90, all hard gates pass, no ambiguity flags
-  REVIEW      — score 65–89, or any ambiguity flag raised
-  LOW         — score 40–64 (tracked, not accepted in dashboard)
-  NOT_FOUND   — no viable candidate
+Pass 1 — Targeted AU/NZ search + deterministic scoring
+  - 1 API call per member (AU|NZ country filter combined)
+  - Hard filters applied first (wrong country + wrong specialty = hard reject)
+  - Score ≥ 110 → HIGH (accepted)
+  - Score 60–109 → carry to Pass 2
+  - No candidates / no pass → NOT_FOUND
 
-Ambiguity flags (any one raises tier to REVIEW):
-  COMMON_NAME         — name appears in >1 accepted match (dedup check)
-  HIGH_VOLUME         — candidate has >500 works (suspicious merge risk)
-  WEAK_TOPIC          — topic density < 10% dermatology
-  COUNTRY_MISMATCH    — last-known institution not AU/NZ
-  LLM_UNCERTAIN       — LLM returned confidence < 0.7 for borderline case
-  NAME_ONLY           — only name signal fired (no corroborating signals)
+Pass 2 — Global relaxed search + calibrated scoring
+  - 1 API call per member (no country filter)
+  - Same hard filters + same scoring + global-penalty signals
+  - Score ≥ 100 → HIGH
+  - Score 60–99 → REVIEW (queued for Pass 3 LLM)
+  - Score < 60 → NOT_FOUND
 
-Scoring rubric (max 165 pts)
-==============================
-Signal 1  Name similarity
-          exact match (normalised)                          40 pts
-          fuzzy ≥ 92 (token_sort_ratio)                    30 pts
-          fuzzy ≥ 85                                        20 pts
-          fuzzy ≥ 75                                        10 pts
+Pass 3 — LLM adjudication (REVIEW queue only, claude-sonnet-4-5)
+  - 0 additional OpenAlex calls
+  - First call: standard adjudication prompt
+  - Second call (if confidence 0.60–0.79): adversarial "find reasons it's NOT the same person"
+  - Both calls agree → accept verdict
+  - Disagree → keep REVIEW for manual inspection
+  - match=true + conf ≥ 0.85 → HIGH
+  - match=true + conf 0.65–0.84 → REVIEW
+  - match=false or specialty_consistent=false → NOT_FOUND
 
-Signal 2  Current AU/NZ institution (last_known)           25 pts
+Pass 4 — Common-name & suspicious-merge audit (in-memory, 0 API calls)
+  - COMMON_NAME_RISK: name matches 2+ OpenAlex profiles at fuzzy ≥ 90
+  - SUSPICIOUS_VOLUME: works_count > 300 AND name was not exact match
+    (waived for high_volume_exceptions.csv entries)
+  - NO_AUNZ_HISTORY: accepted profile has zero AU/NZ affiliation
+  - SPECIALTY_WEAK: < 20% dermatology topics in top-10 topics
 
-Signal 3  Curated AU/NZ dermatology institution catalog    20 pts
-          (substring match against institution names)
+Hard filters (applied before scoring in both Pass 1 and Pass 2)
+  - Wrong country: candidate has NO AU/NZ affiliation (current or historical)
+    AND member is AHPRA-proven → REJECT
+  - Wrong specialty: candidate's top-3 topics contain zero dermatology-adjacent
+    terms AND top concepts are exclusively non-derm → REJECT
 
-Signal 4  Topic density (% of works in dermatology topics)
-          ≥ 50 %                                           20 pts
-          ≥ 30 %                                           10 pts
-          ≥ 15 %                                            5 pts
+Scoring rubric (max ~155 pts)
+  Name exact match              40
+  Name fuzzy ≥ 92               30
+  Name fuzzy 80–91              15
+  Country = AU/NZ (current)     25
+  Country = AU/NZ (historical)  15
+  State match                   12
+  Institution catalog match     15
+  Hospital/practice match       15
+  Dermatology topic (top-5)     15
+  Dermatology concept           10
+  Works 1–50                     8
+  Works 51–150                   5
+  Works 151–300                  2
+  Works > 300 (no exact name)  -20
+  h-index > 50 (no exact name) -10
+  Non-AU/NZ current+historical -30 (Pass 2 only)
 
-Signal 5  State / city keyword match                       10 pts
+LLM scoring adjustments
+  LLM match=true + conf ≥ 0.85  +30
+  LLM match=true + conf 0.65–0.84 +15
+  LLM match=false               hard reject
 
-Signal 6  Historical AU/NZ affiliation (any year)          10 pts
-
-Signal 7  Hospital / practice name match                   10 pts
-          (from HealthShare Hospitals_Names_HS / Practices_Names_HS)
-
-Signal 8  AHPRA practitioner-number anchor                 20 pts
-          (MED prefix confirmed + "Dermatology" in speciality)
-
-Semantic layer (Layer B)
-  TF-IDF cosine similarity between HealthShare bio/interests
-  and candidate's top-3 abstract snippets.
-  cosine ≥ 0.35                                            15 pts
-  cosine ≥ 0.20                                             8 pts
-
-LLM layer (Layer C) — borderline only (score 55–89)
-  Claude haiku adjudicates with structured JSON output:
-  {
-    "match": true/false,
-    "confidence": 0.0–1.0,
-    "reasoning": "...",
-    "flags": ["..."]
-  }
-  LLM match=true + confidence ≥ 0.85                      +20 pts
-  LLM match=true + confidence ≥ 0.70                      +10 pts
-  LLM match=false                                          -30 pts
-
-Acceptance policy
-==================
-  accepted = score ≥ 90 AND aunz_ever AND name_fuzzy ≥ 75
-  REVIEW   = score 65–89 OR any ambiguity flag
-  LOW      = score 40–64
-  NOT_FOUND = score < 40 OR no candidates
-
-Manual override
-================
-  data/input/manual_resolver_overrides.csv  — force a specific OpenAlex ID
-  data/input/manual_fp_overrides.csv        — reject a specific OpenAlex ID
-  data/input/manual_resolver_blacklist.csv  — blacklist an OpenAlex ID globally
-
-CLI
-====
-  python scripts/01c_resolve_authors.py [options]
-  python scripts/01c_resolve_authors.py --help
+Output files
+  data/processed/authors_resolved.csv       — all 712 members
+  data/processed/resolution_rejects.csv     — non-HIGH with score breakdown
+  data/processed/review_queue.csv           — REVIEW tier only
+  data/processed/common_name_review.csv     — common-name/suspicious flags
+  data/logs/resolution.log                  — per-member evidence trail
+  data/logs/resolution_progress.csv         — crash-resume checkpoint
 """
 from __future__ import annotations
 
 import argparse
 import json
 import logging
-import math
 import os
 import re
 import sys
 import time
-import unicodedata
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -135,192 +115,196 @@ except ImportError:
 logger = logging.getLogger("acd.resolver")
 
 # ---------------------------------------------------------------------------
-# Constants
+# File paths
 # ---------------------------------------------------------------------------
-INPUT_CSV   = ROOT / "data" / "input" / "Dermatologists_Consolidated.csv"
-INST_CSV    = ROOT / "data" / "input" / "derm_institutions_au_nz.csv"
-OVERRIDES   = ROOT / "data" / "input" / "manual_resolver_overrides.csv"
+INPUT_CSV    = ROOT / "data" / "input" / "260708_Dermatologists_Consolidated.csv"
+INST_CSV     = ROOT / "data" / "input" / "derm_institutions_au_nz.csv"
+HV_EXCEPT    = ROOT / "data" / "input" / "high_volume_exceptions.csv"
+OVERRIDES    = ROOT / "data" / "input" / "manual_resolver_overrides.csv"
 FP_OVERRIDES = ROOT / "data" / "input" / "manual_fp_overrides.csv"
-BLACKLIST   = ROOT / "data" / "input" / "manual_resolver_blacklist.csv"
-OUT_DIR     = ROOT / "data" / "processed"
-LOGS_DIR    = ROOT / "data" / "logs"
+BLACKLIST    = ROOT / "data" / "input" / "manual_resolver_blacklist.csv"
 
-_AUNZ_AFF_FILTER = "affiliations.institution.country_code:AU|affiliations.institution.country_code:NZ"
-_LOCAL_COUNTRIES = {"AU", "NZ"}
-_CANDIDATES_PER_SEARCH = 10
-_PER_MEMBER_SLEEP = 0.35   # seconds between OpenAlex calls
-_BORDERLINE_LOW  = 55      # lower bound for LLM adjudication
-_BORDERLINE_HIGH = 89      # upper bound for LLM adjudication
-_ACCEPT_THRESHOLD = 90
-_REVIEW_THRESHOLD = 65
-_HIGH_VOLUME_THRESHOLD = 500  # works count above which HIGH_VOLUME flag fires
+# ---------------------------------------------------------------------------
+# Tuning constants
+# ---------------------------------------------------------------------------
+_LOCAL_COUNTRIES        = {"AU", "NZ"}
+_CANDIDATES_PER_SEARCH  = 10
+_PER_MEMBER_SLEEP       = 0.4   # seconds between members
+
+# Pass thresholds
+_P1_ACCEPT   = 110   # Pass 1 → HIGH
+_P2_ACCEPT   = 100   # Pass 2 → HIGH
+_REVIEW_LOW  = 60    # below this → NOT_FOUND (both passes)
+
+# LLM double-verification trigger range
+_LLM_DOUBLE_LOW  = 0.60
+_LLM_DOUBLE_HIGH = 0.79
+
+# Works count / h-index calibration
+_WORKS_PENALTY_THRESHOLD = 300
+_WORKS_PENALTY           = -20
+_HINDEX_PENALTY_THRESHOLD = 50
+_HINDEX_PENALTY           = -10
 
 # Scoring weights
 _NAME_EXACT   = 40
 _NAME_FUZZY92 = 30
-_NAME_FUZZY85 = 20
-_NAME_FUZZY75 = 10
+_NAME_FUZZY80 = 15
 _COUNTRY_PTS  = 25
-_INST_PTS     = 20
-_TOPIC_50     = 20
-_TOPIC_30     = 10
-_TOPIC_15     = 5
-_STATE_PTS    = 10
-_HIST_PTS     = 10
-_HOSP_PTS     = 10
-_AHPRA_PTS    = 20
-_SEM_35       = 15
-_SEM_20       = 8
-_LLM_HIGH     = 20
-_LLM_MED      = 10
-_LLM_NEG      = -30
+_HIST_PTS     = 15
+_STATE_PTS    = 12
+_INST_PTS     = 15
+_HOSP_PTS     = 15
+_TOPIC_PTS    = 15
+_CONCEPT_PTS  = 10
+_WORKS_1_50   = 8
+_WORKS_51_150 = 5
+_WORKS_151_300 = 2
+_GLOBAL_NOAUNZ = -30  # Pass 2 only: no AU/NZ current or historical
 
-# Dermatology topic density keywords (OpenAlex topic labels)
-_DERM_TOPIC_TOKENS = (
+_LLM_HIGH    = 30
+_LLM_MED     = 15
+_LLM_NEG     = -999  # hard reject
+
+# Dermatology topic/concept tokens
+_DERM_TOKENS = frozenset([
     "dermatol", "melanom", "skin cancer", "psoriasis", "eczema",
-    "atopic", "vitiligo", "alopecia", "rosacea", "acne", "cutaneous",
-    "mohs", "phototherap", "dermoscop", "urticaria", "pemphigus",
-    "pemphigoid", "bullous", "hidradenitis", "ichthyosis", "onychomycosis",
-    "hyperhidrosis", "pruritus", "scabies", "herpes zoster",
-    "lupus erythematosus", "scleroderma", "vasculitis", "wound heal",
-    "basal cell", "squamous cell carcinom", "skin neoplasm",
-)
+    "atopic dermatitis", "vitiligo", "alopecia", "rosacea", "acne",
+    "cutaneous", "mohs", "phototherap", "dermoscop", "urticaria",
+    "pemphigus", "pemphigoid", "bullous", "hidradenitis", "ichthyosis",
+    "onychomycosis", "hyperhidrosis", "pruritus", "basal cell",
+    "squamous cell", "skin neoplasm", "skin disease", "skin lesion",
+    "wound heal", "scleroderma", "lupus erythematosus", "vasculitis",
+])
 
-OUTPUT_COLUMNS: list[str] = [
-    "acd_name",
-    "source",
-    "priority",
-    "practitioner_no",
-    "state",
-    "speciality_ahpra",
-    "location_ahpra",
-    "ahpra_proven",
-    "openalex_id",
-    "openalex_display_name",
-    "last_known_institution",
-    "institution_country",
-    "aunz_ever",
-    "works_count",
-    "profile_url",
-    "score_name",
-    "score_country",
-    "score_inst",
-    "score_topic",
-    "score_state",
-    "score_history",
-    "score_hospital",
-    "score_ahpra",
-    "score_semantic",
-    "score_llm",
-    "total_score",
-    "confidence",
-    "accepted",
-    "reject_reason",
-    "resolution_method",
-    "ambiguity_flags",
-    "llm_reasoning",
-    "search_stage",
+# Specialties that are hard evidence of the WRONG person
+_WRONG_SPECIALTY_TOKENS = frozenset([
+    "ophthalmol", "nephrol", "cardiol", "neurol", "gastroenterol",
+    "hepatol", "pulmonol", "endocrinol", "haematol", "oncol",
+    "urol", "gynaecol", "obstetric", "paediatric", "psychiatr",
+    "orthopaed", "anaesthes", "radiol", "pathol",
+])
+
+# State → geography tokens
+_STATE_MAP = {
+    "NSW": ["new south wales", "nsw", "sydney", "newcastle", "wollongong"],
+    "VIC": ["victoria", "vic", "melbourne", "geelong", "ballarat"],
+    "QLD": ["queensland", "qld", "brisbane", "gold coast", "sunshine coast", "townsville"],
+    "SA":  ["south australia", " sa ", "adelaide"],
+    "WA":  ["western australia", " wa ", "perth"],
+    "TAS": ["tasmania", "tas", "hobart", "launceston"],
+    "ACT": ["canberra", "act"],
+    "NT":  ["northern territory", " nt ", "darwin"],
+    "NZ":  ["new zealand", " nz ", "auckland", "wellington", "christchurch", "dunedin"],
+}
+
+# Output schemas
+OUTPUT_COLUMNS = [
+    "acd_name", "source", "priority", "practitioner_no", "state",
+    "speciality_ahpra", "location_ahpra", "ahpra_proven",
+    "openalex_id", "openalex_display_name", "last_known_institution",
+    "institution_country", "aunz_ever", "works_count", "h_index", "profile_url",
+    "score_name", "score_country", "score_inst", "score_topic",
+    "score_state", "score_history", "score_hospital",
+    "score_semantic", "score_llm", "total_score",
+    "confidence", "accepted", "reject_reason",
+    "resolution_method", "ambiguity_flags", "llm_reasoning", "search_pass",
 ]
 
-REJECT_COLUMNS: list[str] = [
-    "acd_name",
-    "acd_state",
-    "ahpra_proven",
-    "top_candidate_id",
-    "top_candidate_name",
-    "top_candidate_institution",
-    "top_candidate_country",
-    "top_candidate_aunz_ever",
-    "top_candidate_works_count",
-    "score_name",
-    "score_country",
-    "score_inst",
-    "score_topic",
-    "score_state",
-    "score_history",
-    "score_hospital",
-    "score_ahpra",
-    "score_semantic",
-    "score_llm",
-    "total_score",
-    "confidence",
-    "reject_reason",
-    "ambiguity_flags",
-    "runner_up_id",
-    "runner_up_name",
-    "runner_up_total_score",
-    "top_candidate_profile_url",
+REVIEW_COLUMNS = OUTPUT_COLUMNS + ["openalex_candidate_url"]
+
+REJECT_COLUMNS = [
+    "acd_name", "acd_state", "ahpra_proven",
+    "top_candidate_id", "top_candidate_name", "top_candidate_institution",
+    "top_candidate_country", "top_candidate_aunz_ever", "top_candidate_works_count",
+    "score_name", "score_country", "score_inst", "score_topic",
+    "score_state", "score_history", "score_hospital",
+    "score_semantic", "score_llm", "total_score",
+    "confidence", "reject_reason", "ambiguity_flags",
+    "runner_up_id", "runner_up_name", "top_candidate_profile_url",
 ]
+
+COMMON_NAME_COLUMNS = [
+    "acd_name", "state", "openalex_id", "openalex_display_name",
+    "last_known_institution", "works_count", "ambiguity_flags",
+    "total_score", "confidence", "flag_reason",
+]
+
 
 # ---------------------------------------------------------------------------
 # Input loading
 # ---------------------------------------------------------------------------
 def _priority(source: Any) -> str:
     s = str(source or "").strip()
-    if s in ("Both", "AHPRA Only"):
-        return "must"
-    return "nice"
+    return "must" if s in ("Both", "AHPRA Only") else "nice"
 
 
 def load_members(input_path: Path) -> pd.DataFrame:
     df = pd.read_csv(input_path, dtype=str).fillna("")
     df["priority"] = df["Source"].map(_priority)
     df["_rank"] = df["priority"].map({"must": 0, "nice": 1})
-    df = df.sort_values(by=["_rank", "Name"], kind="stable").reset_index(drop=True)
-    return df.drop(columns=["_rank"])
+    return df.sort_values(["_rank", "Name"], kind="stable").reset_index(drop=True).drop(columns=["_rank"])
+
+
+def load_high_volume_exceptions(path: Path) -> set[str]:
+    """Load names of known high-volume researchers (works > 300 penalty waived)."""
+    if not path.exists():
+        return set()
+    df = pd.read_csv(path, dtype=str).fillna("")
+    col = "name" if "name" in df.columns else df.columns[0]
+    return {normalise_name(str(v)) for v in df[col] if str(v).strip()}
 
 
 # ---------------------------------------------------------------------------
-# Member context dataclass
+# Member context
 # ---------------------------------------------------------------------------
 @dataclass
 class MemberContext:
-    """Everything the resolver needs about a single ACD dermatologist."""
     name: str
     source: str
     state: str
     practitioner_no: str
     speciality_ahpra: str
     location_ahpra: str
-    hospitals: str          # pipe-joined from Hospitals_Names_HS
-    practices: str          # pipe-joined from Practices_Names_HS
-    bio_hs: str             # HealthShare biography (rich text)
-    interests_hs: str       # HealthShare special interests
-    qualifications_hs: str  # HealthShare qualifications
+    hospitals: str
+    practices: str
+    bio_hs: str
+    interests_hs: str
+    qualifications_hs: str
     priority: str
 
     @property
     def ahpra_proven(self) -> bool:
-        """True iff this member has a confirmed AU AHPRA dermatology registration."""
         pno = self.practitioner_no.strip().upper()
         spec = self.speciality_ahpra.lower()
         return pno.startswith("MED") and "dermatology" in spec
 
     @property
     def hospital_patterns(self) -> list[str]:
-        return _extract_pipe_patterns(self.hospitals)
+        return _pipe_split(self.hospitals)
 
     @property
     def practice_patterns(self) -> list[str]:
-        return _extract_pipe_patterns(self.practices)
+        return _pipe_split(self.practices)
 
     @property
     def semantic_text(self) -> str:
-        """Combined HealthShare text for TF-IDF semantic matching."""
-        parts = [self.bio_hs, self.interests_hs, self.qualifications_hs]
-        return " ".join(p for p in parts if p.strip())
+        return " ".join(p for p in [self.bio_hs, self.interests_hs, self.qualifications_hs] if p.strip())
+
+    @property
+    def norm_name(self) -> str:
+        return normalise_name(self.name)
 
 
-def _extract_pipe_patterns(field: str | None) -> list[str]:
+def _pipe_split(field: str | None) -> list[str]:
     if not field:
         return []
     out, seen = [], set()
     for entry in str(field).split("|"):
         name = re.sub(r"\([^)]*\)", "", entry).strip().lower()
-        if not name or len(name) < 5 or name in seen:
-            continue
-        seen.add(name)
-        out.append(name)
+        if name and len(name) >= 5 and name not in seen:
+            seen.add(name)
+            out.append(name)
     return out
 
 
@@ -355,8 +339,7 @@ class DermInstitutionCatalog:
             return cls()
         df = pd.read_csv(path, dtype=str).fillna("")
         col = "institution_name" if "institution_name" in df.columns else df.columns[0]
-        patterns = [r.strip().lower() for r in df[col] if r.strip()]
-        return cls(patterns=patterns)
+        return cls(patterns=[r.strip().lower() for r in df[col] if r.strip()])
 
     def match_any(self, names: list[str]) -> bool:
         for name in names:
@@ -371,7 +354,6 @@ class DermInstitutionCatalog:
 # Override / blacklist loaders
 # ---------------------------------------------------------------------------
 def _load_overrides(path: Path) -> dict[str, str]:
-    """acd_name → correct_openalex_id"""
     if not path.exists():
         return {}
     df = pd.read_csv(path, dtype=str).fillna("")
@@ -383,7 +365,6 @@ def _load_overrides(path: Path) -> dict[str, str]:
 
 
 def _load_fp_overrides(path: Path) -> dict[str, set[str]]:
-    """acd_name → set of openalex_ids to reject"""
     if not path.exists():
         return {}
     df = pd.read_csv(path, dtype=str).fillna("")
@@ -397,7 +378,6 @@ def _load_fp_overrides(path: Path) -> dict[str, set[str]]:
 
 
 def _load_blacklist(path: Path) -> set[str]:
-    """Global set of OpenAlex IDs to never accept."""
     if not path.exists():
         return set()
     df = pd.read_csv(path, dtype=str).fillna("")
@@ -408,83 +388,82 @@ def _load_blacklist(path: Path) -> set[str]:
 # ---------------------------------------------------------------------------
 # OpenAlex helpers
 # ---------------------------------------------------------------------------
-def _strip_openalex_id(raw: str | None) -> str:
-    if not raw:
-        return ""
-    return raw.split("/")[-1]
+def _strip_id(raw: str | None) -> str:
+    return raw.split("/")[-1] if raw else ""
 
 
-def _all_country_codes(candidate: dict) -> set[str]:
+def _all_country_codes(c: dict) -> set[str]:
     codes: set[str] = set()
-    for aff in candidate.get("affiliations") or []:
-        inst = aff.get("institution") or {}
-        cc = inst.get("country_code") or ""
+    for aff in c.get("affiliations") or []:
+        cc = (aff.get("institution") or {}).get("country_code") or ""
         if cc:
             codes.add(cc.upper())
     return codes
 
 
-def _last_known_country_codes(candidate: dict) -> set[str]:
-    lk = candidate.get("last_known_institution") or {}
-    cc = lk.get("country_code") or ""
+def _lk_country_codes(c: dict) -> set[str]:
+    cc = (c.get("last_known_institution") or {}).get("country_code") or ""
     return {cc.upper()} if cc else set()
 
 
-def _all_institution_names(candidate: dict) -> list[str]:
+def _all_inst_names(c: dict) -> list[str]:
     names: list[str] = []
-    lk = candidate.get("last_known_institution") or {}
+    lk = c.get("last_known_institution") or {}
     if lk.get("display_name"):
         names.append(lk["display_name"])
-    for aff in candidate.get("affiliations") or []:
-        inst = aff.get("institution") or {}
-        if inst.get("display_name"):
-            names.append(inst["display_name"])
+    for aff in c.get("affiliations") or []:
+        dn = (aff.get("institution") or {}).get("display_name") or ""
+        if dn:
+            names.append(dn)
     return names
 
 
-def _topic_density(candidate: dict) -> float:
-    """Fraction of candidate's topic entries that are dermatology-related."""
-    topics = candidate.get("topics") or []
-    if not topics:
-        return 0.0
-    derm_count = 0
-    for t in topics:
+def _topic_labels(c: dict, n: int = 10) -> list[str]:
+    labels = []
+    for t in (c.get("topics") or [])[:n]:
         label = " ".join([
             t.get("display_name") or "",
-            t.get("subfield", {}).get("display_name") or "",
-            t.get("field", {}).get("display_name") or "",
+            (t.get("subfield") or {}).get("display_name") or "",
+            (t.get("field") or {}).get("display_name") or "",
         ]).lower()
-        if any(tok in label for tok in _DERM_TOPIC_TOKENS):
-            derm_count += 1
-    return derm_count / len(topics)
+        labels.append(label)
+    return labels
 
 
-def _fetch_topic_density(
-    candidate_id: str,
-    client: OpenAlexClient,
-    cache: dict[str, float],
-) -> float:
-    if candidate_id in cache:
-        return cache[candidate_id]
+def _is_derm_topic(label: str) -> bool:
+    return any(tok in label for tok in _DERM_TOKENS)
+
+
+def _is_wrong_specialty(labels: list[str]) -> bool:
+    """True if ALL top-3 topics are exclusively non-derm specialties."""
+    if not labels:
+        return False
+    top3 = labels[:3]
+    # If any topic is derm-related, it's NOT wrong specialty
+    if any(_is_derm_topic(lbl) for lbl in top3):
+        return False
+    # If all top-3 are exclusively wrong specialties → hard reject
+    return all(any(tok in lbl for tok in _WRONG_SPECIALTY_TOKENS) for lbl in top3)
+
+
+def _fetch_top_titles(candidate_id: str, client: OpenAlexClient, n: int = 5) -> list[str]:
     try:
         payload = client.get(
-            f"/authors/{candidate_id}",
-            params={"select": "id,topics"},
+            "/works",
+            params={
+                "filter": f"authorships.author.id:{candidate_id}",
+                "sort": "cited_by_count:desc",
+                "per-page": n,
+                "select": "title",
+            },
             allow_404=True,
         )
-        density = _topic_density(payload or {})
+        return [w.get("title") or "" for w in (payload or {}).get("results") or []]
     except Exception:
-        density = 0.0
-    cache[candidate_id] = density
-    return density
+        return []
 
 
-def _fetch_abstract_snippets(
-    candidate_id: str,
-    client: OpenAlexClient,
-    n: int = 5,
-) -> list[str]:
-    """Fetch top-n cited abstracts for a candidate (for semantic matching)."""
+def _fetch_abstract_snippets(candidate_id: str, client: OpenAlexClient, n: int = 5) -> list[str]:
     try:
         payload = client.get(
             "/works",
@@ -496,9 +475,8 @@ def _fetch_abstract_snippets(
             },
             allow_404=True,
         )
-        results = (payload or {}).get("results") or []
         snippets = []
-        for w in results:
+        for w in (payload or {}).get("results") or []:
             abstract = reconstruct_abstract(w.get("abstract_inverted_index") or {})
             title = w.get("title") or ""
             text = f"{title}. {abstract}".strip()
@@ -510,68 +488,80 @@ def _fetch_abstract_snippets(
 
 
 # ---------------------------------------------------------------------------
-# Scoring — deterministic signals
+# Hard filter
 # ---------------------------------------------------------------------------
-def _name_score(member_norm: str, candidate: dict) -> tuple[int, float]:
-    """Return (name_pts, fuzzy_score)."""
-    cand_display = candidate.get("display_name") or ""
-    cand_norm = normalise_name(cand_display)
-    if not cand_norm or not member_norm:
-        return 0, 0.0
-    if member_norm == cand_norm:
-        return _NAME_EXACT, 100.0
-    fuzzy = fuzz.token_sort_ratio(member_norm, cand_norm)
-    if fuzzy >= 92:
-        return _NAME_FUZZY92, float(fuzzy)
-    if fuzzy >= 85:
-        return _NAME_FUZZY85, float(fuzzy)
-    if fuzzy >= 75:
-        return _NAME_FUZZY75, float(fuzzy)
-    return 0, float(fuzzy)
+def hard_filter(ctx: MemberContext, candidate: dict) -> tuple[bool, str]:
+    """
+    Returns (passes, reason).
+    A candidate fails if it has no AU/NZ affiliation AND the member is AHPRA-proven,
+    OR if its top topics are exclusively wrong specialties.
+    """
+    all_codes = _all_country_codes(candidate)
+    lk_codes  = _lk_country_codes(candidate)
+    aunz_ever = bool((all_codes | lk_codes) & _LOCAL_COUNTRIES)
+
+    # Hard filter 1: AHPRA-proven member but candidate has zero AU/NZ history
+    if ctx.ahpra_proven and not aunz_ever:
+        return False, "no_aunz_affiliation"
+
+    # Hard filter 2: Wrong specialty (all top-3 topics are non-derm specialties)
+    topic_labels = _topic_labels(candidate, n=3)
+    if topic_labels and _is_wrong_specialty(topic_labels):
+        return False, "wrong_specialty"
+
+    return True, ""
 
 
-def _state_match(state: str, inst_names: list[str]) -> bool:
-    """Check if any institution name contains the member's state abbreviation or full name."""
-    if not state:
-        return False
-    _STATE_MAP = {
-        "NSW": ["new south wales", "nsw", "sydney"],
-        "VIC": ["victoria", "vic", "melbourne"],
-        "QLD": ["queensland", "qld", "brisbane"],
-        "SA":  ["south australia", " sa ", "adelaide"],
-        "WA":  ["western australia", " wa ", "perth"],
-        "TAS": ["tasmania", "tas", "hobart"],
-        "ACT": ["canberra", "act"],
-        "NT":  ["northern territory", " nt ", "darwin"],
-        "NZ":  ["new zealand", " nz ", "auckland", "wellington", "christchurch"],
-    }
-    tokens = _STATE_MAP.get(state.upper(), [state.lower()])
-    combined = " ".join(inst_names).lower()
-    return any(tok in combined for tok in tokens)
-
-
-def score_candidate_deterministic(
+# ---------------------------------------------------------------------------
+# Scoring
+# ---------------------------------------------------------------------------
+def score_candidate(
     ctx: MemberContext,
     candidate: dict,
     catalog: DermInstitutionCatalog,
+    hv_exceptions: set[str],
+    is_pass2: bool = False,
 ) -> dict[str, Any]:
     """Compute all deterministic signals. Returns score dict."""
-    member_norm = normalise_name(ctx.name)
-    name_pts, fuzzy = _name_score(member_norm, candidate)
+    # Name
+    cand_norm = normalise_name(candidate.get("display_name") or "")
+    name_pts, fuzzy = 0, 0.0
+    if ctx.norm_name and cand_norm:
+        if ctx.norm_name == cand_norm:
+            name_pts, fuzzy = _NAME_EXACT, 100.0
+        else:
+            fuzzy = fuzz.token_sort_ratio(ctx.norm_name, cand_norm)
+            if fuzzy >= 92:
+                name_pts = _NAME_FUZZY92
+            elif fuzzy >= 80:
+                name_pts = _NAME_FUZZY80
 
+    # Country
     all_codes = _all_country_codes(candidate)
-    lk_codes  = _last_known_country_codes(candidate)
-    aunz_ever = bool(all_codes & _LOCAL_COUNTRIES)
+    lk_codes  = _lk_country_codes(candidate)
+    aunz_ever = bool((all_codes | lk_codes) & _LOCAL_COUNTRIES)
     lk_aunz   = bool(lk_codes & _LOCAL_COUNTRIES)
-
     country_pts = _COUNTRY_PTS if lk_aunz else 0
-    hist_pts    = _HIST_PTS if aunz_ever else 0
+    hist_pts    = _HIST_PTS if (aunz_ever and not lk_aunz) else 0
 
-    inst_names = _all_institution_names(candidate)
+    # Pass 2 global penalty: no AU/NZ at all
+    global_penalty = 0
+    if is_pass2 and not aunz_ever:
+        global_penalty = _GLOBAL_NOAUNZ
+
+    # Institution catalog
+    inst_names = _all_inst_names(candidate)
     inst_pts   = _INST_PTS if catalog.match_any(inst_names) else 0
-    state_pts  = _STATE_PTS if _state_match(ctx.state, inst_names) else 0
 
-    # Hospital / practice name match
+    # State match
+    state_pts = 0
+    if ctx.state:
+        tokens = _STATE_MAP.get(ctx.state.upper(), [ctx.state.lower()])
+        combined = " ".join(inst_names).lower()
+        if any(tok in combined for tok in tokens):
+            state_pts = _STATE_PTS
+
+    # Hospital / practice match
     hosp_pts = 0
     if ctx.hospital_patterns or ctx.practice_patterns:
         combined = " ".join(inst_names).lower()
@@ -580,490 +570,698 @@ def score_candidate_deterministic(
                 hosp_pts = _HOSP_PTS
                 break
 
-    ahpra_pts = _AHPRA_PTS if ctx.ahpra_proven else 0
+    # Dermatology topic
+    topic_labels_list = _topic_labels(candidate, n=10)
+    derm_count = sum(1 for lbl in topic_labels_list if _is_derm_topic(lbl))
+    topic_pts = 0
+    if derm_count >= 1:
+        topic_pts = _TOPIC_PTS
+    concept_pts = 0
+    for xc in (candidate.get("x_concepts") or [])[:10]:
+        lbl = (xc.get("display_name") or "").lower()
+        if _is_derm_topic(lbl):
+            concept_pts = _CONCEPT_PTS
+            break
+
+    # Works count
+    works = int(candidate.get("works_count") or 0)
+    is_exact = (name_pts == _NAME_EXACT)
+    is_hv_exception = (ctx.norm_name in hv_exceptions)
+    works_pts = 0
+    if 1 <= works <= 50:
+        works_pts = _WORKS_1_50
+    elif 51 <= works <= 150:
+        works_pts = _WORKS_51_150
+    elif 151 <= works <= 300:
+        works_pts = _WORKS_151_300
+    elif works > _WORKS_PENALTY_THRESHOLD:
+        if not is_exact and not is_hv_exception:
+            works_pts = _WORKS_PENALTY
+
+    # h-index penalty
+    hindex = int(candidate.get("summary_stats", {}).get("h_index") or 0)
+    hindex_pts = 0
+    if hindex > _HINDEX_PENALTY_THRESHOLD and not is_exact and not is_hv_exception:
+        hindex_pts = _HINDEX_PENALTY
 
     return {
         "score_name":    name_pts,
         "score_country": country_pts,
+        "score_hist":    hist_pts,
         "score_inst":    inst_pts,
         "score_state":   state_pts,
-        "score_history": hist_pts,
         "score_hospital": hosp_pts,
-        "score_ahpra":   ahpra_pts,
-        "score_topic":   0,   # filled in later
-        "score_semantic": 0,  # filled in later
-        "score_llm":     0,   # filled in later
-        "_name_fuzzy":   fuzzy,
+        "score_topic":   topic_pts + concept_pts,
+        "score_works":   works_pts + hindex_pts,
+        "score_global_penalty": global_penalty,
+        "score_semantic": 0,
+        "score_llm":     0,
+        "_fuzzy":        fuzzy,
         "_aunz_ever":    aunz_ever,
+        "_works":        works,
+        "_hindex":       hindex,
+        "_derm_count":   derm_count,
     }
 
 
-def total_score(scores: dict[str, Any]) -> int:
-    return sum(
-        scores.get(k, 0)
-        for k in (
-            "score_name", "score_country", "score_inst", "score_state",
-            "score_history", "score_hospital", "score_ahpra",
-            "score_topic", "score_semantic", "score_llm",
-        )
-    )
+def total_score(sc: dict) -> int:
+    return sum(sc.get(k, 0) for k in (
+        "score_name", "score_country", "score_hist", "score_inst",
+        "score_state", "score_hospital", "score_topic", "score_works",
+        "score_global_penalty", "score_semantic", "score_llm",
+    ))
 
 
 # ---------------------------------------------------------------------------
-# Semantic similarity (Layer B)
+# Semantic similarity
 # ---------------------------------------------------------------------------
-def compute_semantic_score(
-    ctx: MemberContext,
-    candidate_id: str,
-    client: OpenAlexClient,
-) -> int:
-    """TF-IDF cosine similarity between HS bio/interests and candidate abstracts."""
+def compute_semantic(ctx: MemberContext, candidate_id: str, client: OpenAlexClient) -> int:
     member_text = ctx.semantic_text.strip()
     if not member_text:
         return 0
-    snippets = _fetch_abstract_snippets(candidate_id, client, n=5)
+    snippets = _fetch_abstract_snippets(candidate_id, client)
     if not snippets:
         return 0
     try:
         corpus = [member_text] + snippets
-        vec = TfidfVectorizer(
-            analyzer="word",
-            ngram_range=(1, 2),
-            max_features=8000,
-            sublinear_tf=True,
-            min_df=1,
-        )
+        vec = TfidfVectorizer(analyzer="word", ngram_range=(1, 2), max_features=8000,
+                              sublinear_tf=True, min_df=1)
         tfidf = vec.fit_transform(corpus)
         sims = cosine_similarity(tfidf[0:1], tfidf[1:]).flatten()
-        best = float(np.max(sims)) if len(sims) > 0 else 0.0
+        best = float(np.max(sims)) if len(sims) else 0.0
         if best >= 0.35:
-            return _SEM_35
+            return 15
         if best >= 0.20:
-            return _SEM_20
-        return 0
+            return 8
     except Exception:
-        return 0
+        pass
+    return 0
 
 
 # ---------------------------------------------------------------------------
-# LLM adjudication (Layer C) — borderline cases only
+# LLM adjudication (Pass 3)
 # ---------------------------------------------------------------------------
-_LLM_SYSTEM = """You are an expert biomedical entity resolution assistant.
-Your task is to determine whether a given OpenAlex researcher profile
-belongs to a specific Australian/New Zealand dermatologist.
+_LLM_SYSTEM_STANDARD = """You are an expert biomedical entity resolution specialist.
+Your task: determine whether a given OpenAlex researcher profile belongs to a specific
+Australian/New Zealand dermatologist.
 
-You will receive:
-1. The dermatologist's name, state, AHPRA speciality, and HealthShare bio/interests.
-2. The OpenAlex candidate's display name, institution, country, works count, and
-   their top publication titles.
+Key rules:
+- A perfect name match with a non-AU/NZ institution and no AU/NZ history = likely WRONG person.
+- A perfect name match with publications exclusively in ophthalmology/nephrology/cardiology = WRONG person.
+- Most ACD dermatologists are clinical practitioners with modest publication records (1–100 papers).
+- Be conservative: false positives (merging wrong people) are far worse than false negatives.
 
-Respond ONLY with a valid JSON object in this exact format:
+Respond ONLY with valid JSON:
 {
   "match": true or false,
   "confidence": 0.0 to 1.0,
-  "reasoning": "one or two sentences explaining your decision",
-  "flags": ["list of concern flags, e.g. COMMON_NAME, COUNTRY_MISMATCH, or empty list"]
-}
+  "reasoning": "one or two sentences",
+  "specialty_consistent": true or false,
+  "geography_consistent": true or false,
+  "flags": ["COMMON_NAME", "COUNTRY_MISMATCH", "WEAK_TOPIC", "PLAUSIBLE_CLINICIAN", ...]
+}"""
 
-Be conservative: if in doubt, set match=false. A false negative is much less
-harmful than a false positive (merging two different people's publication records).
-"""
+_LLM_SYSTEM_ADVERSARIAL = """You are a critical biomedical entity resolution auditor.
+Your task: find ALL reasons why a proposed OpenAlex profile match might be WRONG.
+Be adversarial — assume the match is incorrect unless the evidence is overwhelming.
+
+Consider:
+- Is the institution in AU/NZ? If not, is there any AU/NZ history?
+- Are the publications in dermatology? Or a completely different specialty?
+- Is the name common enough that this could be a different person?
+- Is the works count realistic for a clinical dermatologist?
+
+Respond ONLY with valid JSON:
+{
+  "match": true or false,
+  "confidence": 0.0 to 1.0,
+  "reasoning": "one or two sentences explaining your adversarial assessment",
+  "specialty_consistent": true or false,
+  "geography_consistent": true or false,
+  "flags": ["COMMON_NAME", "COUNTRY_MISMATCH", "WEAK_TOPIC", "WRONG_SPECIALTY", ...]
+}"""
+
+
+def _build_llm_prompt(ctx: MemberContext, candidate: dict, top_titles: list[str]) -> str:
+    lk = candidate.get("last_known_institution") or {}
+    all_codes = _all_country_codes(candidate)
+    topic_labels_list = _topic_labels(candidate, n=5)
+    return f"""DERMATOLOGIST RECORD (from AHPRA + HealthShare):
+  Name: {ctx.name}
+  State: {ctx.state}
+  AHPRA Speciality: {ctx.speciality_ahpra}
+  Hospital affiliations: {ctx.hospitals or 'N/A'}
+  Bio: {ctx.bio_hs[:400] if ctx.bio_hs else 'N/A'}
+  Special interests: {ctx.interests_hs[:300] if ctx.interests_hs else 'N/A'}
+  Qualifications: {ctx.qualifications_hs[:300] if ctx.qualifications_hs else 'N/A'}
+
+OPENALEX CANDIDATE:
+  Display name: {candidate.get('display_name', 'N/A')}
+  Current institution: {lk.get('display_name', 'N/A')} ({lk.get('country_code', 'N/A')})
+  All country history: {', '.join(sorted(all_codes)) or 'N/A'}
+  Works count: {candidate.get('works_count', 'N/A')}
+  h-index: {candidate.get('summary_stats', {}).get('h_index', 'N/A')}
+  Top topics: {'; '.join(topic_labels_list[:5]) or 'N/A'}
+  Top publications:
+{chr(10).join(f'    - {t}' for t in top_titles[:5]) if top_titles else '    (none available)'}
+
+Is this OpenAlex profile the same person as the dermatologist listed above?"""
+
+
+def _call_llm(system: str, prompt: str, model: str = "claude-sonnet-4-5") -> dict[str, Any]:
+    try:
+        from openai import OpenAI
+        oai = OpenAI(
+            api_key=os.environ.get("OPENAI_API_KEY", ""),
+            base_url=os.environ.get("OPENAI_API_BASE", "https://api.openai.com/v1"),
+        )
+        response = oai.chat.completions.create(
+            model=model,
+            max_tokens=512,
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": prompt},
+            ],
+        )
+        text = response.choices[0].message.content.strip()
+        m = re.search(r"\{.*\}", text, re.DOTALL)
+        if m:
+            return json.loads(m.group())
+    except Exception as exc:
+        logger.warning("LLM call failed: %s", exc)
+    return {"match": None, "confidence": 0.5, "reasoning": "LLM call failed",
+            "specialty_consistent": None, "geography_consistent": None, "flags": []}
 
 
 def llm_adjudicate(
     ctx: MemberContext,
     candidate: dict,
     top_titles: list[str],
+    evidence_f,
 ) -> dict[str, Any]:
-    """Call Claude haiku to adjudicate a borderline match. Returns structured result."""
-    try:
-        import anthropic
-        client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY", ""))
-        lk = candidate.get("last_known_institution") or {}
-        prompt = f"""DERMATOLOGIST:
-Name: {ctx.name}
-State: {ctx.state}
-AHPRA Speciality: {ctx.speciality_ahpra}
-HealthShare Bio: {ctx.bio_hs[:400] if ctx.bio_hs else 'N/A'}
-HealthShare Interests: {ctx.interests_hs[:400] if ctx.interests_hs else 'N/A'}
-Qualifications: {ctx.qualifications_hs[:300] if ctx.qualifications_hs else 'N/A'}
+    """
+    Pass 3 LLM adjudication with optional adversarial double-verification.
+    Returns merged verdict dict.
+    """
+    model = os.environ.get("LLM_DISAMBIG_MODEL", "claude-sonnet-4-5")
+    prompt = _build_llm_prompt(ctx, candidate, top_titles)
 
-OPENALEX CANDIDATE:
-Display Name: {candidate.get('display_name', 'N/A')}
-Last Known Institution: {lk.get('display_name', 'N/A')} ({lk.get('country_code', 'N/A')})
-Works Count: {candidate.get('works_count', 'N/A')}
-Top Publication Titles:
-{chr(10).join(f'  - {t}' for t in top_titles[:5]) if top_titles else '  (none available)'}
+    # First call: standard adjudication
+    result1 = _call_llm(_LLM_SYSTEM_STANDARD, prompt, model)
+    conf1 = float(result1.get("confidence") or 0.5)
+    evidence_f.write(f"  LLM-1: match={result1.get('match')} conf={conf1:.2f} "
+                     f"spec={result1.get('specialty_consistent')} "
+                     f"geo={result1.get('geography_consistent')}\n")
+    evidence_f.write(f"  LLM-1 reasoning: {result1.get('reasoning', '')}\n")
 
-Is this OpenAlex profile the same person as the dermatologist listed above?"""
+    # Double-verification: adversarial second call if confidence is uncertain
+    if _LLM_DOUBLE_LOW <= conf1 <= _LLM_DOUBLE_HIGH:
+        evidence_f.write(f"  → Confidence {conf1:.2f} in uncertain range, running adversarial call\n")
+        result2 = _call_llm(_LLM_SYSTEM_ADVERSARIAL, prompt, model)
+        conf2 = float(result2.get("confidence") or 0.5)
+        evidence_f.write(f"  LLM-2 (adversarial): match={result2.get('match')} conf={conf2:.2f}\n")
+        evidence_f.write(f"  LLM-2 reasoning: {result2.get('reasoning', '')}\n")
 
-        response = client.messages.create(
-            model="claude-haiku-4-20250514",
-            max_tokens=512,
-            system=_LLM_SYSTEM,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        text = response.content[0].text.strip()
-        # Extract JSON from response
-        json_match = re.search(r"\{.*\}", text, re.DOTALL)
-        if json_match:
-            return json.loads(json_match.group())
-    except Exception as exc:
-        logger.warning("LLM adjudication failed: %s", exc)
-    return {"match": None, "confidence": 0.5, "reasoning": "LLM call failed", "flags": []}
+        # If both calls agree on match=true, average confidence
+        if result1.get("match") is True and result2.get("match") is True:
+            merged_conf = (conf1 + conf2) / 2
+            result1["confidence"] = merged_conf
+            result1["reasoning"] = (
+                f"[Dual-verified] {result1.get('reasoning', '')} "
+                f"Adversarial check: {result2.get('reasoning', '')}"
+            )
+            result1["flags"] = list(set(
+                (result1.get("flags") or []) + (result2.get("flags") or [])
+            ))
+        elif result1.get("match") is True and result2.get("match") is False:
+            # Disagreement: keep as REVIEW
+            result1["match"] = None  # None = uncertain
+            result1["confidence"] = 0.60
+            result1["reasoning"] = (
+                f"[DISAGREEMENT] Standard: {result1.get('reasoning', '')} | "
+                f"Adversarial: {result2.get('reasoning', '')}"
+            )
+            result1["flags"] = list(set(
+                (result1.get("flags") or []) + (result2.get("flags") or []) + ["LLM_DISAGREEMENT"]
+            ))
+        else:
+            # Both say false or first said false
+            result1["confidence"] = min(conf1, conf2)
+            result1["reasoning"] = (
+                f"[Both reject] {result1.get('reasoning', '')} | "
+                f"{result2.get('reasoning', '')}"
+            )
 
-
-# ---------------------------------------------------------------------------
-# Acceptance policy
-# ---------------------------------------------------------------------------
-def apply_acceptance_policy(
-    ctx: MemberContext,
-    scores: dict[str, Any],
-    t_score: int,
-    candidate: dict,
-    llm_result: dict | None = None,
-) -> tuple[str, str, list[str]]:
-    """Return (confidence_tier, reject_reason, ambiguity_flags)."""
-    flags: list[str] = []
-    fuzzy = scores.get("_name_fuzzy", 0.0)
-    aunz_ever = scores.get("_aunz_ever", False)
-    works_count = int(candidate.get("works_count") or 0)
-
-    # Hard gates
-    if fuzzy < 75:
-        return "NOT_FOUND", "below_name_fuzzy_75", flags
-    if not aunz_ever and ctx.ahpra_proven:
-        return "NOT_FOUND", "ahpra_proven_but_no_aunz_affiliation", flags
-
-    # Ambiguity flags
-    if works_count > _HIGH_VOLUME_THRESHOLD:
-        flags.append("HIGH_VOLUME")
-    if scores.get("score_topic", 0) == 0 and scores.get("score_semantic", 0) == 0:
-        flags.append("WEAK_TOPIC")
-    if scores.get("score_country", 0) == 0:
-        flags.append("COUNTRY_MISMATCH")
-    if (scores.get("score_name", 0) > 0 and
-            scores.get("score_country", 0) == 0 and
-            scores.get("score_inst", 0) == 0 and
-            scores.get("score_hospital", 0) == 0 and
-            scores.get("score_ahpra", 0) == 0):
-        flags.append("NAME_ONLY")
-    if llm_result and llm_result.get("confidence", 1.0) < 0.7:
-        flags.append("LLM_UNCERTAIN")
-    if llm_result:
-        for f in (llm_result.get("flags") or []):
-            if f and f not in flags:
-                flags.append(f)
-
-    if t_score >= _ACCEPT_THRESHOLD and not flags:
-        return "HIGH", "", flags
-    if t_score >= _ACCEPT_THRESHOLD and flags:
-        return "REVIEW", f"flags:{','.join(flags)}", flags
-    if t_score >= _REVIEW_THRESHOLD:
-        return "REVIEW", f"score_{t_score}_flags:{','.join(flags)}", flags
-    return "LOW", f"score_below_review:{t_score}", flags
+    return result1
 
 
 # ---------------------------------------------------------------------------
-# Candidate summary helper
+# Search
 # ---------------------------------------------------------------------------
-def candidate_summary(candidate: dict) -> dict[str, Any]:
-    lk = candidate.get("last_known_institution") or {}
-    return {
-        "openalex_id":    _strip_openalex_id(candidate.get("id")),
-        "display_name":   candidate.get("display_name") or "",
-        "institution":    lk.get("display_name") or "",
-        "country":        lk.get("country_code") or "",
-        "works_count":    candidate.get("works_count") or 0,
-        "profile_url":    candidate.get("id") or "",
-        "aunz_ever":      bool(_all_country_codes(candidate) & _LOCAL_COUNTRIES),
-    }
-
-
-# ---------------------------------------------------------------------------
-# Two-stage search
-# ---------------------------------------------------------------------------
-def _search(
-    client: OpenAlexClient,
-    search_name: str,
-    country_filter: bool,
-) -> list[dict[str, Any]]:
-    if not search_name:
+def _search_aunz(client: OpenAlexClient, name: str) -> list[dict]:
+    """Pass 1: single search with AU|NZ filter combined."""
+    if not name:
         return []
-    params: dict[str, Any] = {
-        "search": search_name,
-        "per-page": _CANDIDATES_PER_SEARCH,
-    }
-    if country_filter:
-        params["filter"] = _AUNZ_AFF_FILTER
     try:
-        payload = client.get("/authors", params=params, allow_404=True)
-        return payload.get("results") or []
+        # Try combined OR filter first
+        payload = client.get(
+            "/authors",
+            params={
+                "search": name,
+                "filter": "last_known_institutions.country_code:AU|NZ",
+                "per-page": _CANDIDATES_PER_SEARCH,
+                "select": "id,display_name,last_known_institution,affiliations,works_count,topics,x_concepts,summary_stats",
+            },
+            allow_404=True,
+        )
+        results = (payload or {}).get("results") or []
+        if results:
+            return results
+        # Fallback: try AU only
+        payload = client.get(
+            "/authors",
+            params={
+                "search": name,
+                "filter": "last_known_institutions.country_code:AU",
+                "per-page": _CANDIDATES_PER_SEARCH,
+                "select": "id,display_name,last_known_institution,affiliations,works_count,topics,x_concepts,summary_stats",
+            },
+            allow_404=True,
+        )
+        return (payload or {}).get("results") or []
     except BudgetExhausted:
         raise
     except Exception as exc:
-        logger.warning("search failed (country=%s) for %s: %s", country_filter, search_name, exc)
+        logger.warning("Pass 1 search failed for %s: %s", name, exc)
+        return []
+
+
+def _search_global(client: OpenAlexClient, name: str) -> list[dict]:
+    """Pass 2: global search, no country filter."""
+    if not name:
+        return []
+    try:
+        payload = client.get(
+            "/authors",
+            params={
+                "search": name,
+                "per-page": _CANDIDATES_PER_SEARCH,
+                "select": "id,display_name,last_known_institution,affiliations,works_count,topics,x_concepts,summary_stats",
+            },
+            allow_404=True,
+        )
+        return (payload or {}).get("results") or []
+    except BudgetExhausted:
+        raise
+    except Exception as exc:
+        logger.warning("Pass 2 search failed for %s: %s", name, exc)
         return []
 
 
 # ---------------------------------------------------------------------------
-# Per-member resolution
+# Per-member resolution (Pass 1 + 2 combined)
 # ---------------------------------------------------------------------------
 def resolve_member(
     ctx: MemberContext,
     client: OpenAlexClient,
     catalog: DermInstitutionCatalog,
-    topic_cache: dict[str, float],
+    hv_exceptions: set[str],
     overrides: dict[str, str],
     fp_overrides: dict[str, set[str]],
     blacklist: set[str],
     evidence_f,
 ) -> dict[str, Any]:
-    """Full resolution pipeline for a single dermatologist."""
-    search_name = normalise_name(ctx.name)
-    evidence_f.write(f"\n--- {ctx.name} ({ctx.state}) ---\n")
+    evidence_f.write(f"\n--- {ctx.name} ({ctx.state}) priority={ctx.priority} ---\n")
 
-    # ── Manual override ──────────────────────────────────────────────────────
+    # Manual override
     if ctx.name in overrides:
         forced_id = overrides[ctx.name]
         evidence_f.write(f"  MANUAL OVERRIDE → {forced_id}\n")
         try:
-            payload = client.get(f"/authors/{forced_id}", params={"select": "id,display_name,last_known_institution,affiliations,works_count,topics"}, allow_404=True)
-            if payload:
-                summ = candidate_summary(payload)
-                return _build_accepted_row(ctx, summ, {
-                    "score_name": _NAME_EXACT, "score_country": _COUNTRY_PTS,
-                    "score_inst": 0, "score_topic": 0, "score_state": 0,
-                    "score_history": 0, "score_hospital": 0, "score_ahpra": 0,
-                    "score_semantic": 0, "score_llm": 0,
-                    "_name_fuzzy": 100.0, "_aunz_ever": summ["aunz_ever"],
-                }, "manual_override", [], "", "aunz")
-        except Exception:
-            pass
-
-    # ── Stage 1: AU/NZ-filtered search ──────────────────────────────────────
-    stage = "aunz"
-    candidates = _search(client, search_name, country_filter=True)
-    if not candidates:
-        candidates = _search(client, search_name, country_filter=False)
-        stage = "global"
-
-    evidence_f.write(f"  stage={stage} candidates={len(candidates)}\n")
-
-    # ── Apply blacklist + per-member FP overrides ────────────────────────────
-    fp_set = fp_overrides.get(ctx.name, set())
-    candidates = [
-        c for c in candidates
-        if _strip_openalex_id(c.get("id")) not in blacklist
-        and _strip_openalex_id(c.get("id")) not in fp_set
-    ]
-
-    if not candidates:
-        return _build_not_found_row(ctx, stage)
-
-    # ── Deterministic scoring ────────────────────────────────────────────────
-    scored: list[dict[str, Any]] = []
-    for cand in candidates:
-        sc = score_candidate_deterministic(ctx, cand, catalog)
-        if sc["score_name"] == 0:
-            continue  # zero name signal → skip entirely
-
-        # Topic density (cached)
-        cand_id = _strip_openalex_id(cand.get("id"))
-        if cand_id:
-            density = _fetch_topic_density(cand_id, client, topic_cache)
-            if density >= 0.50:
-                sc["score_topic"] = _TOPIC_50
-            elif density >= 0.30:
-                sc["score_topic"] = _TOPIC_30
-            elif density >= 0.15:
-                sc["score_topic"] = _TOPIC_15
-
-        scored.append({"candidate": cand, "scores": sc})
-
-    if not scored:
-        return _build_not_found_row(ctx, stage)
-
-    # Sort by provisional total (without semantic/LLM)
-    scored.sort(key=lambda r: total_score(r["scores"]), reverse=True)
-    winner_row = scored[0]
-    winner = winner_row["candidate"]
-    winner_scores = winner_row["scores"]
-    winner_id = _strip_openalex_id(winner.get("id"))
-    prov_total = total_score(winner_scores)
-
-    # ── Semantic similarity (Layer B) ────────────────────────────────────────
-    if winner_id and ctx.semantic_text:
-        sem_pts = compute_semantic_score(ctx, winner_id, client)
-        winner_scores["score_semantic"] = sem_pts
-        evidence_f.write(f"  semantic_score={sem_pts}\n")
-
-    # ── LLM adjudication (Layer C) — borderline only ─────────────────────────
-    llm_result: dict | None = None
-    llm_reasoning = ""
-    current_total = total_score(winner_scores)
-    if _BORDERLINE_LOW <= current_total <= _BORDERLINE_HIGH:
-        evidence_f.write(f"  borderline score={current_total} → LLM adjudication\n")
-        top_titles = []
-        try:
-            works_payload = client.get(
-                "/works",
-                params={
-                    "filter": f"authorships.author.id:{winner_id}",
-                    "sort": "cited_by_count:desc",
-                    "per-page": 5,
-                    "select": "title",
-                },
+            payload = client.get(
+                f"/authors/{forced_id}",
+                params={"select": "id,display_name,last_known_institution,affiliations,works_count,topics,x_concepts,summary_stats"},
                 allow_404=True,
             )
-            top_titles = [w.get("title") or "" for w in (works_payload or {}).get("results") or []]
+            if payload:
+                return _build_row(ctx, payload, {
+                    "score_name": _NAME_EXACT, "score_country": _COUNTRY_PTS,
+                    "score_hist": 0, "score_inst": 0, "score_topic": 0,
+                    "score_state": 0, "score_history": 0, "score_hospital": 0,
+                    "score_works": 0, "score_global_penalty": 0,
+                    "score_semantic": 0, "score_llm": 0,
+                    "_fuzzy": 100.0, "_aunz_ever": True, "_works": 0, "_hindex": 0, "_derm_count": 0,
+                }, "HIGH", "manual_override", [], "", "override")
         except Exception:
             pass
 
-        llm_result = llm_adjudicate(ctx, winner, top_titles)
-        llm_reasoning = llm_result.get("reasoning") or ""
-        evidence_f.write(f"  LLM: match={llm_result.get('match')} conf={llm_result.get('confidence'):.2f} flags={llm_result.get('flags')}\n")
+    fp_set = fp_overrides.get(ctx.name, set())
 
-        if llm_result.get("match") is True:
-            conf = llm_result.get("confidence", 0.0)
-            if conf >= 0.85:
-                winner_scores["score_llm"] = _LLM_HIGH
-            elif conf >= 0.70:
-                winner_scores["score_llm"] = _LLM_MED
-        elif llm_result.get("match") is False:
-            winner_scores["score_llm"] = _LLM_NEG
+    # ── Pass 1: AU/NZ targeted search ────────────────────────────────────────
+    evidence_f.write("  [Pass 1] AU/NZ targeted search\n")
+    candidates = _search_aunz(client, ctx.norm_name)
+    candidates = [c for c in candidates
+                  if _strip_id(c.get("id")) not in blacklist
+                  and _strip_id(c.get("id")) not in fp_set]
 
-    final_total = total_score(winner_scores)
-    evidence_f.write(f"  final_score={final_total}\n")
+    best_p1 = _score_candidates(ctx, candidates, catalog, hv_exceptions, is_pass2=False, evidence_f=evidence_f)
 
-    # ── Acceptance policy ────────────────────────────────────────────────────
-    conf_tier, reject_reason, flags = apply_acceptance_policy(
-        ctx, winner_scores, final_total, winner, llm_result
+    if best_p1 and best_p1["_total"] >= _P1_ACCEPT:
+        evidence_f.write(f"  Pass 1 ACCEPTED: score={best_p1['_total']}\n")
+        return _build_row(ctx, best_p1["_cand"], best_p1["_sc"], "HIGH",
+                          "pass1_targeted", best_p1["_flags"], "", "pass1")
+
+    # ── Pass 2: Global relaxed search ────────────────────────────────────────
+    evidence_f.write("  [Pass 2] Global relaxed search\n")
+    candidates2 = _search_global(client, ctx.norm_name)
+    candidates2 = [c for c in candidates2
+                   if _strip_id(c.get("id")) not in blacklist
+                   and _strip_id(c.get("id")) not in fp_set]
+
+    # Merge Pass 1 + Pass 2 candidates (deduplicate by ID)
+    seen_ids = {_strip_id(c.get("id")) for c in candidates}
+    for c in candidates2:
+        if _strip_id(c.get("id")) not in seen_ids:
+            candidates.append(c)
+
+    best_p2 = _score_candidates(ctx, candidates, catalog, hv_exceptions, is_pass2=True, evidence_f=evidence_f)
+
+    if not best_p2:
+        evidence_f.write("  NOT_FOUND: no candidates passed hard filter\n")
+        return _build_not_found(ctx, "pass2")
+
+    t = best_p2["_total"]
+    if t >= _P2_ACCEPT:
+        evidence_f.write(f"  Pass 2 ACCEPTED: score={t}\n")
+        return _build_row(ctx, best_p2["_cand"], best_p2["_sc"], "HIGH",
+                          "pass2_global", best_p2["_flags"], "", "pass2")
+    elif t >= _REVIEW_LOW:
+        evidence_f.write(f"  Pass 2 REVIEW: score={t} → queued for Pass 3 LLM\n")
+        return _build_row(ctx, best_p2["_cand"], best_p2["_sc"], "REVIEW",
+                          "pass2_review", best_p2["_flags"], "", "pass2")
+    else:
+        evidence_f.write(f"  NOT_FOUND: best score={t} below review threshold\n")
+        return _build_not_found(ctx, "pass2")
+
+
+def _score_candidates(
+    ctx: MemberContext,
+    candidates: list[dict],
+    catalog: DermInstitutionCatalog,
+    hv_exceptions: set[str],
+    is_pass2: bool,
+    evidence_f,
+) -> dict | None:
+    """Score all candidates, apply hard filters, return best or None."""
+    scored = []
+    for cand in candidates:
+        passes, reason = hard_filter(ctx, cand)
+        if not passes:
+            cid = _strip_id(cand.get("id"))
+            evidence_f.write(f"  HARD REJECT {cid}: {reason}\n")
+            continue
+        if (fuzz.token_sort_ratio(ctx.norm_name, normalise_name(cand.get("display_name") or "")) < 60):
+            continue  # name too dissimilar to even score
+        sc = score_candidate(ctx, cand, catalog, hv_exceptions, is_pass2=is_pass2)
+        t = total_score(sc)
+        flags = _compute_flags(ctx, cand, sc)
+        scored.append({"_cand": cand, "_sc": sc, "_total": t, "_flags": flags})
+
+    if not scored:
+        return None
+    scored.sort(key=lambda r: r["_total"], reverse=True)
+    best = scored[0]
+    evidence_f.write(
+        f"  Best candidate: {best['_cand'].get('display_name')} "
+        f"score={best['_total']} fuzzy={best['_sc']['_fuzzy']:.0f} "
+        f"aunz={best['_sc']['_aunz_ever']} works={best['_sc']['_works']}\n"
     )
+    return best
 
-    # Common-name flag: checked post-hoc by caller, so we just record name
-    evidence_f.write(f"  confidence={conf_tier} reason={reject_reason} flags={flags}\n")
 
-    summ = candidate_summary(winner)
-    runner_up = scored[1]["candidate"] if len(scored) > 1 else None
+def _compute_flags(ctx: MemberContext, candidate: dict, sc: dict) -> list[str]:
+    flags = []
+    works = sc.get("_works", 0)
+    is_exact = sc.get("score_name", 0) == _NAME_EXACT
+    is_hv = ctx.norm_name in set()  # populated at runtime
 
-    accepted = "1" if conf_tier == "HIGH" else "0"
-    method = "exact_name+signals" if winner_scores["score_name"] == _NAME_EXACT else "fuzzy_name+signals"
+    if works > _WORKS_PENALTY_THRESHOLD and not is_exact:
+        flags.append("SUSPICIOUS_VOLUME")
+    if not sc.get("_aunz_ever"):
+        flags.append("NO_AUNZ_HISTORY")
+    if sc.get("_derm_count", 0) == 0:
+        flags.append("SPECIALTY_WEAK")
+    if sc.get("score_country", 0) == 0 and sc.get("score_hist", 0) == 0:
+        flags.append("COUNTRY_MISMATCH")
+    return flags
 
-    row = {
-        "acd_name":              ctx.name,
-        "source":                ctx.source,
-        "priority":              ctx.priority,
-        "practitioner_no":       ctx.practitioner_no,
-        "state":                 ctx.state,
-        "speciality_ahpra":      ctx.speciality_ahpra,
-        "location_ahpra":        ctx.location_ahpra,
-        "ahpra_proven":          "1" if ctx.ahpra_proven else "0",
-        "openalex_id":           summ["openalex_id"] if accepted == "1" else "",
-        "openalex_display_name": summ["display_name"] if accepted == "1" else "",
-        "last_known_institution": summ["institution"],
-        "institution_country":   summ["country"],
-        "aunz_ever":             "1" if summ["aunz_ever"] else "0",
-        "works_count":           summ["works_count"],
-        "profile_url":           summ["profile_url"] if accepted == "1" else "",
-        "score_name":            winner_scores["score_name"],
-        "score_country":         winner_scores["score_country"],
-        "score_inst":            winner_scores["score_inst"],
-        "score_topic":           winner_scores["score_topic"],
-        "score_state":           winner_scores["score_state"],
-        "score_history":         winner_scores["score_history"],
-        "score_hospital":        winner_scores["score_hospital"],
-        "score_ahpra":           winner_scores["score_ahpra"],
-        "score_semantic":        winner_scores["score_semantic"],
-        "score_llm":             winner_scores["score_llm"],
-        "total_score":           final_total,
-        "confidence":            conf_tier,
-        "accepted":              accepted,
-        "reject_reason":         reject_reason,
-        "resolution_method":     method,
-        "ambiguity_flags":       "|".join(flags),
-        "llm_reasoning":         llm_reasoning,
-        "search_stage":          stage,
-        "_runner_up":            runner_up,
+
+# ---------------------------------------------------------------------------
+# Pass 3: LLM adjudication of REVIEW queue
+# ---------------------------------------------------------------------------
+def run_pass3_llm(
+    review_rows: list[dict],
+    client: OpenAlexClient,
+    evidence_f,
+) -> list[dict]:
+    """Adjudicate all REVIEW-tier rows with Claude Sonnet."""
+    updated = []
+    for row in tqdm(review_rows, desc="Pass 3 LLM", leave=False):
+        ctx_dict = {
+            "Name": row["acd_name"], "Source": row.get("source", ""),
+            "State": row.get("state", ""), "Practitioner_No_AHPRA": row.get("practitioner_no", ""),
+            "Speciality_AHPRA": row.get("speciality_ahpra", ""),
+            "Location_AHPRA": row.get("location_ahpra", ""),
+            "Hospitals_Names_HS": row.get("_hospitals", ""),
+            "Practices_Names_HS": row.get("_practices", ""),
+            "Bio_HS": row.get("_bio", ""),
+            "Special_Interests_HS": row.get("_interests", ""),
+            "Qualifications_HS": row.get("_qualifications", ""),
+            "priority": row.get("priority", "must"),
+        }
+        ctx = build_context(ctx_dict)
+
+        # Reconstruct candidate dict from row
+        candidate = {
+            "display_name": row.get("openalex_display_name", ""),
+            "last_known_institution": {"display_name": row.get("last_known_institution", ""),
+                                       "country_code": row.get("institution_country", "")},
+            "affiliations": [],
+            "works_count": int(row.get("works_count") or 0),
+            "summary_stats": {"h_index": int(row.get("h_index") or 0)},
+            "topics": [],
+        }
+
+        # Fetch top titles for LLM context
+        cand_id = row.get("openalex_id", "")
+        top_titles = []
+        if cand_id:
+            top_titles = _fetch_top_titles(cand_id, client)
+
+        evidence_f.write(f"\n[Pass 3 LLM] {ctx.name}\n")
+        llm_result = llm_adjudicate(ctx, candidate, top_titles, evidence_f)
+        conf = float(llm_result.get("confidence") or 0.5)
+        match = llm_result.get("match")
+        reasoning = llm_result.get("reasoning") or ""
+
+        # Apply LLM verdict
+        if match is True and conf >= 0.85:
+            row["confidence"] = "HIGH"
+            row["accepted"] = "1"
+            row["score_llm"] = _LLM_HIGH
+            row["total_score"] = int(row.get("total_score") or 0) + _LLM_HIGH
+            row["resolution_method"] = "pass3_llm_high"
+        elif match is True and conf >= 0.65:
+            row["confidence"] = "REVIEW"
+            row["accepted"] = "0"
+            row["score_llm"] = _LLM_MED
+            row["total_score"] = int(row.get("total_score") or 0) + _LLM_MED
+            row["resolution_method"] = "pass3_llm_review"
+        elif match is False or (
+            llm_result.get("specialty_consistent") is False or
+            llm_result.get("geography_consistent") is False
+        ):
+            row["confidence"] = "NOT_FOUND"
+            row["accepted"] = "0"
+            row["openalex_id"] = ""
+            row["openalex_display_name"] = ""
+            row["profile_url"] = ""
+            row["score_llm"] = 0
+            row["reject_reason"] = "llm_rejected"
+            row["resolution_method"] = "pass3_llm_rejected"
+        else:
+            # Uncertain (LLM disagreement or None)
+            row["confidence"] = "REVIEW"
+            row["accepted"] = "0"
+            row["resolution_method"] = "pass3_llm_uncertain"
+
+        # Merge LLM flags
+        existing_flags = [f for f in (row.get("ambiguity_flags") or "").split("|") if f]
+        llm_flags = [f for f in (llm_result.get("flags") or []) if f]
+        all_flags = list(dict.fromkeys(existing_flags + llm_flags))
+        row["ambiguity_flags"] = "|".join(all_flags)
+        row["llm_reasoning"] = reasoning
+
+        evidence_f.write(f"  → Final: {row['confidence']} ({reasoning[:80]})\n")
+        updated.append(row)
+        time.sleep(0.3)  # brief pause between LLM calls
+
+    return updated
+
+
+# ---------------------------------------------------------------------------
+# Pass 4: Common-name & suspicious-merge audit
+# ---------------------------------------------------------------------------
+def run_pass4_audit(rows: list[dict], hv_exceptions: set[str]) -> tuple[list[dict], list[dict]]:
+    """
+    Flag common-name risks and suspicious merges.
+    Returns (updated_rows, common_name_rows).
+    """
+    # Build name → [openalex_ids] map for common-name detection
+    name_to_ids: dict[str, list[str]] = {}
+    for row in rows:
+        if row.get("openalex_id"):
+            norm = normalise_name(row["acd_name"])
+            name_to_ids.setdefault(norm, []).append(row["openalex_id"])
+
+    # Build openalex_id → [acd_names] map for duplicate-ID detection
+    id_to_names: dict[str, list[str]] = {}
+    for row in rows:
+        oid = row.get("openalex_id")
+        if oid:
+            id_to_names.setdefault(oid, []).append(row["acd_name"])
+
+    common_name_rows = []
+
+    for row in rows:
+        flags = [f for f in (row.get("ambiguity_flags") or "").split("|") if f]
+        flag_reasons = []
+
+        # Duplicate OpenAlex ID (two ACD members matched to same profile)
+        oid = row.get("openalex_id")
+        if oid and len(id_to_names.get(oid, [])) > 1:
+            flags.append("COMMON_NAME_RISK")
+            flag_reasons.append(f"OpenAlex ID {oid} matched to {len(id_to_names[oid])} members")
+
+        # Suspicious volume (works > 300, not exact name match, not HV exception)
+        works = int(row.get("works_count") or 0)
+        is_exact = int(row.get("score_name") or 0) == _NAME_EXACT
+        norm = normalise_name(row.get("acd_name") or "")
+        if works > _WORKS_PENALTY_THRESHOLD and not is_exact and norm not in hv_exceptions:
+            flags.append("SUSPICIOUS_VOLUME")
+            flag_reasons.append(f"works_count={works} but name not exact match")
+
+        # No AU/NZ history
+        if row.get("accepted") == "1" and row.get("aunz_ever") == "0":
+            flags.append("NO_AUNZ_HISTORY")
+            flag_reasons.append("accepted profile has no AU/NZ affiliation history")
+
+        if flag_reasons:
+            # Downgrade HIGH → REVIEW
+            if row.get("confidence") == "HIGH":
+                row["confidence"] = "REVIEW"
+                row["accepted"] = "0"
+                row["reject_reason"] = "pass4_audit:" + ";".join(flag_reasons)
+
+            row["ambiguity_flags"] = "|".join(dict.fromkeys(flags))
+            common_name_rows.append({
+                "acd_name": row["acd_name"],
+                "state": row.get("state", ""),
+                "openalex_id": row.get("openalex_id", ""),
+                "openalex_display_name": row.get("openalex_display_name", ""),
+                "last_known_institution": row.get("last_known_institution", ""),
+                "works_count": works,
+                "ambiguity_flags": row["ambiguity_flags"],
+                "total_score": row.get("total_score", 0),
+                "confidence": row.get("confidence", ""),
+                "flag_reason": "; ".join(flag_reasons),
+            })
+
+    return rows, common_name_rows
+
+
+# ---------------------------------------------------------------------------
+# Row builders
+# ---------------------------------------------------------------------------
+def _build_row(
+    ctx: MemberContext,
+    candidate: dict,
+    sc: dict,
+    confidence: str,
+    method: str,
+    flags: list[str],
+    llm_reasoning: str,
+    search_pass: str,
+) -> dict[str, Any]:
+    lk = candidate.get("last_known_institution") or {}
+    all_codes = _all_country_codes(candidate)
+    lk_codes  = _lk_country_codes(candidate)
+    aunz_ever = bool((all_codes | lk_codes) & _LOCAL_COUNTRIES)
+    cand_id = _strip_id(candidate.get("id"))
+    accepted = "1" if confidence == "HIGH" else "0"
+    t = total_score(sc)
+    return {
+        "acd_name": ctx.name,
+        "source": ctx.source,
+        "priority": ctx.priority,
+        "practitioner_no": ctx.practitioner_no,
+        "state": ctx.state,
+        "speciality_ahpra": ctx.speciality_ahpra,
+        "location_ahpra": ctx.location_ahpra,
+        "ahpra_proven": "1" if ctx.ahpra_proven else "0",
+        "openalex_id": cand_id if accepted == "1" else "",
+        "openalex_display_name": candidate.get("display_name") or "",
+        "last_known_institution": lk.get("display_name") or "",
+        "institution_country": lk.get("country_code") or "",
+        "aunz_ever": "1" if aunz_ever else "0",
+        "works_count": int(candidate.get("works_count") or 0),
+        "h_index": int((candidate.get("summary_stats") or {}).get("h_index") or 0),
+        "profile_url": candidate.get("id") or "" if accepted == "1" else "",
+        "score_name": sc.get("score_name", 0),
+        "score_country": sc.get("score_country", 0) + sc.get("score_hist", 0),
+        "score_inst": sc.get("score_inst", 0),
+        "score_topic": sc.get("score_topic", 0),
+        "score_state": sc.get("score_state", 0),
+        "score_history": sc.get("score_hist", 0),
+        "score_hospital": sc.get("score_hospital", 0),
+        "score_semantic": sc.get("score_semantic", 0),
+        "score_llm": sc.get("score_llm", 0),
+        "total_score": t,
+        "confidence": confidence,
+        "accepted": accepted,
+        "reject_reason": "",
+        "resolution_method": method,
+        "ambiguity_flags": "|".join(flags),
+        "llm_reasoning": llm_reasoning,
+        "search_pass": search_pass,
+        # Hidden fields for Pass 3 context (not written to CSV)
+        "_hospitals": ctx.hospitals,
+        "_practices": ctx.practices,
+        "_bio": ctx.bio_hs,
+        "_interests": ctx.interests_hs,
+        "_qualifications": ctx.qualifications_hs,
     }
-    return row
 
 
-def _build_not_found_row(ctx: MemberContext, stage: str) -> dict[str, Any]:
+def _build_not_found(ctx: MemberContext, search_pass: str) -> dict[str, Any]:
     return {
         "acd_name": ctx.name, "source": ctx.source, "priority": ctx.priority,
         "practitioner_no": ctx.practitioner_no, "state": ctx.state,
         "speciality_ahpra": ctx.speciality_ahpra, "location_ahpra": ctx.location_ahpra,
         "ahpra_proven": "1" if ctx.ahpra_proven else "0",
         "openalex_id": "", "openalex_display_name": "", "last_known_institution": "",
-        "institution_country": "", "aunz_ever": "0", "works_count": 0, "profile_url": "",
+        "institution_country": "", "aunz_ever": "0", "works_count": 0, "h_index": 0,
+        "profile_url": "",
         "score_name": 0, "score_country": 0, "score_inst": 0, "score_topic": 0,
-        "score_state": 0, "score_history": 0, "score_hospital": 0, "score_ahpra": 0,
+        "score_state": 0, "score_history": 0, "score_hospital": 0,
         "score_semantic": 0, "score_llm": 0, "total_score": 0,
-        "confidence": "NOT_FOUND", "accepted": "0", "reject_reason": "no_candidates",
+        "confidence": "NOT_FOUND", "accepted": "0", "reject_reason": "no_viable_candidate",
         "resolution_method": "not_found", "ambiguity_flags": "", "llm_reasoning": "",
-        "search_stage": stage, "_runner_up": None,
+        "search_pass": search_pass,
+        "_hospitals": ctx.hospitals, "_practices": ctx.practices,
+        "_bio": ctx.bio_hs, "_interests": ctx.interests_hs,
+        "_qualifications": ctx.qualifications_hs,
     }
-
-
-def _build_accepted_row(
-    ctx: MemberContext,
-    summ: dict,
-    scores: dict,
-    method: str,
-    flags: list[str],
-    llm_reasoning: str,
-    stage: str,
-) -> dict[str, Any]:
-    return {
-        "acd_name": ctx.name, "source": ctx.source, "priority": ctx.priority,
-        "practitioner_no": ctx.practitioner_no, "state": ctx.state,
-        "speciality_ahpra": ctx.speciality_ahpra, "location_ahpra": ctx.location_ahpra,
-        "ahpra_proven": "1" if ctx.ahpra_proven else "0",
-        "openalex_id": summ["openalex_id"], "openalex_display_name": summ["display_name"],
-        "last_known_institution": summ["institution"], "institution_country": summ["country"],
-        "aunz_ever": "1" if summ["aunz_ever"] else "0", "works_count": summ["works_count"],
-        "profile_url": summ["profile_url"],
-        "score_name": scores.get("score_name", 0), "score_country": scores.get("score_country", 0),
-        "score_inst": scores.get("score_inst", 0), "score_topic": scores.get("score_topic", 0),
-        "score_state": scores.get("score_state", 0), "score_history": scores.get("score_history", 0),
-        "score_hospital": scores.get("score_hospital", 0), "score_ahpra": scores.get("score_ahpra", 0),
-        "score_semantic": scores.get("score_semantic", 0), "score_llm": scores.get("score_llm", 0),
-        "total_score": total_score(scores), "confidence": "HIGH", "accepted": "1",
-        "reject_reason": "", "resolution_method": method,
-        "ambiguity_flags": "|".join(flags), "llm_reasoning": llm_reasoning,
-        "search_stage": stage, "_runner_up": None,
-    }
-
-
-# ---------------------------------------------------------------------------
-# Common-name deduplication post-processing
-# ---------------------------------------------------------------------------
-def flag_common_names(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Flag members whose accepted match is shared by another member (common name merge)."""
-    accepted_ids: dict[str, list[str]] = {}
-    for row in rows:
-        if row.get("accepted") == "1" and row.get("openalex_id"):
-            accepted_ids.setdefault(row["openalex_id"], []).append(row["acd_name"])
-
-    for row in rows:
-        oid = row.get("openalex_id")
-        if oid and len(accepted_ids.get(oid, [])) > 1:
-            flags = row.get("ambiguity_flags") or ""
-            flag_list = [f for f in flags.split("|") if f]
-            if "COMMON_NAME" not in flag_list:
-                flag_list.append("COMMON_NAME")
-            row["ambiguity_flags"] = "|".join(flag_list)
-            # Downgrade to REVIEW
-            if row.get("confidence") == "HIGH":
-                row["confidence"] = "REVIEW"
-                row["accepted"] = "0"
-                row["reject_reason"] = "common_name_merge"
-            logger.warning(
-                "COMMON_NAME: OpenAlex ID %s matched to multiple members: %s",
-                oid, accepted_ids[oid],
-            )
-    return rows
 
 
 # ---------------------------------------------------------------------------
@@ -1073,11 +1271,13 @@ def run(
     *,
     input_path: Path = INPUT_CSV,
     institutions_path: Path = INST_CSV,
+    hv_exceptions_path: Path = HV_EXCEPT,
     overrides_path: Path = OVERRIDES,
     fp_overrides_path: Path = FP_OVERRIDES,
     blacklist_path: Path = BLACKLIST,
     out_dir: Path = ROOT / "data",
     must_only: bool = True,
+    include_nice: bool = False,
     limit: Optional[int] = None,
     budget_limit: int = 100_000,
     session: Optional[requests.Session] = None,
@@ -1091,130 +1291,157 @@ def run(
     processed_dir.mkdir(parents=True, exist_ok=True)
     logs_dir.mkdir(parents=True, exist_ok=True)
 
-    out_csv    = processed_dir / "authors_resolved.csv"
-    reject_csv = processed_dir / "resolution_rejects.csv"
-    evidence_log_path = logs_dir / "resolution.log"
-    credit_state      = logs_dir / "credit_usage.json"
+    out_csv          = processed_dir / "authors_resolved.csv"
+    reject_csv       = processed_dir / "resolution_rejects.csv"
+    review_csv       = processed_dir / "review_queue.csv"
+    common_name_csv  = processed_dir / "common_name_review.csv"
+    evidence_log     = logs_dir / "resolution.log"
+    credit_state     = logs_dir / "credit_usage.json"
 
-    fh = logging.FileHandler(evidence_log_path, mode="a", encoding="utf-8")
-    fh.setLevel(logging.INFO)
+    # Logging setup
+    logging.basicConfig(level=logging.INFO,
+                        format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+    fh = logging.FileHandler(logs_dir / "01c_resolver.log", mode="a", encoding="utf-8")
     fh.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
     logger.addHandler(fh)
 
-    evidence_f = evidence_log_path.open("a", encoding="utf-8")
-    evidence_f.write(f"\n===== ACD resolver run @ {datetime.now().isoformat()} =====\n")
+    evidence_f = evidence_log.open("a", encoding="utf-8")
+    evidence_f.write(f"\n===== ACD resolver v2 @ {datetime.now().isoformat()} =====\n")
 
-    catalog    = DermInstitutionCatalog.load(institutions_path)
-    overrides  = _load_overrides(overrides_path)
+    # Load reference data
+    catalog      = DermInstitutionCatalog.load(institutions_path)
+    hv_exceptions = load_high_volume_exceptions(hv_exceptions_path)
+    overrides    = _load_overrides(overrides_path)
     fp_overrides = _load_fp_overrides(fp_overrides_path)
-    blacklist  = _load_blacklist(blacklist_path)
-    logger.info("Loaded %d institution patterns, %d overrides, %d FP overrides, %d blacklisted IDs",
-                len(catalog.patterns), len(overrides), sum(len(v) for v in fp_overrides.values()), len(blacklist))
+    blacklist    = _load_blacklist(blacklist_path)
+    logger.info("Loaded %d institution patterns, %d HV exceptions, %d overrides",
+                len(catalog.patterns), len(hv_exceptions), len(overrides))
 
+    # Load members
     df = load_members(input_path)
-    if must_only:
+    if must_only and not include_nice:
         df = df[df["priority"] == "must"].reset_index(drop=True)
     if limit is not None:
         df = df.head(limit).reset_index(drop=True)
     logger.info("Processing %d members", len(df))
 
+    # OpenAlex client
     budget = CreditBudget(daily_limit=budget_limit, state_path=credit_state)
     client = OpenAlexClient(
         email=email or os.environ.get("OPENALEX_EMAIL", ""),
         api_key=api_key or os.environ.get("OPENALEX_API_KEY", ""),
         base_url=base_url or os.environ.get("OPENALEX_BASE_URL") or "https://api.openalex.org",
         session=session if session is not None else requests.Session(),
+        max_retries=2,
         on_success=lambda _payload: budget.charge(1),
     )
 
-    topic_cache: dict[str, float] = {}
-    all_rows: list[dict[str, Any]] = []
+    # Checkpoint writer (crash-safe incremental writes)
+    accepted_writer = CheckpointWriter(
+        csv_path=out_csv, columns=OUTPUT_COLUMNS,
+        key_column="acd_name", progress_log=logs_dir / "resolution_progress.csv",
+    )
+    already_done = accepted_writer.seen_keys()
+    logger.info("Resuming: %d already resolved, %d remaining",
+                len(already_done), len(df) - len(already_done))
+
+    all_rows: list[dict] = []
+    counts = {"HIGH": 0, "REVIEW": 0, "LOW": 0, "NOT_FOUND": 0}
     exhausted = False
 
-    pbar = tqdm(df.to_dict("records"), desc="resolving", disable=None)
+    # ── Pass 1 + 2 ────────────────────────────────────────────────────────────
+    pbar = tqdm(df.to_dict("records"), desc="Pass 1+2", unit="member")
     try:
         for raw in pbar:
             ctx = build_context(raw)
-            if not ctx.name:
+            if not ctx.name or ctx.name in already_done:
                 continue
             try:
                 row = resolve_member(
-                    ctx, client, catalog, topic_cache,
+                    ctx, client, catalog, hv_exceptions,
                     overrides, fp_overrides, blacklist, evidence_f,
                 )
             except BudgetExhausted:
                 logger.warning("Budget exhausted at %s", ctx.name)
                 exhausted = True
                 break
+
             all_rows.append(row)
+            out_row = {k: row.get(k, "") for k in OUTPUT_COLUMNS}
+            accepted_writer.write_row(out_row)
+            tier = row.get("confidence", "NOT_FOUND")
+            counts[tier] = counts.get(tier, 0) + 1
+            pbar.set_postfix(HIGH=counts["HIGH"], REVIEW=counts["REVIEW"],
+                             NOT_FOUND=counts["NOT_FOUND"])
             time.sleep(_PER_MEMBER_SLEEP)
     finally:
         pbar.close()
 
-    # Post-processing: flag common-name merges
-    all_rows = flag_common_names(all_rows)
+    # ── Pass 3: LLM adjudication of REVIEW queue ──────────────────────────────
+    review_rows = [r for r in all_rows if r.get("confidence") == "REVIEW"]
+    logger.info("Pass 3: %d REVIEW members queued for LLM adjudication", len(review_rows))
 
-    # Write outputs
-    accepted_writer = CheckpointWriter(
+    if review_rows and not exhausted:
+        review_rows = run_pass3_llm(review_rows, client, evidence_f)
+        # Update all_rows with LLM results
+        review_map = {r["acd_name"]: r for r in review_rows}
+        for i, row in enumerate(all_rows):
+            if row["acd_name"] in review_map:
+                all_rows[i] = review_map[row["acd_name"]]
+        # Update counts
+        counts["REVIEW"] = sum(1 for r in all_rows if r.get("confidence") == "REVIEW")
+        counts["HIGH"] = sum(1 for r in all_rows if r.get("confidence") == "HIGH")
+        counts["NOT_FOUND"] = sum(1 for r in all_rows if r.get("confidence") == "NOT_FOUND")
+
+    # ── Pass 4: Common-name & suspicious-merge audit ──────────────────────────
+    logger.info("Pass 4: running common-name and suspicious-merge audit")
+    all_rows, common_name_rows = run_pass4_audit(all_rows, hv_exceptions)
+
+    # ── Write final outputs ───────────────────────────────────────────────────
+    # Rewrite full accepted CSV (with Pass 3 + 4 updates)
+    final_writer = CheckpointWriter(
         csv_path=out_csv, columns=OUTPUT_COLUMNS,
-        key_column="acd_name", progress_log=logs_dir / "resolution_progress.csv",
+        key_column="acd_name", progress_log=logs_dir / "resolution_progress_final.csv",
     )
-    reject_writer = CheckpointWriter(
-        csv_path=reject_csv, columns=REJECT_COLUMNS,
-        key_column="acd_name", progress_log=logs_dir / "resolution_rejects_progress.csv",
-    )
-
-    counts = {"HIGH": 0, "REVIEW": 0, "LOW": 0, "NOT_FOUND": 0}
     for row in all_rows:
-        out_row = {k: row.get(k, "") for k in OUTPUT_COLUMNS}
-        accepted_writer.write_row(out_row)
-        tier = row.get("confidence", "NOT_FOUND")
-        counts[tier] = counts.get(tier, 0) + 1
+        final_writer.write_row({k: row.get(k, "") for k in OUTPUT_COLUMNS})
 
-        if row.get("confidence") not in ("HIGH",):
-            runner_up = row.get("_runner_up")
-            ru_summ = candidate_summary(runner_up) if runner_up else {}
-            reject_row = {
-                "acd_name": row["acd_name"],
-                "acd_state": row["state"],
-                "ahpra_proven": row["ahpra_proven"],
-                "top_candidate_id": row.get("openalex_id") or ru_summ.get("openalex_id", ""),
-                "top_candidate_name": row.get("openalex_display_name") or ru_summ.get("display_name", ""),
-                "top_candidate_institution": row.get("last_known_institution") or ru_summ.get("institution", ""),
-                "top_candidate_country": row.get("institution_country") or ru_summ.get("country", ""),
-                "top_candidate_aunz_ever": row.get("aunz_ever", "0"),
-                "top_candidate_works_count": row.get("works_count", 0),
-                "score_name": row.get("score_name", 0),
-                "score_country": row.get("score_country", 0),
-                "score_inst": row.get("score_inst", 0),
-                "score_topic": row.get("score_topic", 0),
-                "score_state": row.get("score_state", 0),
-                "score_history": row.get("score_history", 0),
-                "score_hospital": row.get("score_hospital", 0),
-                "score_ahpra": row.get("score_ahpra", 0),
-                "score_semantic": row.get("score_semantic", 0),
-                "score_llm": row.get("score_llm", 0),
-                "total_score": row.get("total_score", 0),
-                "confidence": row.get("confidence", "NOT_FOUND"),
-                "reject_reason": row.get("reject_reason", ""),
-                "ambiguity_flags": row.get("ambiguity_flags", ""),
-                "runner_up_id": ru_summ.get("openalex_id", ""),
-                "runner_up_name": ru_summ.get("display_name", ""),
-                "runner_up_total_score": "",
-                "top_candidate_profile_url": row.get("profile_url") or ru_summ.get("profile_url", ""),
-            }
-            reject_writer.write_row(reject_row)
+    # Write review queue
+    if review_rows:
+        review_df = pd.DataFrame([{k: r.get(k, "") for k in OUTPUT_COLUMNS} for r in review_rows])
+        review_df.to_csv(review_csv, index=False)
+        logger.info("Review queue written: %d rows → %s", len(review_rows), review_csv)
+
+    # Write common-name review
+    if common_name_rows:
+        pd.DataFrame(common_name_rows).to_csv(common_name_csv, index=False)
+        logger.info("Common-name review written: %d rows → %s", len(common_name_rows), common_name_csv)
+
+    # Write rejects
+    reject_rows = [r for r in all_rows if r.get("confidence") not in ("HIGH",)]
+    if reject_rows:
+        reject_df = pd.DataFrame([{k: r.get(k, "") for k in REJECT_COLUMNS if k in r} for r in reject_rows])
+        reject_df.to_csv(reject_csv, index=False)
 
     evidence_f.close()
-    logger.info("Resolution complete: %s", counts)
+
+    final_counts = {
+        "HIGH": sum(1 for r in all_rows if r.get("confidence") == "HIGH"),
+        "REVIEW": sum(1 for r in all_rows if r.get("confidence") == "REVIEW"),
+        "NOT_FOUND": sum(1 for r in all_rows if r.get("confidence") == "NOT_FOUND"),
+        "LOW": sum(1 for r in all_rows if r.get("confidence") == "LOW"),
+    }
+    logger.info("Resolution complete: %s", final_counts)
 
     return {
         "processed": len(all_rows),
-        "counts": counts,
+        "counts": final_counts,
         "exhausted": exhausted,
         "out_csv": out_csv,
         "reject_csv": reject_csv,
-        "log_path": evidence_log_path,
+        "review_csv": review_csv,
+        "common_name_csv": common_name_csv,
+        "log_path": evidence_log,
     }
 
 
@@ -1222,7 +1449,7 @@ def run(
 # CLI
 # ---------------------------------------------------------------------------
 def _parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description="ACD dermatologist entity resolver.")
+    p = argparse.ArgumentParser(description="ACD dermatologist entity resolver v2.")
     p.add_argument("--input", type=Path, default=INPUT_CSV)
     p.add_argument("--institutions", type=Path, default=INST_CSV)
     p.add_argument("--out-dir", type=Path, default=ROOT / "data")
@@ -1234,10 +1461,6 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Optional[list[str]] = None) -> int:
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-    )
     args = _parser().parse_args(argv)
     result = run(
         input_path=args.input,
@@ -1248,15 +1471,16 @@ def main(argv: Optional[list[str]] = None) -> int:
         budget_limit=args.budget,
     )
     print("\n" + "=" * 60)
-    print("ACD AUTHOR RESOLVER SUMMARY")
+    print("ACD AUTHOR RESOLVER v2 SUMMARY")
     print("=" * 60)
-    print(f"Processed members : {result['processed']}")
+    print(f"Processed : {result['processed']}")
     for k, v in result["counts"].items():
         print(f"  {k:<12}: {v}")
-    print(f"Budget exhausted  : {result['exhausted']}")
-    print(f"Output CSV        : {result['out_csv']}")
-    print(f"Rejects CSV       : {result['reject_csv']}")
-    print(f"Evidence log      : {result['log_path']}")
+    print(f"Budget exhausted: {result['exhausted']}")
+    print(f"Resolved CSV    : {result['out_csv']}")
+    print(f"Review queue    : {result['review_csv']}")
+    print(f"Common-name     : {result['common_name_csv']}")
+    print(f"Evidence log    : {result['log_path']}")
     return 0
 
 

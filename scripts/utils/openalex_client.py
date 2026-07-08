@@ -20,7 +20,10 @@ _RETRYABLE_STATUS = {429, 500, 502, 503, 504}
 
 # Upper bound (seconds) on any single backoff — protects against a
 # pathological Retry-After value pinning the pipeline for hours.
-_MAX_BACKOFF = 60.0
+_MAX_BACKOFF = 30.0
+
+# Initial backoff delay for retryable errors (seconds)
+_INITIAL_BACKOFF = 2.0
 
 
 @dataclass
@@ -64,7 +67,8 @@ class OpenAlexClient:
 
     def _params(self, extra: Optional[dict[str, Any]]) -> dict[str, Any]:
         p = dict(extra or {})
-        p["api_key"] = self.api_key
+        if self.api_key:  # Only add api_key if non-empty (polite pool uses email only)
+            p["api_key"] = self.api_key
         return p
 
     @staticmethod
@@ -111,15 +115,18 @@ class OpenAlexClient:
         Raises on any other non-retryable status or exhausted retries.
         """
         url = f"{self.base_url}{path}"
-        delay = 1.0
+        delay = _INITIAL_BACKOFF
         last_resp: Any = None
 
         for attempt in range(self.max_retries + 1):
+            if attempt > 0:
+                # Small inter-retry sleep to avoid hammering the API
+                self.sleep_fn(0.5)
             resp = self.session.get(
                 url,
                 params=self._params(params),
                 headers=self._headers(),
-                timeout=30,
+                timeout=(8, 15),  # (connect_timeout, read_timeout)
             )
             last_resp = resp
             status = resp.status_code
@@ -134,9 +141,15 @@ class OpenAlexClient:
                 return {"results": [], "meta": {}}
 
             if status in _RETRYABLE_STATUS and attempt < self.max_retries:
-                wait = self._retry_after(resp, delay) if status == 429 else delay
+                if status == 429:
+                    # Honour Retry-After if present, else use short fixed wait
+                    retry_after = self._retry_after(resp, 5.0)
+                    # Cap at 30s — if OpenAlex says wait longer, we'll just retry
+                    wait = min(retry_after, 30.0)
+                else:
+                    wait = delay
+                    delay = min(delay * 2, _MAX_BACKOFF)
                 self.sleep_fn(wait)
-                delay = min(delay * 2, _MAX_BACKOFF)
                 continue
 
             # Non-retryable (including 404 when allow_404=False) or
