@@ -235,7 +235,8 @@ def load_search_index() -> pd.DataFrame:
 def reload() -> None:
     """Invalidate all loader caches (useful in debug mode)."""
     for fn in (load_authors, _accepted_name_set, load_publications, load_stats,
-               load_funding, load_clinical_trials, load_search_index):
+               load_funding, load_clinical_trials, load_search_index,
+               _subtopics_map, _keywords_map, _orcid_map):
         fn.cache_clear()
 
 
@@ -373,54 +374,82 @@ def slug_to_name(slug: str) -> str | None:
     return None
 
 
-def member_keywords(acd_name: str, top_n: int = 12) -> list[str]:
-    """Return top keywords for a member from their publications."""
+# ---------------------------------------------------------------------------
+# Pre-computed per-member lookup maps  (built once, O(1) per lookup)
+# ---------------------------------------------------------------------------
+
+@functools.lru_cache(maxsize=1)
+def _subtopics_map(top_n: int = 8) -> dict[str, list[str]]:
+    """Pre-compute top SubTopics for every member in a single groupby pass.
+
+    Replaces the O(N) per-member scan with a single O(1) dictionary lookup.
+    Called once on first access; result is cached for the process lifetime.
+    """
+    pubs = load_publications()
+    if pubs.empty or "acd_name" not in pubs.columns or "SubTopic" not in pubs.columns:
+        return {}
+    result: dict[str, list[str]] = {}
+    for name, grp in pubs.groupby("acd_name", sort=False):
+        st = grp["SubTopic"].dropna()
+        if not st.empty:
+            result[name] = st.value_counts().head(top_n).index.tolist()
+        else:
+            result[name] = []
+    return result
+
+
+@functools.lru_cache(maxsize=1)
+def _keywords_map(top_n: int = 12) -> dict[str, list[str]]:
+    """Pre-compute top Keywords for every member in a single groupby pass."""
     pubs = load_publications()
     if pubs.empty or "acd_name" not in pubs.columns or "Keywords" not in pubs.columns:
-        return []
-    p = pubs[pubs["acd_name"] == acd_name]
-    kw = (
-        p["Keywords"].dropna()
-        .str.split("|")
-        .explode()
-        .str.strip()
-        .str.lower()
-    )
-    kw = kw[kw.str.len() > 2]
-    if kw.empty:
-        return []
-    return kw.value_counts().head(top_n).index.tolist()
+        return {}
+    result: dict[str, list[str]] = {}
+    for name, grp in pubs.groupby("acd_name", sort=False):
+        kw = (
+            grp["Keywords"].dropna()
+            .str.split("|")
+            .explode()
+            .str.strip()
+            .str.lower()
+        )
+        kw = kw[kw.str.len() > 2]
+        result[name] = kw.value_counts().head(top_n).index.tolist() if not kw.empty else []
+    return result
+
+
+@functools.lru_cache(maxsize=1)
+def _orcid_map() -> dict[str, str | None]:
+    """Pre-compute most common ORCID for every member in a single groupby pass."""
+    pubs = load_publications()
+    if pubs.empty or "acd_name" not in pubs.columns or "ORCIDs" not in pubs.columns:
+        return {}
+    result: dict[str, str | None] = {}
+    for name, grp in pubs.groupby("acd_name", sort=False):
+        orcids = (
+            grp["ORCIDs"].dropna()
+            .str.split("|")
+            .explode()
+            .str.strip()
+        )
+        orcids = orcids[(orcids.str.len() > 5) & (orcids.str.lower() != "none")]
+        result[name] = orcids.value_counts().index[0] if not orcids.empty else None
+    return result
+
+
+def member_keywords(acd_name: str, top_n: int = 12) -> list[str]:
+    """Return top keywords for a member — O(1) via pre-computed map."""
+    return _keywords_map(top_n).get(acd_name, [])
 
 
 def member_subtopics(acd_name: str, top_n: int = 8) -> list[str]:
-    """Return top SubTopics for a member from their publications."""
-    pubs = load_publications()
-    if pubs.empty or "acd_name" not in pubs.columns or "SubTopic" not in pubs.columns:
-        return []
-    p = pubs[pubs["acd_name"] == acd_name]
-    st = p["SubTopic"].dropna()
-    if st.empty:
-        return []
-    return st.value_counts().head(top_n).index.tolist()
+    """Return top SubTopics for a member — O(1) via pre-computed map."""
+    return _subtopics_map(top_n).get(acd_name, [])
 
 
 def member_orcid(acd_name: str) -> str | None:
-    """Return the most common ORCID for a member from their publications."""
-    pubs = load_publications()
-    if pubs.empty or "acd_name" not in pubs.columns or "ORCIDs" not in pubs.columns:
-        return None
-    p = pubs[pubs["acd_name"] == acd_name]
-    orcids = (
-        p["ORCIDs"].dropna()
-        .str.split("|")
-        .explode()
-        .str.strip()
-    )
-    orcids = orcids[orcids.str.len() > 5]
-    orcids = orcids[orcids.str.lower() != "none"]
-    if orcids.empty:
-        return None
-    return orcids.value_counts().index[0]
+    """Return the most common ORCID for a member — O(1) via pre-computed map."""
+    return _orcid_map().get(acd_name)
 
 
 def member_coauthors(acd_name: str, top_n: int = 30) -> pd.DataFrame:

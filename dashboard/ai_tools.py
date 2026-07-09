@@ -10,8 +10,6 @@ import logging
 import os
 from typing import Generator
 
-import anthropic
-
 logger = logging.getLogger("acd.ai")
 
 _MODEL = "claude-sonnet-4-5"
@@ -162,6 +160,7 @@ def stream_response(
     system = _SYSTEM_PROMPT.format(snapshot=snapshot)
 
     try:
+        import anthropic  # lazy import — avoids 1.5s cold-start penalty
         client = anthropic.Anthropic(api_key=api_key)
         with client.messages.stream(
             model=_MODEL,
@@ -185,12 +184,9 @@ def stream_response(
                         delta = event.delta
                         if hasattr(delta, "type") and delta.type == "text_delta":
                             yield delta.text
-    except anthropic.APIError as exc:
-        logger.error("Anthropic API error: %s", exc)
-        yield f"\n\n*API error: {exc}*"
     except Exception as exc:
-        logger.error("Unexpected error in stream_response: %s", exc)
-        yield f"\n\n*Unexpected error: {exc}*"
+        logger.error("Error in stream_response: %s", exc)
+        yield f"\n\n*Error: {exc}*"
 
 
 def get_single_response(
