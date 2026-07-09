@@ -235,3 +235,136 @@ def get_summary_kpis() -> dict:
         "n_funded":        n_funded,
         "total_citations": total_citations,
     }
+
+
+# ---------------------------------------------------------------------------
+# Per-member helper functions for profile pages
+# ---------------------------------------------------------------------------
+
+import re as _re
+
+
+def make_slug(name: str) -> str:
+    """Convert an ACD member name to a URL-safe slug."""
+    return _re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+
+
+def slug_to_name(slug: str) -> str | None:
+    """Reverse-lookup: find the acd_name matching a URL slug."""
+    authors = load_authors()
+    if authors.empty:
+        return None
+    for name in authors["acd_name"]:
+        if make_slug(str(name)) == slug:
+            return name
+    return None
+
+
+def member_keywords(acd_name: str, top_n: int = 12) -> list[str]:
+    """Return top keywords for a member from the publications CSV."""
+    pubs = load_publications()
+    if pubs.empty or "acd_name" not in pubs.columns:
+        return []
+    p = pubs[pubs["acd_name"] == acd_name]
+    if "Keywords" not in p.columns:
+        return []
+    kw = (
+        p["Keywords"].dropna()
+        .str.split("|")
+        .explode()
+        .str.strip()
+        .str.lower()
+    )
+    kw = kw[kw.str.len() > 2]
+    if kw.empty:
+        return []
+    return kw.value_counts().head(top_n).index.tolist()
+
+
+def member_subtopics(acd_name: str, top_n: int = 8) -> list[str]:
+    """Return top SubTopics for a member from the publications CSV."""
+    pubs = load_publications()
+    if pubs.empty or "acd_name" not in pubs.columns:
+        return []
+    p = pubs[pubs["acd_name"] == acd_name]
+    if "SubTopic" not in p.columns:
+        return []
+    st = p["SubTopic"].dropna()
+    if st.empty:
+        return []
+    return st.value_counts().head(top_n).index.tolist()
+
+
+def member_orcid(acd_name: str) -> str | None:
+    """Return the most common ORCID for a member from the publications CSV."""
+    pubs = load_publications()
+    if pubs.empty or "acd_name" not in pubs.columns:
+        return None
+    p = pubs[pubs["acd_name"] == acd_name]
+    if "ORCIDs" not in p.columns:
+        return None
+    orcids = (
+        p["ORCIDs"].dropna()
+        .str.split("|")
+        .explode()
+        .str.strip()
+    )
+    orcids = orcids[orcids.str.len() > 5]
+    orcids = orcids[orcids.str.lower() != "none"]
+    if orcids.empty:
+        return None
+    return orcids.value_counts().index[0]
+
+
+def member_coauthors(acd_name: str, top_n: int = 30) -> pd.DataFrame:
+    """Return top co-authors for a member with shared publication counts.
+
+    Returns a DataFrame with columns: coauthor_name, shared_pubs.
+    """
+    pubs = load_publications()
+    if pubs.empty or "acd_name" not in pubs.columns or "Author_Names" not in pubs.columns:
+        return pd.DataFrame(columns=["coauthor_name", "shared_pubs"])
+    p = pubs[pubs["acd_name"] == acd_name]
+    if p.empty:
+        return pd.DataFrame(columns=["coauthor_name", "shared_pubs"])
+    # Explode Author_Names (pipe-separated)
+    coauthors = (
+        p["Author_Names"].dropna()
+        .str.split("|")
+        .explode()
+        .str.strip()
+    )
+    # Remove the member themselves (fuzzy: last name match)
+    last_name = acd_name.split()[-1].lower()
+    coauthors = coauthors[~coauthors.str.lower().str.contains(last_name, na=False)]
+    coauthors = coauthors[coauthors.str.len() > 2]
+    if coauthors.empty:
+        return pd.DataFrame(columns=["coauthor_name", "shared_pubs"])
+    counts = coauthors.value_counts().head(top_n).reset_index()
+    counts.columns = ["coauthor_name", "shared_pubs"]
+    return counts
+
+
+def member_detail(acd_name: str) -> dict | None:
+    """Return a merged dict of author + stats for a member."""
+    authors = load_authors()
+    if authors.empty:
+        return None
+    row = authors[authors["acd_name"] == acd_name]
+    if row.empty:
+        return None
+    d = row.iloc[0].to_dict()
+    stats = stats_for_member(acd_name)
+    if stats:
+        # Stats values override authors values for computed metrics
+        _STATS_OVERRIDE_KEYS = {"h_index", "citation_count", "pub_count", "fwci_mean",
+                                "grants_count", "trial_count", "oa_rate", "intl_collab_rate",
+                                "derm_relevance_rate", "percentile_citations", "percentile_fwci"}
+        for k, v in stats.items():
+            if k in _STATS_OVERRIDE_KEYS or k not in d:
+                d[k] = v
+    # Clean speciality_ahpra — strip leading/trailing semicolons and spaces
+    if d.get("speciality_ahpra"):
+        sp = str(d["speciality_ahpra"]).strip("; ").strip()
+        d["speciality_ahpra"] = sp if sp else None
+    return d

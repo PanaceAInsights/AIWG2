@@ -11,6 +11,7 @@ from dash import Input, Output, html
 
 from dashboard.layout import build_shell
 from dashboard.pages import PAGE_MAP, REGISTRY
+from dashboard.pages.member_profile import build_member_profile_page
 from dashboard.theme import BG_MAIN, FONT_FAMILY, WARM_CREAM
 
 # ---------------------------------------------------------------------------
@@ -60,6 +61,12 @@ def route(pathname: str):
     # Normalise trailing slash
     if pathname != "/" and pathname.endswith("/"):
         pathname = pathname.rstrip("/")
+
+    # Handle dynamic /profiles/{slug} routes
+    if pathname.startswith("/profiles/"):
+        slug = pathname[len("/profiles/"):].strip("/")
+        if slug:
+            return build_member_profile_page(slug), "Member Profile"
 
     page = PAGE_MAP.get(pathname)
     if page is None:
