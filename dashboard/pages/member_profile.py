@@ -141,6 +141,8 @@ def _build_timeline(pubs_df: pd.DataFrame) -> go.Figure:
         return fig
 
     years = pubs_df["Year"].dropna().astype(int)
+    # Restrict to plausible publication years (1990–2026) to exclude data entry errors
+    years = years[(years >= 1990) & (years <= 2026)]
     year_counts = years.value_counts().sort_index()
 
     fig = go.Figure(go.Bar(
@@ -305,6 +307,13 @@ def build_member_profile_page(slug: str) -> html.Div:
     fwci       = _fmt(detail.get("fwci_mean"), 2)
     grants     = _fmt(detail.get("grants_count"), 0)
     trials_n   = _fmt(detail.get("trial_count"), 0)
+    _derm_raw  = detail.get("derm_relevance_rate")
+    # derm_relevance_rate is stored as a percentage (e.g. 88.5 means 88.5%)
+    derm_rate  = (
+        _fmt(_derm_raw, 0, "%")
+        if _derm_raw is not None and not (isinstance(_derm_raw, float) and pd.isna(_derm_raw))
+        else "—"
+    )
 
     # Location string
     loc_parts = [p for p in [state_val, "Australia" if country == "AU" else country] if p]
@@ -533,12 +542,13 @@ def build_member_profile_page(slug: str) -> html.Div:
             ], style={"display": "flex", "flexDirection": "column", "alignItems": "flex-end", "gap": "4px", "flexShrink": "0", "marginLeft": "20px"}),
         ], style={"display": "flex", "alignItems": "flex-start", "marginBottom": "28px"}),
 
-        # ── 6 Metric cards ────────────────────────────────────────────────
+        # ── 7 Metric cards ────────────────────────────────────────────────
         html.Div([
             _metric_card(h_index, "H-index", "Number of publications (N) each cited at least N times"),
             _metric_card(pub_count, "Publications", "Total publications in OpenAlex"),
             _metric_card(citations, "Citations", "Total citations received"),
             _metric_card(fwci, "FWCI", "Field-Weighted Citation Impact (>1.0 = above world average)"),
+            _metric_card(derm_rate, "Derm Relevance", "Percentage of this member's publications in dermatology-related topics"),
             _metric_card(grants, "Funding Awards", "Number of funding awards extracted from publications"),
             _metric_card(trials_n, "Clinical Trials", "Clinical trials registered in ANZCTR"),
         ], style={

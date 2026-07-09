@@ -64,7 +64,7 @@ def update_kpis(_):
     kpis = get_summary_kpis()
     cards = [
         _kpi_card(kpis.get("n_total", 0),         "Total Dermatologists",   COPPER,       "bi bi-people-fill"),
-        _kpi_card(kpis.get("n_resolved", 0),       "Resolved to OpenAlex",  TIER_HIGH,    "bi bi-check-circle-fill"),
+        _kpi_card(kpis.get("n_high", 0),            "Resolved to OpenAlex",  TIER_HIGH,    "bi bi-check-circle-fill"),
         _kpi_card(kpis.get("n_review", 0),         "Flagged for Review",    TIER_REVIEW,  "bi bi-exclamation-triangle-fill"),
         _kpi_card(f"{kpis.get('n_pubs', 0):,}",    "Total Publications",    MAUVE_PURPLE, "bi bi-journal-text"),
         _kpi_card(f"{kpis.get('total_citations', 0):,}", "Total Citations",  LIGHT_COPPER, "bi bi-quote"),
@@ -118,9 +118,14 @@ def update_pubs_trend(_):
 @callback(Output("overview-topics-bar", "figure"), Input("overview-interval", "n_intervals"))
 def update_topics_bar(_):
     pubs = load_publications()
-    if pubs.empty or "SubTopic" not in pubs.columns:
+    if pubs.empty:
         return go.Figure()
-    top = pubs["SubTopic"].dropna().value_counts().head(10).reset_index()
+    # Use Topic_Field (medicine-level grouping) for the overview bar chart.
+    # Fall back to SubTopic if Topic_Field is absent.
+    topic_col = "Topic_Field" if "Topic_Field" in pubs.columns else "SubTopic"
+    if topic_col not in pubs.columns:
+        return go.Figure()
+    top = pubs[topic_col].dropna().value_counts().head(10).reset_index()
     top.columns = ["Topic", "Count"]
     fig = px.bar(top, x="Count", y="Topic", orientation="h",
                  color_discrete_sequence=[MAUVE_PURPLE])
