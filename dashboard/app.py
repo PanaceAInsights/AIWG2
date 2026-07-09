@@ -181,79 +181,108 @@ def clear_filters(n_clicks):
 
 
 # --------------------------------------------------------------------- #
-# Profiles — selection → detail card
+# Profiles — tile click → drawer, tile grid filter, export
 # --------------------------------------------------------------------- #
+from dash import ALL
+
 @callback(
-    Output("profile-detail", "children"),
-    Input("roster-grid", "selectedRows"),
+    Output("profile-detail-drawer", "opened"),
+    Output("profile-detail-content", "children"),
+    Input({"type": "profile-tile", "index": ALL}, "n_clicks"),
     prevent_initial_call=True,
 )
-def profile_selected(selected):
-    if not selected:
-        return no_update
-    row = selected[0]
-    name = row.get("acd_name")
+def profile_tile_clicked(n_clicks_list):
+    from dash import ctx
+    if not any(n for n in n_clicks_list if n):
+        return no_update, no_update
+    triggered = ctx.triggered_id
+    if not triggered or not isinstance(triggered, dict):
+        return no_update, no_update
+    name = triggered.get("index")
     if not name:
-        return no_update
-    return build_profile_card(name)
+        return no_update, no_update
+    return True, build_profile_card(name)
 
 
 @callback(
-    Output("roster-grid", "rowData"),
+    Output("profiles-tile-grid", "children"),
     Input("roster-search", "value"),
     Input("roster-scope", "value"),
     Input("global-filters", "data"),
 )
 def apply_roster_filters(search_value: str, scope: str, gf: dict):
-    """Filter roster rows by free-text search, scope and global filters."""
+    """Re-render tile grid based on search, scope and global filters."""
+    from .pages.profiles import _build_tiles
     authors = data.load_authors().copy()
     if authors.empty:
         return []
     summary = data.load_summary()
+    _want = ["acd_name", "pub_count", "citation_count", "h_index",
+             "fwci_mean", "oa_rate", "grants_count", "derm_relevance_rate",
+             "intl_collab_rate"]
     if not summary.empty:
-        _want = ["acd_name", "pub_count", "citation_count", "h_index",
-                 "fwci_mean", "oa_rate", "grants_count", "derm_pub_count"]
         _available = [c for c in _want if c in summary.columns]
         if "acd_name" in _available and "acd_name" in authors.columns:
             authors = authors.merge(summary[_available], on="acd_name", how="left")
+    for c in _want[1:]:
+        if c not in authors.columns:
+            authors[c] = None
     # Scope
     if scope == "resolved":
-        if "accepted" in authors.columns and (authors["accepted"].astype(str) == "1").any():
-            authors = authors[authors["accepted"].astype(str) == "1"]
-        elif "confidence" in authors.columns:
-            authors = authors[authors["confidence"] == "HIGH"]
-    elif scope == "ahpra":
-        if "ahpra_proven" in authors.columns:
-            authors = authors[authors["ahpra_proven"].astype(str).isin(("1", "True"))]
+        authors = authors[authors["accepted"] == True]
+    elif scope == "unresolved":
+        authors = authors[authors["accepted"] != True]
     # Apply global filters
     if gf:
         authors = apply_author_filters(authors, gf)
     # Free-text search
     q = (search_value or "").strip().lower()
     if q:
-        search_cols = [c for c in (
-            "acd_name", "state", "membership_type",
-            "last_known_institution", "institution_country",
-            "speciality_ahpra", "location_ahpra",
-        ) if c in authors.columns]
-        if search_cols:
-            haystack = authors[search_cols].fillna("").astype(str).agg(" ".join, axis=1).str.lower()
-            authors = authors[haystack.str.contains(q, regex=False, na=False)]
-    return authors.fillna("").to_dict("records")
+        mask = (
+            authors["acd_name"].str.lower().str.contains(q, na=False) |
+            authors["last_known_institution"].fillna("").str.lower().str.contains(q, na=False)
+        )
+        authors = authors[mask]
+    authors = authors.sort_values(
+        ["accepted", "h_index"], ascending=[False, False], na_position="last"
+    ).reset_index(drop=True)
+    return _build_tiles(authors)
 
 
 @callback(
     Output("roster-download", "data"),
     Input("roster-export-btn", "n_clicks"),
-    State("roster-grid", "rowData"),
+    State("roster-scope", "value"),
+    State("roster-search", "value"),
+    State("global-filters", "data"),
     prevent_initial_call=True,
 )
-def export_roster_csv(n_clicks, row_data):
-    if not n_clicks or not row_data:
+def export_roster_csv(n_clicks, scope, search_value, gf):
+    if not n_clicks:
         return no_update
-    df = pd.DataFrame(row_data)
+    authors = data.load_authors().copy()
+    summary = data.load_summary()
+    _want = ["acd_name", "pub_count", "citation_count", "h_index",
+             "fwci_mean", "oa_rate", "grants_count", "derm_relevance_rate"]
+    if not summary.empty:
+        _available = [c for c in _want if c in summary.columns]
+        if "acd_name" in _available:
+            authors = authors.merge(summary[_available], on="acd_name", how="left")
+    if scope == "resolved":
+        authors = authors[authors["accepted"] == True]
+    elif scope == "unresolved":
+        authors = authors[authors["accepted"] != True]
+    if gf:
+        authors = apply_author_filters(authors, gf)
+    q = (search_value or "").strip().lower()
+    if q:
+        mask = (
+            authors["acd_name"].str.lower().str.contains(q, na=False) |
+            authors["last_known_institution"].fillna("").str.lower().str.contains(q, na=False)
+        )
+        authors = authors[mask]
     buf = io.StringIO()
-    df.to_csv(buf, index=False)
+    authors.to_csv(buf, index=False)
     return dict(content=buf.getvalue(), filename="acd_roster_filtered.csv")
 
 
