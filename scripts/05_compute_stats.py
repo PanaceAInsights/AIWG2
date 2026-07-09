@@ -86,8 +86,8 @@ OUTPUT_COLUMNS: tuple[str, ...] = (
     "first_year",
     "last_year",
     "trial_count",
-    "rehab_pub_count",
-    "rehab_relevance_pct",
+    "derm_pub_count",
+    "derm_relevance_rate",  # renamed from derm_relevance_pct for dashboard compatibility
     "pub_count_pctile",
     "citation_count_pctile",
     "h_index_pctile",
@@ -145,11 +145,18 @@ def _read_trials(path: Path) -> pd.DataFrame:
 # --------------------------------------------------------------------------- #
 
 
-def _rehab_count(pub_rows: pd.DataFrame) -> int:
-    """Count rehab-relevant publications for an author."""
-    if "is_rehab_relevant" not in pub_rows.columns:
+def _derm_count(pub_rows: pd.DataFrame) -> int:
+    """Count dermatology-relevant publications for an author."""
+    # Supports both is_derm_relevant (correct name) and is_rehab_relevant
+    # (legacy RMSANZ name) for backward compatibility during transition.
+    col_name = None
+    if "is_derm_relevant" in pub_rows.columns:
+        col_name = "is_derm_relevant"
+    elif "is_rehab_relevant" in pub_rows.columns:
+        col_name = "is_rehab_relevant"
+    if col_name is None:
         return 0
-    col = pub_rows["is_rehab_relevant"]
+    col = pub_rows[col_name]
     return int(col.apply(
         lambda x: 1 if x is True or str(x).strip().lower() == "true" else 0
     ).sum())
@@ -179,8 +186,8 @@ def _per_author_stats(
             "first_year": 0,
             "last_year": 0,
             "trial_count": n_trials,
-            "rehab_pub_count": 0,
-            "rehab_relevance_pct": 0.0,
+            "derm_pub_count": 0,
+            "derm_relevance_rate": 0.0,
         }
 
     citations = pd.to_numeric(pub_rows["Citations"], errors="coerce").fillna(0).astype(int).tolist()
@@ -203,9 +210,9 @@ def _per_author_stats(
         "first_year": first_year,
         "last_year": last_year,
         "trial_count": n_trials,
-        "rehab_pub_count": int(_rehab_count(pub_rows)),
-        "rehab_relevance_pct": round(
-            100.0 * _rehab_count(pub_rows) / len(pub_rows), 1
+        "derm_pub_count": int(_derm_count(pub_rows)),
+        "derm_relevance_rate": round(
+            100.0 * _derm_count(pub_rows) / len(pub_rows), 1
         ) if len(pub_rows) > 0 else 0.0,
     }
 
@@ -263,7 +270,7 @@ def run(*, input_dir: Path, output_path: Path) -> RunResult:
     # Join links -> pubs so every per-author row has the publication's
     # metrics plus the (author, work)-specific author_position.
     pubs_indexed = pubs.set_index("Unique ID")
-    link_metrics_cols = [c for c in ("Citations", "FWCI", "Open_Access", "Authors_Countries", "Publication_Year", "is_rehab_relevant") if c in pubs_indexed.columns]
+    link_metrics_cols = [c for c in ("Citations", "FWCI", "Open_Access", "Authors_Countries", "Publication_Year", "is_derm_relevant", "is_rehab_relevant") if c in pubs_indexed.columns]
     joined = links.merge(
         pubs_indexed[link_metrics_cols],
         left_on="openalex_work_id",

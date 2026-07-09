@@ -501,20 +501,40 @@ def _fetch_abstract_snippets(candidate_id: str, client: OpenAlexClient, n: int =
 def hard_filter(ctx: MemberContext, candidate: dict) -> tuple[bool, str]:
     """
     Returns (passes, reason).
-    A candidate fails if it has no AU/NZ affiliation AND the member is AHPRA-proven,
-    OR if its top topics are exclusively wrong specialties.
+    Three veto gates applied before scoring. Any single failure hard-rejects.
+
+    Veto 1 (geography): AHPRA-proven member but candidate has zero AU/NZ history.
+
+    Veto 2 (inverted derm-positive): Prolific profiles (>20 works) must have at
+        least one dermatology-positive topic in their top-5 OpenAlex topics.
+        This catches radiation oncologists, cardiologists, etc. whose topics do
+        not explicitly match _WRONG_SPECIALTY_TOKENS but are clearly not derm.
+        Sparse profiles (<=20 works) are exempt — legitimate clinical
+        dermatologists often have minimal topic data in OpenAlex.
+
+    Veto 3 (explicit wrong specialty): All top-3 topics are explicitly non-derm
+        specialties (belt-and-braces, retained from v1).
     """
     all_codes = _all_country_codes(candidate)
     lk_codes  = _lk_country_codes(candidate)
     aunz_ever = bool((all_codes | lk_codes) & _LOCAL_COUNTRIES)
 
-    # Hard filter 1: AHPRA-proven member but candidate has zero AU/NZ history
+    # Veto 1: AHPRA-proven member but candidate has zero AU/NZ history
     if ctx.ahpra_proven and not aunz_ever:
         return False, "no_aunz_affiliation"
 
-    # Hard filter 2: Wrong specialty (all top-3 topics are non-derm specialties)
-    topic_labels = _topic_labels(candidate, n=3)
-    if topic_labels and _is_wrong_specialty(topic_labels):
+    # Veto 2 (REVISED — inverted derm-positive): For prolific profiles, require
+    # at least one dermatology-positive topic. Primary fix for the
+    # radiation-oncologist false-positive (Quynh-Thu Le, 1033 works, h-index 101).
+    works = int(candidate.get("works_count") or 0)
+    topic_labels = _topic_labels(candidate, n=5)
+    if works > 20 and topic_labels:
+        has_derm = any(_is_derm_topic(lbl) for lbl in topic_labels)
+        if not has_derm:
+            return False, "no_derm_topic_in_prolific_profile"
+
+    # Veto 3: All top-3 topics are explicitly wrong specialties (belt-and-braces)
+    if topic_labels and _is_wrong_specialty(topic_labels[:3]):
         return False, "wrong_specialty"
 
     return True, ""
@@ -669,44 +689,41 @@ def compute_semantic(ctx: MemberContext, candidate_id: str, client: OpenAlexClie
 # ---------------------------------------------------------------------------
 # LLM adjudication (Pass 3)
 # ---------------------------------------------------------------------------
-_LLM_SYSTEM_STANDARD = """You are an expert biomedical entity resolution specialist.
-Your task: determine whether a given OpenAlex researcher profile belongs to a specific
-Australian/New Zealand dermatologist.
+# REVISED: Single comprehensive prompt replaces the dual adversarial design.
+# The adversarial design caused "paralysis by disagreement" — when the standard
+# call said YES and the adversarial call said NO, the system defaulted to REVIEW
+# rather than making a definitive call. This left 216 of 276 REVIEW members
+# unresolved. The new single prompt explicitly handles the "sparse stub profile"
+# case (a legitimate clinical dermatologist with 1-20 works and minimal topic data).
+_LLM_SYSTEM_COMPREHENSIVE = """You are an expert biomedical entity resolution specialist
+for the Australasian College of Dermatologists (ACD). Your task: determine whether a
+given OpenAlex researcher profile belongs to a specific Australian/New Zealand dermatologist.
+Make a DEFINITIVE yes or no decision.
 
-Key rules:
-- A perfect name match with a non-AU/NZ institution and no AU/NZ history = likely WRONG person.
-- A perfect name match with publications exclusively in ophthalmology/nephrology/cardiology = WRONG person.
-- Most ACD dermatologists are clinical practitioners with modest publication records (1–100 papers).
-- Be conservative: false positives (merging wrong people) are far worse than false negatives.
+Critical decision rules (apply in order):
+1. SPARSE STUB PROFILES: A profile with 1-20 works at an Australian or New Zealand hospital
+   is LIKELY the correct person. Most clinical dermatologists have minimal research output.
+   Do NOT reject a sparse profile just because it lacks topic data.
+2. PROLIFIC PROFILES (>20 works): Must have at least one dermatology-related publication
+   topic (skin, melanoma, psoriasis, eczema, cutaneous, etc.) to be accepted.
+3. GEOGRAPHY: A profile at an AU/NZ institution is strong positive evidence.
+   A profile with NO AU/NZ history at all is strong negative evidence.
+4. COMMON NAMES: For common names (e.g., David Lee, Michael Smith, Quynh Le),
+   require institution match as well as name match.
+5. WRONG SPECIALTY: Publications exclusively in ophthalmology, cardiology, nephrology,
+   radiation oncology, neurology, or psychiatry = WRONG person.
+6. PRECISION OVER RECALL: False positives (merging wrong people) are far worse than
+   false negatives (missing a match). When genuinely uncertain, return false.
 
-Respond ONLY with valid JSON:
+Respond ONLY with valid JSON (no markdown, no explanation outside JSON):
 {
   "match": true or false,
   "confidence": 0.0 to 1.0,
-  "reasoning": "one or two sentences",
+  "reasoning": "one or two sentences explaining your definitive decision",
   "specialty_consistent": true or false,
   "geography_consistent": true or false,
-  "flags": ["COMMON_NAME", "COUNTRY_MISMATCH", "WEAK_TOPIC", "PLAUSIBLE_CLINICIAN", ...]
-}"""
-
-_LLM_SYSTEM_ADVERSARIAL = """You are a critical biomedical entity resolution auditor.
-Your task: find ALL reasons why a proposed OpenAlex profile match might be WRONG.
-Be adversarial — assume the match is incorrect unless the evidence is overwhelming.
-
-Consider:
-- Is the institution in AU/NZ? If not, is there any AU/NZ history?
-- Are the publications in dermatology? Or a completely different specialty?
-- Is the name common enough that this could be a different person?
-- Is the works count realistic for a clinical dermatologist?
-
-Respond ONLY with valid JSON:
-{
-  "match": true or false,
-  "confidence": 0.0 to 1.0,
-  "reasoning": "one or two sentences explaining your adversarial assessment",
-  "specialty_consistent": true or false,
-  "geography_consistent": true or false,
-  "flags": ["COMMON_NAME", "COUNTRY_MISMATCH", "WEAK_TOPIC", "WRONG_SPECIALTY", ...]
+  "flags": ["COMMON_NAME", "COUNTRY_MISMATCH", "WEAK_TOPIC", "PLAUSIBLE_CLINICIAN",
+            "WRONG_SPECIALTY", "SPARSE_STUB", "PROLIFIC_DERM", ...]
 }"""
 
 
@@ -769,59 +786,25 @@ def llm_adjudicate(
     evidence_f,
 ) -> dict[str, Any]:
     """
-    Pass 3 LLM adjudication with optional adversarial double-verification.
-    Returns merged verdict dict.
+    Pass 3 LLM adjudication — single comprehensive prompt.
+
+    REVISED from dual adversarial design: the old design caused paralysis when
+    the standard and adversarial prompts disagreed, leaving candidates in REVIEW.
+    The new single prompt makes a definitive decision and explicitly handles
+    the sparse stub profile case (1-20 works at an AU hospital).
     """
     model = os.environ.get("LLM_DISAMBIG_MODEL", "claude-sonnet-4-6")
     prompt = _build_llm_prompt(ctx, candidate, top_titles)
 
-    # First call: standard adjudication
-    result1 = _call_llm(_LLM_SYSTEM_STANDARD, prompt, model)
-    conf1 = float(result1.get("confidence") or 0.5)
-    evidence_f.write(f"  LLM-1: match={result1.get('match')} conf={conf1:.2f} "
-                     f"spec={result1.get('specialty_consistent')} "
-                     f"geo={result1.get('geography_consistent')}\n")
-    evidence_f.write(f"  LLM-1 reasoning: {result1.get('reasoning', '')}\n")
-
-    # Double-verification: adversarial second call if confidence is uncertain
-    if _LLM_DOUBLE_LOW <= conf1 <= _LLM_DOUBLE_HIGH:
-        evidence_f.write(f"  → Confidence {conf1:.2f} in uncertain range, running adversarial call\n")
-        result2 = _call_llm(_LLM_SYSTEM_ADVERSARIAL, prompt, model)
-        conf2 = float(result2.get("confidence") or 0.5)
-        evidence_f.write(f"  LLM-2 (adversarial): match={result2.get('match')} conf={conf2:.2f}\n")
-        evidence_f.write(f"  LLM-2 reasoning: {result2.get('reasoning', '')}\n")
-
-        # If both calls agree on match=true, average confidence
-        if result1.get("match") is True and result2.get("match") is True:
-            merged_conf = (conf1 + conf2) / 2
-            result1["confidence"] = merged_conf
-            result1["reasoning"] = (
-                f"[Dual-verified] {result1.get('reasoning', '')} "
-                f"Adversarial check: {result2.get('reasoning', '')}"
-            )
-            result1["flags"] = list(set(
-                (result1.get("flags") or []) + (result2.get("flags") or [])
-            ))
-        elif result1.get("match") is True and result2.get("match") is False:
-            # Disagreement: keep as REVIEW
-            result1["match"] = None  # None = uncertain
-            result1["confidence"] = 0.60
-            result1["reasoning"] = (
-                f"[DISAGREEMENT] Standard: {result1.get('reasoning', '')} | "
-                f"Adversarial: {result2.get('reasoning', '')}"
-            )
-            result1["flags"] = list(set(
-                (result1.get("flags") or []) + (result2.get("flags") or []) + ["LLM_DISAGREEMENT"]
-            ))
-        else:
-            # Both say false or first said false
-            result1["confidence"] = min(conf1, conf2)
-            result1["reasoning"] = (
-                f"[Both reject] {result1.get('reasoning', '')} | "
-                f"{result2.get('reasoning', '')}"
-            )
-
-    return result1
+    result = _call_llm(_LLM_SYSTEM_COMPREHENSIVE, prompt, model)
+    conf = float(result.get("confidence") or 0.5)
+    evidence_f.write(
+        f"  LLM: match={result.get('match')} conf={conf:.2f} "
+        f"spec={result.get('specialty_consistent')} "
+        f"geo={result.get('geography_consistent')}\n"
+    )
+    evidence_f.write(f"  LLM reasoning: {result.get('reasoning', '')}\n")
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -1071,6 +1054,101 @@ def _compute_flags(ctx: MemberContext, candidate: dict, sc: dict) -> list[str]:
     if sc.get("score_country", 0) == 0 and sc.get("score_hist", 0) == 0:
         flags.append("COUNTRY_MISMATCH")
     return flags
+
+
+# ---------------------------------------------------------------------------
+# Pass 2b: Co-authorship bootstrap (NEW — elevates REVIEW candidates who
+#           co-authored with already-confirmed HIGH seed members)
+# ---------------------------------------------------------------------------
+def run_pass2b_coauth_bootstrap(
+    review_rows: list[dict],
+    high_openalex_ids: set[str],
+    client: OpenAlexClient,
+    evidence_f,
+) -> list[dict]:
+    """
+    For each REVIEW-tier row, check if the candidate has co-authored any works
+    with any member of the HIGH seed ring. A confirmed shared publication awards
+    +30 points, potentially elevating the candidate above the HIGH threshold.
+
+    This directly targets the 97 AU-based members stuck at scores 90-109 who
+    have a correct institution match but a sub-threshold name fuzzy score.
+
+    OpenAlex query: /works?filter=authorships.author.id:{candidate_id},
+                    authorships.author.id:{seed_id_1}|{seed_id_2}|...
+    Cost: 1 API call per REVIEW candidate (only those with an openalex_id).
+    """
+    if not high_openalex_ids:
+        evidence_f.write("  [Pass 2b Coauth] No HIGH seed members yet, skipping.\n")
+        return review_rows
+
+    # OpenAlex filter= supports up to ~50 pipe-separated IDs reliably.
+    # Chunk the seed ring to stay within URL length limits.
+    _CHUNK = 40
+    seed_chunks = [
+        list(high_openalex_ids)[i:i + _CHUNK]
+        for i in range(0, len(high_openalex_ids), _CHUNK)
+    ]
+
+    updated = []
+    elevated = 0
+    for row in review_rows:
+        oa_id = str(row.get("openalex_id") or "").strip()
+        if not oa_id:
+            updated.append(row)
+            continue
+
+        shared_count = 0
+        for chunk in seed_chunks:
+            seed_filter = "|".join(chunk)
+            try:
+                payload = client.get(
+                    "/works",
+                    params={
+                        "filter": (
+                            f"authorships.author.id:{oa_id},"
+                            f"authorships.author.id:{seed_filter}"
+                        ),
+                        "per-page": 1,
+                        "select": "id",
+                    },
+                    allow_404=True,
+                )
+                shared_count += int((payload or {}).get("meta", {}).get("count", 0))
+                if shared_count > 0:
+                    break  # Found at least one — no need to check further chunks
+            except Exception as exc:
+                evidence_f.write(
+                    f"  [Pass 2b Coauth] {row['acd_name']}: API error: {exc}\n"
+                )
+                break
+
+        if shared_count > 0:
+            bonus = 30
+            old_score = int(row.get("total_score") or 0)
+            new_score = old_score + bonus
+            evidence_f.write(
+                f"  [Pass 2b Coauth] {row['acd_name']}: "
+                f"{shared_count} shared work(s) with seed ring → "
+                f"score {old_score} + {bonus} = {new_score}\n"
+            )
+            row["total_score"] = new_score
+            row["score_llm"] = int(row.get("score_llm") or 0) + bonus
+            if new_score >= _P1_ACCEPT:
+                row["confidence"] = "HIGH"
+                row["accepted"] = "1"
+                row["resolution_method"] = "pass2b_coauth_bootstrap"
+                elevated += 1
+                evidence_f.write(
+                    f"  [Pass 2b Coauth] {row['acd_name']}: ELEVATED to HIGH\n"
+                )
+        updated.append(row)
+        time.sleep(0.2)  # polite pause between coauth queries
+
+    evidence_f.write(
+        f"  [Pass 2b Coauth] Complete: {elevated} members elevated to HIGH\n"
+    )
+    return updated
 
 
 # ---------------------------------------------------------------------------
@@ -1434,6 +1512,31 @@ def run(
             time.sleep(_PER_MEMBER_SLEEP)
     finally:
         pbar.close()
+
+    # ── Pass 2b: Co-authorship bootstrap ────────────────────────────────────────
+    review_rows = [r for r in all_rows if r.get("confidence") == "REVIEW"]
+    high_ids = {
+        str(r["openalex_id"]).strip()
+        for r in all_rows
+        if r.get("confidence") == "HIGH" and r.get("openalex_id")
+    }
+    logger.info(
+        "Pass 2b: %d REVIEW members, %d HIGH seed IDs for co-authorship bootstrap",
+        len(review_rows), len(high_ids),
+    )
+    if review_rows and high_ids and not exhausted:
+        review_rows = run_pass2b_coauth_bootstrap(review_rows, high_ids, client, evidence_f)
+        # Update all_rows with co-authorship results
+        coauth_map = {r["acd_name"]: r for r in review_rows}
+        for i, row in enumerate(all_rows):
+            if row["acd_name"] in coauth_map:
+                all_rows[i] = coauth_map[row["acd_name"]]
+        counts["REVIEW"] = sum(1 for r in all_rows if r.get("confidence") == "REVIEW")
+        counts["HIGH"] = sum(1 for r in all_rows if r.get("confidence") == "HIGH")
+        logger.info(
+            "Pass 2b complete: HIGH=%d, REVIEW remaining=%d",
+            counts["HIGH"], counts["REVIEW"],
+        )
 
     # ── Pass 3: LLM adjudication of REVIEW queue ──────────────────────────────
     review_rows = [r for r in all_rows if r.get("confidence") == "REVIEW"]

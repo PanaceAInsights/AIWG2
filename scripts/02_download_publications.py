@@ -77,9 +77,14 @@ _WORKS_SELECT = (
     "ids,apc_list,has_fulltext"
 )
 
-# Confidences we download works for. Low / not_found are skipped —
-# the operator triages them separately via resolution_log.csv.
-_ELIGIBLE_CONFIDENCES = {"HIGH", "REVIEW"}
+# Confidences we download works for.
+# CRITICAL FIX (2026-07-09): REVIEW members are excluded. Downloading works
+# for REVIEW candidates causes 5x data bloat (~62MB vs ~12MB in pandas) and
+# OOM crashes on Render.com Starter (512MB). REVIEW members have not been
+# confirmed as the correct person, so their publications contaminate all
+# downstream metrics (h-index, derm relevance rate, collaboration graphs).
+# Only HIGH (confirmed) members are eligible for publication download.
+_ELIGIBLE_CONFIDENCES = {"HIGH"}
 
 # Polite delay between authors (spec §5.5) — OpenAlex polite-pool guidance.
 _PER_AUTHOR_SLEEP_S = 0.1
