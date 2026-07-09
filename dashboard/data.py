@@ -1,13 +1,17 @@
 """ACD Research Intelligence Platform — centralised data loader.
 
-All dashboard pages import from this module. Data is loaded once at startup
-and cached in module-level variables. Pages call the public functions below.
+Mirrors the RMSANZ dashboard data.py pattern:
+- All loaders are cached with functools.lru_cache (one parse per process).
+- _accepted_name_set() returns only HIGH-confidence members (accepted==1 or confidence==HIGH).
+- Every downstream loader (publications, stats, funding) filters to this set,
+  so REVIEW false-positives never contaminate charts or KPIs.
+- usecols on publications keeps memory within Render Starter 512 MB RAM.
 """
 from __future__ import annotations
 
+import functools
 import logging
-import os
-from functools import lru_cache
+import re as _re
 from pathlib import Path
 from typing import Optional
 
@@ -18,86 +22,198 @@ logger = logging.getLogger("acd.data")
 _ROOT = Path(__file__).resolve().parent.parent
 _PROCESSED = _ROOT / "data" / "processed"
 
+
 # ---------------------------------------------------------------------------
-# Internal loaders (called once at startup)
+# Internal CSV reader
 # ---------------------------------------------------------------------------
 
-def _safe_read(path: Path, **kwargs) -> pd.DataFrame:
+def _read_csv(path: Path, **kwargs) -> pd.DataFrame:
     if not path.exists():
-        logger.warning("Data file not found: %s", path)
+        logger.warning("CSV missing: %s", path)
         return pd.DataFrame()
     try:
-        return pd.read_csv(path, low_memory=False, **kwargs)
+        return pd.read_csv(path, encoding="utf-8", low_memory=False, **kwargs)
+    except UnicodeDecodeError:
+        return pd.read_csv(path, encoding="latin-1", low_memory=False, **kwargs)
     except Exception as exc:
         logger.error("Failed to load %s: %s", path, exc)
         return pd.DataFrame()
 
 
-@lru_cache(maxsize=1)
+# ---------------------------------------------------------------------------
+# Loaders
+# ---------------------------------------------------------------------------
+
+@functools.lru_cache(maxsize=1)
 def load_authors() -> pd.DataFrame:
-    df = _safe_read(_PROCESSED / "authors_resolved.csv")
+    """Full roster (all 669 members). Used for member count KPIs and resolver stats."""
+    df = _read_csv(_PROCESSED / "authors_resolved.csv")
     if df.empty:
         return df
-    # Normalise confidence tier capitalisation
     if "confidence" in df.columns:
         df["confidence"] = df["confidence"].str.upper().fillna("NOT_FOUND")
-    # Boolean helpers
     for col in ("accepted", "ahpra_proven", "aunz_ever"):
         if col in df.columns:
             df[col] = df[col].astype(str).str.strip().isin(("1", "True", "true", "yes"))
-    # Ensure numeric
-    if "works_count" in df.columns:
-        df["works_count"] = pd.to_numeric(df["works_count"], errors="coerce").fillna(0).astype(int)
-    if "total_score" in df.columns:
-        df["total_score"] = pd.to_numeric(df["total_score"], errors="coerce").fillna(0)
+    for col in ("works_count", "total_score", "h_index"):
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
+    # Clean speciality_ahpra
+    if "speciality_ahpra" in df.columns:
+        df["speciality_ahpra"] = (
+            df["speciality_ahpra"].astype(str)
+            .str.strip("; ")
+            .str.strip()
+            .replace({"nan": None, "": None})
+        )
     return df
 
 
-@lru_cache(maxsize=1)
+@functools.lru_cache(maxsize=1)
+def _accepted_name_set() -> frozenset[str]:
+    """Names of HIGH-confidence members only.
+
+    All publication/stats/funding loaders filter through this set so that
+    REVIEW false-positives never appear in charts or KPIs.
+    """
+    authors = load_authors()
+    if authors.empty:
+        return frozenset()
+    # Prefer explicit accepted==1 flag; fall back to confidence==HIGH
+    if "accepted" in authors.columns and authors["accepted"].any():
+        sel = authors["accepted"] == True  # noqa: E712
+    elif "confidence" in authors.columns:
+        sel = authors["confidence"] == "HIGH"
+    else:
+        sel = pd.Series(True, index=authors.index)
+    col = "acd_name" if "acd_name" in authors.columns else authors.columns[0]
+    return frozenset(n for n in authors.loc[sel, col].tolist() if isinstance(n, str))
+
+
+@functools.lru_cache(maxsize=1)
 def load_publications() -> pd.DataFrame:
-    df = _safe_read(_PROCESSED / "publications_clean.csv")
+    """Publications for HIGH-confidence members only (filtered at load time).
+
+    Uses usecols to keep the in-memory DataFrame small (~20 MB vs ~75 MB full).
+    """
+    p = _PROCESSED / "publications_clean.csv"
+    if not p.exists():
+        p = _PROCESSED / "publications.csv"
+    # Read header to build tolerant usecols
+    try:
+        header = pd.read_csv(p, encoding="utf-8", nrows=0).columns.tolist()
+    except Exception:
+        return pd.DataFrame()
+    wanted = {
+        "Unique ID", "RAMS_Author", "DOI", "Title", "Publication_Year",
+        "Publication_Date", "Type", "FWCI", "Citations", "Retracted",
+        "Language", "PMID", "Author_Names", "ORCIDs", "Keywords",
+        "SubTopic", "Topic", "Topic_Field", "Topic_Domain",
+        "Open_Access", "OA_Type", "is_derm_relevant",
+        "Top_1%", "Top_10%",
+    }
+    usecols = [c for c in header if c in wanted]
+    df = _read_csv(p, usecols=usecols if usecols else None)
     if df.empty:
         return df
-    # Normalise year column name
-    if "Publication_Year" in df.columns and "Year" not in df.columns:
-        df["Year"] = pd.to_numeric(df["Publication_Year"], errors="coerce")
-    elif "Year" in df.columns:
-        df["Year"] = pd.to_numeric(df["Year"], errors="coerce")
-    # Normalise author column name
-    if "RAMS_Author" in df.columns and "acd_name" not in df.columns:
-        df["acd_name"] = df["RAMS_Author"]
-    # Normalise citations column name
-    for col in ("Citations", "CitedByCount", "cited_by_count"):
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
-            if col != "CitedByCount":
-                df["CitedByCount"] = df[col]
-            break
-    if "is_derm_relevant" in df.columns:
-        df["is_derm_relevant"] = df["is_derm_relevant"].astype(str).str.lower().isin(("true", "1", "yes"))
-    # Join state from authors if not present
+    # Rename to canonical names
+    rename = {
+        "RAMS_Author": "acd_name",
+        "Publication_Year": "Year",
+        "FWCI": "fwci",
+        "Citations": "citations",
+        "Type": "type",
+        "DOI": "doi",
+        "Title": "title",
+        "Retracted": "retracted",
+        "Language": "language",
+        "PMID": "pmid",
+    }
+    df = df.rename(columns={k: v for k, v in rename.items() if k in df.columns})
+    # Coerce numerics
+    for c in ("Year",):
+        if c in df.columns:
+            df[c] = pd.to_numeric(df[c], errors="coerce")
+    for c in ("citations", "fwci"):
+        if c in df.columns:
+            df[c] = pd.to_numeric(df[c], errors="coerce")
+    # Boolean flags
+    for c in ("retracted", "is_derm_relevant"):
+        if c in df.columns:
+            df[c] = df[c].astype(str).str.lower().isin(("true", "1", "yes"))
+    # Alias for backward compatibility
+    if "citations" in df.columns:
+        df["Citations"] = df["citations"]
+        df["CitedByCount"] = df["citations"]
+    if "Year" in df.columns:
+        df["Publication_Year"] = df["Year"]
+    # Filter to HIGH-confidence members only
+    accepted = _accepted_name_set()
+    if accepted and "acd_name" in df.columns:
+        df = df[df["acd_name"].isin(accepted)].reset_index(drop=True)
+    # Join state from authors
     if "state" not in df.columns and "acd_name" in df.columns:
-        authors = _safe_read(_PROCESSED / "authors_resolved.csv")
+        authors = load_authors()
         if not authors.empty and "state" in authors.columns:
             state_map = authors.set_index("acd_name")["state"].to_dict()
             df["state"] = df["acd_name"].map(state_map)
     return df
 
 
-@lru_cache(maxsize=1)
+@functools.lru_cache(maxsize=1)
+def load_stats() -> pd.DataFrame:
+    """Per-author stats, filtered to HIGH-confidence members only."""
+    p = _PROCESSED / "author_summary_stats.csv"
+    if not p.exists():
+        p = _PROCESSED / "member_stats.csv"
+    df = _read_csv(p)
+    if df.empty:
+        return df
+    numeric_cols = [
+        "pub_count", "citation_count", "h_index", "fwci_mean", "fwci_median",
+        "oa_rate", "intl_collab_rate", "grants_count", "trial_count",
+        "derm_relevance_rate", "first_year", "last_year",
+    ] + [c for c in df.columns if c.endswith("_pctile") or c.endswith("_percentile")]
+    for c in numeric_cols:
+        if c in df.columns:
+            df[c] = pd.to_numeric(df[c], errors="coerce")
+    # Column aliases for backward compatibility
+    if "citation_count" in df.columns and "total_citations" not in df.columns:
+        df["total_citations"] = df["citation_count"]
+    if "pub_count" in df.columns and "total_works" not in df.columns:
+        df["total_works"] = df["pub_count"]
+    # Join state
+    if "state" not in df.columns and "acd_name" in df.columns:
+        authors = load_authors()
+        if not authors.empty and "state" in authors.columns:
+            state_map = authors.set_index("acd_name")["state"].to_dict()
+            df["state"] = df["acd_name"].map(state_map)
+    # Filter to HIGH-confidence members only
+    accepted = _accepted_name_set()
+    if accepted and "acd_name" in df.columns:
+        df = df[df["acd_name"].isin(accepted)].reset_index(drop=True)
+    return df
+
+
+@functools.lru_cache(maxsize=1)
 def load_funding() -> pd.DataFrame:
-    df = _safe_read(_PROCESSED / "funding.csv")
+    """Funding data, filtered to HIGH-confidence members only."""
+    df = _read_csv(_PROCESSED / "funding.csv")
     if df.empty:
         return df
     for col in ("amount", "Amount", "award_amount"):
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
+    accepted = _accepted_name_set()
+    if accepted and "acd_name" in df.columns:
+        df = df[df["acd_name"].isin(accepted)].reset_index(drop=True)
     return df
 
 
-@lru_cache(maxsize=1)
+@functools.lru_cache(maxsize=1)
 def load_clinical_trials() -> pd.DataFrame:
-    df = _safe_read(_PROCESSED / "clinical_trials.csv")
+    """Clinical trials — not filtered (trials are matched by name, not OpenAlex ID)."""
+    df = _read_csv(_PROCESSED / "clinical_trials.csv")
     if df.empty:
         return df
     for col in ("start_date", "completion_date"):
@@ -106,38 +222,25 @@ def load_clinical_trials() -> pd.DataFrame:
     return df
 
 
-@lru_cache(maxsize=1)
-def load_stats() -> pd.DataFrame:
-    # Try both filenames for backward compatibility
-    p1 = _PROCESSED / "author_summary_stats.csv"
-    p2 = _PROCESSED / "member_stats.csv"
-    df = _safe_read(p1 if p1.exists() else p2)
-    if df.empty:
-        return df
-    # Add column aliases for backward compatibility with dashboard pages
-    if "citation_count" in df.columns and "total_citations" not in df.columns:
-        df["total_citations"] = df["citation_count"]
-    if "pub_count" in df.columns and "total_works" not in df.columns:
-        df["total_works"] = df["pub_count"]
-    # Join state from authors if not present
-    if "state" not in df.columns and "acd_name" in df.columns:
-        authors = _safe_read(_PROCESSED / "authors_resolved.csv")
-        if not authors.empty and "state" in authors.columns:
-            state_map = authors.set_index("acd_name")["state"].to_dict()
-            df["state"] = df["acd_name"].map(state_map)
+@functools.lru_cache(maxsize=1)
+def load_search_index() -> pd.DataFrame:
+    p1 = _PROCESSED / "publications_search_index.csv"
+    p2 = _PROCESSED / "search_index.csv"
+    df = _read_csv(p1 if p1.exists() else p2)
+    if not df.empty and "RAMS_Author" in df.columns:
+        df = df.rename(columns={"RAMS_Author": "acd_name"})
     return df
 
 
-@lru_cache(maxsize=1)
-def load_search_index() -> pd.DataFrame:
-    # Try both filenames for backward compatibility
-    p1 = _PROCESSED / "publications_search_index.csv"
-    p2 = _PROCESSED / "search_index.csv"
-    return _safe_read(p1 if p1.exists() else p2)
+def reload() -> None:
+    """Invalidate all loader caches (useful in debug mode)."""
+    for fn in (load_authors, _accepted_name_set, load_publications, load_stats,
+               load_funding, load_clinical_trials, load_search_index):
+        fn.cache_clear()
 
 
 # ---------------------------------------------------------------------------
-# Public helpers used by pages
+# Public view helpers
 # ---------------------------------------------------------------------------
 
 def resolved_roster(
@@ -145,17 +248,24 @@ def resolved_roster(
     state: Optional[str] = None,
     priority: Optional[str] = None,
 ) -> pd.DataFrame:
-    """Return filtered authors frame."""
+    """Return HIGH-confidence members only (the accepted cohort).
+
+    Passing confidence=['HIGH','REVIEW'] will include REVIEW members for
+    admin/debug views, but the default (None) returns HIGH only.
+    """
     df = load_authors()
     if df.empty:
         return df
     if confidence:
         df = df[df["confidence"].isin([c.upper() for c in confidence])]
+    else:
+        # Default: HIGH only
+        df = df[df["confidence"] == "HIGH"]
     if state and state != "All":
         df = df[df["state"] == state]
     if priority and priority != "All":
         df = df[df["priority"] == priority]
-    return df
+    return df.reset_index(drop=True)
 
 
 def publications_for_member(acd_name: str) -> pd.DataFrame:
@@ -204,15 +314,20 @@ def get_all_subtopics() -> list[str]:
 
 
 def get_summary_kpis() -> dict:
-    """Return top-level KPI values for the overview page."""
-    authors = load_authors()
-    pubs    = load_publications()
-    trials  = load_clinical_trials()
-    funding = load_funding()
+    """Return top-level KPI values for the overview page.
 
-    n_resolved  = int(authors["accepted"].sum()) if not authors.empty and "accepted" in authors.columns else 0
+    Member counts use the full roster; publication/citation KPIs use
+    the HIGH-only filtered publications.
+    """
+    authors = load_authors()
+    pubs    = load_publications()   # already filtered to HIGH
+    trials  = load_clinical_trials()
+    funding = load_funding()        # already filtered to HIGH
+
     n_total     = len(authors)
-    n_review    = int((authors.get("confidence", pd.Series()) == "REVIEW").sum()) if not authors.empty else 0
+    n_high      = int((authors["confidence"] == "HIGH").sum()) if not authors.empty else 0
+    n_review    = int((authors["confidence"] == "REVIEW").sum()) if not authors.empty else 0
+    n_not_found = int((authors["confidence"] == "NOT_FOUND").sum()) if not authors.empty else 0
     n_pubs      = len(pubs)
     n_derm_pubs = int(pubs["is_derm_relevant"].sum()) if not pubs.empty and "is_derm_relevant" in pubs.columns else 0
     n_trials    = len(trials)
@@ -220,15 +335,16 @@ def get_summary_kpis() -> dict:
 
     total_citations = 0
     if not pubs.empty:
-        for col in ("Citations", "CitedByCount", "cited_by_count"):
+        for col in ("citations", "Citations", "CitedByCount"):
             if col in pubs.columns:
                 total_citations = int(pubs[col].fillna(0).sum())
                 break
 
     return {
         "n_total":         n_total,
-        "n_resolved":      n_resolved,
+        "n_high":          n_high,
         "n_review":        n_review,
+        "n_not_found":     n_not_found,
         "n_pubs":          n_pubs,
         "n_derm_pubs":     n_derm_pubs,
         "n_trials":        n_trials,
@@ -238,11 +354,8 @@ def get_summary_kpis() -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Per-member helper functions for profile pages
+# Per-member helpers for profile pages
 # ---------------------------------------------------------------------------
-
-import re as _re
-
 
 def make_slug(name: str) -> str:
     """Convert an ACD member name to a URL-safe slug."""
@@ -261,13 +374,11 @@ def slug_to_name(slug: str) -> str | None:
 
 
 def member_keywords(acd_name: str, top_n: int = 12) -> list[str]:
-    """Return top keywords for a member from the publications CSV."""
+    """Return top keywords for a member from their publications."""
     pubs = load_publications()
-    if pubs.empty or "acd_name" not in pubs.columns:
+    if pubs.empty or "acd_name" not in pubs.columns or "Keywords" not in pubs.columns:
         return []
     p = pubs[pubs["acd_name"] == acd_name]
-    if "Keywords" not in p.columns:
-        return []
     kw = (
         p["Keywords"].dropna()
         .str.split("|")
@@ -282,13 +393,11 @@ def member_keywords(acd_name: str, top_n: int = 12) -> list[str]:
 
 
 def member_subtopics(acd_name: str, top_n: int = 8) -> list[str]:
-    """Return top SubTopics for a member from the publications CSV."""
+    """Return top SubTopics for a member from their publications."""
     pubs = load_publications()
-    if pubs.empty or "acd_name" not in pubs.columns:
+    if pubs.empty or "acd_name" not in pubs.columns or "SubTopic" not in pubs.columns:
         return []
     p = pubs[pubs["acd_name"] == acd_name]
-    if "SubTopic" not in p.columns:
-        return []
     st = p["SubTopic"].dropna()
     if st.empty:
         return []
@@ -296,13 +405,11 @@ def member_subtopics(acd_name: str, top_n: int = 8) -> list[str]:
 
 
 def member_orcid(acd_name: str) -> str | None:
-    """Return the most common ORCID for a member from the publications CSV."""
+    """Return the most common ORCID for a member from their publications."""
     pubs = load_publications()
-    if pubs.empty or "acd_name" not in pubs.columns:
+    if pubs.empty or "acd_name" not in pubs.columns or "ORCIDs" not in pubs.columns:
         return None
     p = pubs[pubs["acd_name"] == acd_name]
-    if "ORCIDs" not in p.columns:
-        return None
     orcids = (
         p["ORCIDs"].dropna()
         .str.split("|")
@@ -317,24 +424,19 @@ def member_orcid(acd_name: str) -> str | None:
 
 
 def member_coauthors(acd_name: str, top_n: int = 30) -> pd.DataFrame:
-    """Return top co-authors for a member with shared publication counts.
-
-    Returns a DataFrame with columns: coauthor_name, shared_pubs.
-    """
+    """Return top co-authors for a member with shared publication counts."""
     pubs = load_publications()
     if pubs.empty or "acd_name" not in pubs.columns or "Author_Names" not in pubs.columns:
         return pd.DataFrame(columns=["coauthor_name", "shared_pubs"])
     p = pubs[pubs["acd_name"] == acd_name]
     if p.empty:
         return pd.DataFrame(columns=["coauthor_name", "shared_pubs"])
-    # Explode Author_Names (pipe-separated)
     coauthors = (
         p["Author_Names"].dropna()
         .str.split("|")
         .explode()
         .str.strip()
     )
-    # Remove the member themselves (fuzzy: last name match)
     last_name = acd_name.split()[-1].lower()
     coauthors = coauthors[~coauthors.str.lower().str.contains(last_name, na=False)]
     coauthors = coauthors[coauthors.str.len() > 2]
@@ -346,7 +448,12 @@ def member_coauthors(acd_name: str, top_n: int = 30) -> pd.DataFrame:
 
 
 def member_detail(acd_name: str) -> dict | None:
-    """Return a merged dict of author + stats for a member."""
+    """Return a merged dict of author + stats for a member.
+
+    Stats values override authors values for computed metrics (h_index, etc.)
+    because the stats CSV is computed from the actual publications, while the
+    authors CSV may have stale values from the resolver.
+    """
     authors = load_authors()
     if authors.empty:
         return None
@@ -356,15 +463,17 @@ def member_detail(acd_name: str) -> dict | None:
     d = row.iloc[0].to_dict()
     stats = stats_for_member(acd_name)
     if stats:
-        # Stats values override authors values for computed metrics
-        _STATS_OVERRIDE_KEYS = {"h_index", "citation_count", "pub_count", "fwci_mean",
-                                "grants_count", "trial_count", "oa_rate", "intl_collab_rate",
-                                "derm_relevance_rate", "percentile_citations", "percentile_fwci"}
+        _STATS_OVERRIDE_KEYS = {
+            "h_index", "citation_count", "pub_count", "fwci_mean",
+            "grants_count", "trial_count", "oa_rate", "intl_collab_rate",
+            "derm_relevance_rate", "percentile_citations", "percentile_fwci",
+            "total_citations", "total_works",
+        }
         for k, v in stats.items():
             if k in _STATS_OVERRIDE_KEYS or k not in d:
                 d[k] = v
-    # Clean speciality_ahpra — strip leading/trailing semicolons and spaces
+    # Clean speciality_ahpra
     if d.get("speciality_ahpra"):
         sp = str(d["speciality_ahpra"]).strip("; ").strip()
-        d["speciality_ahpra"] = sp if sp else None
+        d["speciality_ahpra"] = sp if sp and sp != "nan" else None
     return d
