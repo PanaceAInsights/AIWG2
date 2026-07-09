@@ -261,7 +261,11 @@ def run(*, input_dir: Path, output_path: Path) -> RunResult:
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     authors = pd.read_csv(input_dir / "authors_resolved.csv", dtype=str).fillna("")
-    pubs = pd.read_csv(input_dir / "publications.csv")
+    # Use publications_clean.csv (has is_derm_relevant column from Phase 6).
+    # Fall back to publications.csv if clean file doesn't exist.
+    pubs_clean_path = input_dir / "publications_clean.csv"
+    pubs_raw_path   = input_dir / "publications.csv"
+    pubs = pd.read_csv(pubs_clean_path if pubs_clean_path.exists() else pubs_raw_path)
     links = pd.read_csv(input_dir / "author_works_link.csv", dtype=str).fillna("")
     funding_path = input_dir / "funding.csv"
     funding = pd.read_csv(funding_path, dtype=str).fillna("") if funding_path.exists() else pd.DataFrame()

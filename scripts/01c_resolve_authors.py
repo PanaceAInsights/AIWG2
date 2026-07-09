@@ -1188,10 +1188,18 @@ def run_pass3_llm(
         }
 
         # Fetch top titles for LLM context
-        cand_id = row.get("openalex_id", "")
+        cand_id = str(row.get("openalex_id") or "").strip()
         top_titles = []
         if cand_id:
             top_titles = _fetch_top_titles(cand_id, client)
+        else:
+            # No OpenAlex candidate — cannot adjudicate. Leave as REVIEW.
+            evidence_f.write(
+                f"\n[Pass 3 LLM] {ctx.name}: SKIPPED (no openalex_id — no candidate to adjudicate)\n"
+            )
+            row["resolution_method"] = "pass3_llm_no_candidate"
+            updated.append(row)
+            continue
 
         evidence_f.write(f"\n[Pass 3 LLM] {ctx.name}\n")
         llm_result = llm_adjudicate(ctx, candidate, top_titles, evidence_f)
