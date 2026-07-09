@@ -1124,24 +1124,65 @@ def run_pass2b_coauth_bootstrap(
                 break
 
         if shared_count > 0:
-            bonus = 30
-            old_score = int(row.get("total_score") or 0)
-            new_score = old_score + bonus
-            evidence_f.write(
-                f"  [Pass 2b Coauth] {row['acd_name']}: "
-                f"{shared_count} shared work(s) with seed ring → "
-                f"score {old_score} + {bonus} = {new_score}\n"
-            )
-            row["total_score"] = new_score
-            row["score_llm"] = int(row.get("score_llm") or 0) + bonus
-            if new_score >= _P1_ACCEPT:
-                row["confidence"] = "HIGH"
-                row["accepted"] = "1"
-                row["resolution_method"] = "pass2b_coauth_bootstrap"
-                elevated += 1
+            # -------------------------------------------------------------------
+            # Specialty veto BEFORE elevation: fetch the candidate's topics from
+            # OpenAlex and require at least one derm-positive topic.
+            # Applied unconditionally (no works_count threshold) because sparse
+            # profiles (5-19 works) are exactly where co-authorship bootstrap
+            # is most likely to produce false positives (e.g. cardiologists and
+            # respiratory physicians who co-author with ACD members at the same
+            # hospital).
+            # -------------------------------------------------------------------
+            veto_passed = True
+            try:
+                cand_profile = client.get(
+                    f"/authors/{oa_id}",
+                    params={"select": "works_count,topics"},
+                    allow_404=True,
+                ) or {}
+                cand_works = int(cand_profile.get("works_count") or 0)
+                cand_topic_labels = [
+                    t.get("display_name", "")
+                    for t in cand_profile.get("topics", [])[:5]
+                ]
+                has_derm = any(_is_derm_topic(lbl) for lbl in cand_topic_labels)
+                # Any profile with at least 1 work must have a derm topic.
+                # Truly empty profiles (0 works, clinical-only practitioners)
+                # are allowed through.
+                if cand_works > 0 and not has_derm:
+                    veto_passed = False
+                    evidence_f.write(
+                        f"  [Pass 2b Coauth] {row['acd_name']}: "
+                        f"REJECTED — co-author match found but no derm topic "
+                        f"in profile (works={cand_works}, "
+                        f"topics={cand_topic_labels[:3]})\n"
+                    )
+            except Exception as exc:
+                veto_passed = False
                 evidence_f.write(
-                    f"  [Pass 2b Coauth] {row['acd_name']}: ELEVATED to HIGH\n"
+                    f"  [Pass 2b Coauth] {row['acd_name']}: "
+                    f"topic-veto fetch error: {exc} — skipping elevation\n"
                 )
+
+            if veto_passed:
+                bonus = 30
+                old_score = int(row.get("total_score") or 0)
+                new_score = old_score + bonus
+                evidence_f.write(
+                    f"  [Pass 2b Coauth] {row['acd_name']}: "
+                    f"{shared_count} shared work(s) with seed ring → "
+                    f"score {old_score} + {bonus} = {new_score}\n"
+                )
+                row["total_score"] = new_score
+                row["score_llm"] = int(row.get("score_llm") or 0) + bonus
+                if new_score >= _P1_ACCEPT:
+                    row["confidence"] = "HIGH"
+                    row["accepted"] = "1"
+                    row["resolution_method"] = "pass2b_coauth_bootstrap"
+                    elevated += 1
+                    evidence_f.write(
+                        f"  [Pass 2b Coauth] {row['acd_name']}: ELEVATED to HIGH\n"
+                    )
         updated.append(row)
         time.sleep(0.2)  # polite pause between coauth queries
 
@@ -1193,11 +1234,18 @@ def run_pass3_llm(
         if cand_id:
             top_titles = _fetch_top_titles(cand_id, client)
         else:
-            # No OpenAlex candidate — cannot adjudicate. Leave as REVIEW.
+            # No OpenAlex candidate — cannot adjudicate. Reclassify as NOT_FOUND.
+            # REVIEW with no ID is a silent classification error: these members
+            # have no viable OpenAlex match and should not appear in the REVIEW
+            # queue for manual inspection (there is nothing to review).
             evidence_f.write(
-                f"\n[Pass 3 LLM] {ctx.name}: SKIPPED (no openalex_id — no candidate to adjudicate)\n"
+                f"\n[Pass 3 LLM] {ctx.name}: SKIPPED (no openalex_id) — "
+                f"reclassified as NOT_FOUND\n"
             )
+            row["confidence"] = "NOT_FOUND"
+            row["accepted"] = "0"
             row["resolution_method"] = "pass3_llm_no_candidate"
+            row["reject_reason"] = "no_openalex_candidate"
             updated.append(row)
             continue
 

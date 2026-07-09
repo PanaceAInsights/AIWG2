@@ -1,17 +1,15 @@
-"""Phase 8: Emit publications_clean.csv for client validation.
+"""Phase 8: Emit publications_clean.csv for ACD dashboard.
 
-Produces two deliverables for HealthConsult/RMSANZ:
+Produces two deliverables:
 
 1. ``data/processed/publications_clean.csv`` — all publications from
-   accepted v4 members with a freshly computed ``is_rehab_relevant``
-   column (True/False). This is the file sent to RMSANZ for their
-   validity-check exercise.
+   accepted HIGH members with a freshly computed ``is_derm_relevant``
+   column (True/False). This is the clean file used by the dashboard.
 
 2. ``data/processed/common_name_validation_shortlist.csv`` — members
    whose names are likely ambiguous in OpenAlex (common surnames,
    short/single-token first names, multiple roster entries sharing a
-   surname). These are suggested for manual validation by RMSANZ
-   contacts.
+   surname). These are suggested for manual validation.
 
 CLI::
 
@@ -28,11 +26,11 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-# Re-use the rehab vocabulary and vectorized classifier from Phase 6
-from scripts.utils.rehab_vocab import (
-    REHAB_FIELD_TOKENS,
-    REHAB_MESH_TOKENS,
-    REHAB_TITLE_ABSTRACT_TOKENS,
+# Re-use the derm vocabulary and vectorized classifier from Phase 6
+from scripts.utils.derm_vocab import (
+    DERM_FIELD_TOKENS,
+    DERM_MESH_TOKENS,
+    DERM_TITLE_ABSTRACT_TOKENS,
     vectorized_relevance,
 )
 
@@ -41,12 +39,11 @@ PROCESSED = ROOT / "data" / "processed"
 
 
 def _load_accepted_names() -> set[str]:
-    """Return the set of acd_name values accepted in v4."""
-    for fname in ("authors_resolved_v4.csv", "authors_resolved_v3.csv"):
-        path = PROCESSED / fname
-        if path.exists():
-            df = pd.read_csv(path, usecols=["acd_name", "accepted"], dtype=str)
-            return set(df.loc[df["accepted"] == "1", "acd_name"])
+    """Return the set of acd_name values with confidence=HIGH."""
+    path = PROCESSED / "authors_resolved.csv"
+    if path.exists():
+        df = pd.read_csv(path, usecols=["acd_name", "confidence"], dtype=str)
+        return set(df.loc[df["confidence"] == "HIGH", "acd_name"])
     return set()
 
 
@@ -57,11 +54,10 @@ def _compute_common_name_risk(
     """Build the common-name validation shortlist.
 
     Risk factors:
-    - Surname shared by 2+ members in the full 600 roster
+    - Surname shared by 2+ members in the full roster
     - First name is <= 4 characters (e.g. "Yan", "Tim", "Su Yi")
     - First name is extremely common (top-100 English/Chinese given names)
     - Member has no AHPRA proof (no external ground-truth anchor)
-    - Member's confidence is HIGH but with a low score_name signal
     """
     # Common first names that are globally ambiguous
     COMMON_FIRST_NAMES = {
@@ -117,12 +113,6 @@ def _compute_common_name_risk(
             risk_factors.append(f"common first name '{first_name}'")
             risk_score += 2
 
-        # No AHPRA proof
-        ahpra = str(row.get("ahpra_proven", "")).strip()
-        if ahpra not in ("1", "True", "true"):
-            risk_factors.append("no AHPRA proof")
-            risk_score += 1
-
         # Only include if risk_score >= 3 (meaningful ambiguity)
         if risk_score >= 3:
             records.append({
@@ -132,11 +122,9 @@ def _compute_common_name_risk(
                 "last_known_institution": row.get("last_known_institution", ""),
                 "institution_country": row.get("institution_country", ""),
                 "confidence": row.get("confidence", ""),
-                "ahpra_proven": ahpra,
                 "risk_score": risk_score,
                 "risk_factors": "; ".join(risk_factors),
-                "suggested_validator": "",  # RMSANZ fills this
-                "validation_status": "",    # RMSANZ fills this
+                "validation_status": "",
             })
 
     df = pd.DataFrame(records)
@@ -159,9 +147,9 @@ def main() -> int:
     logging.info("Loading data...")
     accepted_names = _load_accepted_names()
     if not accepted_names:
-        logging.error("No accepted members found. Run resolver first.")
+        logging.error("No accepted HIGH members found. Run resolver first.")
         return 1
-    logging.info("Accepted members: %d", len(accepted_names))
+    logging.info("Accepted HIGH members: %d", len(accepted_names))
 
     pubs_path = PROCESSED / "publications.csv"
     if not pubs_path.exists():
@@ -171,25 +159,37 @@ def main() -> int:
     pubs = pd.read_csv(pubs_path, low_memory=False)
     logging.info("Total publications loaded: %d", len(pubs))
 
-    # ----------------------------------------------------------- Filter to accepted
+    # ----------------------------------------------------------- Filter to accepted HIGH members
     pubs_clean = pubs[pubs["RAMS_Author"].isin(accepted_names)].copy()
-    logging.info("Publications from accepted members: %d", len(pubs_clean))
+    logging.info("Publications from HIGH members: %d", len(pubs_clean))
 
-    # ----------------------------------------------------------- Re-tag rehab relevance
-    # Drop existing column if present (handles NaN from override enrichment)
-    if "is_rehab_relevant" in pubs_clean.columns:
-        pubs_clean = pubs_clean.drop(columns=["is_rehab_relevant"])
+    # ----------------------------------------------------------- Tag derm relevance
+    # Drop existing column if present
+    for col in ("is_derm_relevant", "is_rehab_relevant"):
+        if col in pubs_clean.columns:
+            pubs_clean = pubs_clean.drop(columns=[col])
 
-    logging.info("Computing rehab relevance tags...")
+    logging.info("Computing derm relevance tags...")
     relevance = vectorized_relevance(pubs_clean)
-    pubs_clean["is_rehab_relevant"] = relevance.map({True: "True", False: "False"})
+    pubs_clean["is_derm_relevant"] = relevance.map({True: "True", False: "False"})
 
-    rehab_count = int(relevance.sum())
+    derm_count = int(relevance.sum())
     total = len(pubs_clean)
     logging.info(
-        "Rehab relevant: %d / %d (%.1f%%)",
-        rehab_count, total, (rehab_count / total * 100) if total else 0,
+        "Derm relevant: %d / %d (%.1f%%)",
+        derm_count, total, (derm_count / total * 100) if total else 0,
     )
+
+    # ----------------------------------------------------------- Filter out pre-1960 data errors
+    if "Publication_Year" in pubs_clean.columns:
+        year_col = pd.to_numeric(pubs_clean["Publication_Year"], errors="coerce")
+        pre_1960 = (year_col < 1960) & year_col.notna()
+        if pre_1960.sum() > 0:
+            logging.info("Dropping %d pre-1960 data errors", pre_1960.sum())
+            pubs_clean = pubs_clean[~pre_1960].copy()
+            relevance = relevance[~pre_1960]
+            derm_count = int(relevance.sum())
+            total = len(pubs_clean)
 
     # ----------------------------------------------------------- Write publications_clean.csv
     out_path = PROCESSED / "publications_clean.csv"
@@ -197,55 +197,45 @@ def main() -> int:
     logging.info("Written: %s (%d rows)", out_path.name, len(pubs_clean))
 
     # ----------------------------------------------------------- Common-name shortlist
-    authors_path = PROCESSED / "authors_resolved_v4.csv"
-    if not authors_path.exists():
-        authors_path = PROCESSED / "authors_resolved_v3.csv"
-    all_authors = pd.read_csv(authors_path, dtype=str).fillna("")
-
-    shortlist = _compute_common_name_risk(all_authors, accepted_names)
-    shortlist_path = PROCESSED / "common_name_validation_shortlist.csv"
-    shortlist.to_csv(shortlist_path, index=False, encoding="utf-8")
-    logging.info("Written: %s (%d members flagged)", shortlist_path.name, len(shortlist))
+    authors_path = PROCESSED / "authors_resolved.csv"
+    if authors_path.exists():
+        all_authors = pd.read_csv(authors_path, dtype=str).fillna("")
+        shortlist = _compute_common_name_risk(all_authors, accepted_names)
+        shortlist_path = PROCESSED / "common_name_validation_shortlist.csv"
+        shortlist.to_csv(shortlist_path, index=False, encoding="utf-8")
+        logging.info("Written: %s (%d members flagged)", shortlist_path.name, len(shortlist))
+    else:
+        shortlist = pd.DataFrame()
+        logging.warning("authors_resolved.csv not found — skipping shortlist")
 
     # ----------------------------------------------------------- Summary
     print()
     print("=" * 70)
     print("PUBLICATIONS CLEAN - DELIVERY SUMMARY")
     print("=" * 70)
-    print(f"Accepted members:            {len(accepted_names)}")
+    print(f"Accepted HIGH members:       {len(accepted_names)}")
     print(f"Total publications:          {total:,}")
-    print(f"  Rehab-relevant:            {rehab_count:,} ({rehab_count/total*100:.1f}%)")
-    print(f"  Off-topic:                 {total - rehab_count:,} ({(total-rehab_count)/total*100:.1f}%)")
+    print(f"  Derm-relevant:             {derm_count:,} ({derm_count/total*100:.1f}%)" if total else "  Derm-relevant:             0")
+    print(f"  Off-topic:                 {total - derm_count:,} ({(total-derm_count)/total*100:.1f}%)" if total else "  Off-topic:                 0")
     print(f"Output file:                 {out_path}")
     print()
     print(f"Common-name validation shortlist: {len(shortlist)} members")
-    print(f"Output file:                 {shortlist_path}")
     print()
 
-    if not shortlist.empty:
-        print("Top 15 highest-risk names for RMSANZ validation:")
-        for _, r in shortlist.head(15).iterrows():
-            print(
-                f"  {r['acd_name']:<28s}  score={int(r['risk_score'])}  "
-                f"inst={str(r['last_known_institution'])[:35]:<35s}  "
-                f"risk: {r['risk_factors'][:60]}"
-            )
-        print()
-
-    # Per-member breakdown
-    print("Per-member publication counts (top 20 by rehab pubs):")
+    # Per-member breakdown (top 20)
+    print("Per-member publication counts (top 20 by derm pubs):")
     member_stats = (
         pubs_clean.assign(_rel=relevance.astype(int))
         .groupby("RAMS_Author")
-        .agg(total_pubs=("_rel", "count"), rehab_pubs=("_rel", "sum"))
+        .agg(total_pubs=("_rel", "count"), derm_pubs=("_rel", "sum"))
         .reset_index()
     )
-    member_stats["rehab_pct"] = member_stats["rehab_pubs"] / member_stats["total_pubs"]
-    member_stats = member_stats.sort_values("rehab_pubs", ascending=False)
+    member_stats["derm_pct"] = member_stats["derm_pubs"] / member_stats["total_pubs"]
+    member_stats = member_stats.sort_values("derm_pubs", ascending=False)
     for _, r in member_stats.head(20).iterrows():
         print(
             f"  {r['RAMS_Author']:<30s}  total={int(r['total_pubs']):>5d}  "
-            f"rehab={int(r['rehab_pubs']):>4d}  ({r['rehab_pct']*100:.0f}%)"
+            f"derm={int(r['derm_pubs']):>4d}  ({r['derm_pct']*100:.0f}%)"
         )
     print()
 

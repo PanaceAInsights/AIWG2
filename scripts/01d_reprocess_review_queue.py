@@ -282,11 +282,102 @@ def run(
         review_final = [r for r in final_rows if r.get("confidence") == "REVIEW"]
         if review_final:
             pd.DataFrame(review_final).to_csv(REVIEW_CSV, index=False)
+
+        # ── Auto-trigger downstream ETL for newly elevated HIGH members ──────
+        # Any member elevated to HIGH by this script needs their publications
+        # downloaded and stats computed. Without this step, they appear in the
+        # dashboard with 0 publications and 0% derm relevance.
+        newly_elevated_names = {
+            r["acd_name"] for r in all_updated
+            if r.get("confidence") == "HIGH"
+        }
+        if newly_elevated_names:
+            logger.info(
+                "Triggering download + stats for %d newly elevated HIGH members",
+                len(newly_elevated_names),
+            )
+            _run_downstream_etl(newly_elevated_names)
+        else:
+            logger.info("No newly elevated HIGH members — skipping downstream ETL")
     else:
         logger.info("DRY RUN: no files written")
 
     evidence_f.close()
     return final_counts
+
+
+def _run_downstream_etl(newly_elevated_names: set[str]) -> None:
+    """
+    Trigger 02_download_publications.py and 05_compute_stats.py for newly
+    elevated HIGH members. Called automatically after 01d completes.
+    Uses subprocess to run each script in isolation so their own logging
+    and checkpoint systems operate independently.
+    """
+    import subprocess
+
+    scripts_dir = ROOT / "scripts"
+    data_dir    = ROOT / "data"
+
+    logger.info("=== Downstream ETL: downloading publications for new HIGH members ===")
+    download_result = subprocess.run(
+        [
+            sys.executable,
+            str(scripts_dir / "02_download_publications.py"),
+            "--input",  str(data_dir / "processed" / "authors_resolved.csv"),
+            "--out-dir", str(data_dir),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if download_result.returncode != 0:
+        logger.error(
+            "02_download_publications.py failed:\n%s",
+            download_result.stderr[-2000:],
+        )
+    else:
+        logger.info("02_download_publications.py completed successfully")
+        # Log any useful stdout
+        if download_result.stdout.strip():
+            for line in download_result.stdout.strip().splitlines()[-10:]:
+                logger.info("  [download] %s", line)
+
+    logger.info("=== Downstream ETL: running 06_tag_derm_relevance ===")
+    tag_result = subprocess.run(
+        [sys.executable, str(scripts_dir / "06_tag_derm_relevance.py")],
+        capture_output=True,
+        text=True,
+        cwd=str(ROOT),
+    )
+    if tag_result.returncode != 0:
+        logger.error("06_tag_derm_relevance.py failed:\n%s", tag_result.stderr[-2000:])
+    else:
+        logger.info("06_tag_derm_relevance.py completed")
+
+    logger.info("=== Downstream ETL: running 08_emit_publications_clean ===")
+    emit_result = subprocess.run(
+        [sys.executable, str(scripts_dir / "08_emit_publications_clean.py")],
+        capture_output=True,
+        text=True,
+        cwd=str(ROOT),
+    )
+    if emit_result.returncode != 0:
+        logger.error("08_emit_publications_clean.py failed:\n%s", emit_result.stderr[-2000:])
+    else:
+        logger.info("08_emit_publications_clean.py completed")
+
+    logger.info("=== Downstream ETL: running 05_compute_stats ===")
+    stats_result = subprocess.run(
+        [sys.executable, str(scripts_dir / "05_compute_stats.py")],
+        capture_output=True,
+        text=True,
+        cwd=str(ROOT),
+    )
+    if stats_result.returncode != 0:
+        logger.error("05_compute_stats.py failed:\n%s", stats_result.stderr[-2000:])
+    else:
+        logger.info("05_compute_stats.py completed")
+
+    logger.info("=== Downstream ETL complete ===")
 
 
 def main(argv=None):
