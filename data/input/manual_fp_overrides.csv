@@ -1,3 +1,3 @@
 acd_name,openalex_id_to_reject,note
-Dr Quynh Van Le,A5013860869,WRONG PERSON: Stanford radiation oncologist Quynh-Thu Le (1033 works h=101). ACD member is an AU dermatologist. New Veto 2 should catch this automatically but override retained as belt-and-braces.
-Dr Aakriti  Gupta,A5016354767,WRONG PERSON: Anaesthesiologist/cardiologist at Royal Adelaide Hospital (12 works, 0 derm topics). ACD member is a dermatologist. Below 20-work Veto 2 threshold so must be manually blocked.
+Dr Quynh Van Le,A5013860869,"WRONG PERSON: Stanford radiation oncologist Quynh-Thu Le (1033 works h=101). ACD member is an AU dermatologist. New Veto 2 should catch this automatically but override retained as belt-and-braces."
+Dr Aakriti  Gupta,A5016354767,"WRONG PERSON: Anaesthesiologist/cardiologist at Royal Adelaide Hospital (12 works, 0 derm topics). ACD member is a dermatologist. Below 20-work Veto 2 threshold so must be manually blocked."
