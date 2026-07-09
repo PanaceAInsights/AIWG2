@@ -1,138 +1,190 @@
-"""ACD Dashboard — Methodology page."""
+"""Methodology page — plain-English explanation of the dashboard data pipeline."""
 from __future__ import annotations
 
-from dash import html, dcc
-import dash_bootstrap_components as dbc
+import dash_mantine_components as dmc
+from dash import html
 
-from dashboard.theme import (
-    COPPER, MAUVE_PURPLE, LIGHT_COPPER, BG_CARD, BORDER_COLOR,
-    TEXT_MUTED, WHITE, WARM_CREAM, DARK_PLUM, TIER_HIGH, TIER_REVIEW,
-)
+from .. import data
 
 PAGE_TITLE = "Methodology"
 PAGE_HREF  = "/methodology"
 
-_METHODOLOGY_MD = """
-## Data Sources
 
-| Source | Description |
-|--------|-------------|
-| **Input CSV** | 712 dermatologists sourced from AHPRA, HealthShare, and ACD member lists |
-| **OpenAlex** | Open scholarly graph — publications, citations, funding, author disambiguation |
-| **ANZCTR** | Australian New Zealand Clinical Trials Registry — bulk export matched by PI name |
+def render() -> html.Div:
+    """Static methodology content for non-technical stakeholders."""
+    authors  = data.load_authors()
+    resolved = data.resolved_roster()
+    pubs     = data.load_publications()
 
----
+    total_members  = len(authors)
+    total_resolved = len(resolved)
+    resolved_pct   = round(100 * total_resolved / total_members, 0) if total_members else 0
+    total_pubs     = len(pubs)
+    derm_count     = (
+        int(pubs["is_derm_relevant"].apply(
+            lambda x: 1 if x is True or str(x).strip().lower() in ("true", "1") else 0
+        ).sum())
+        if "is_derm_relevant" in pubs.columns else 0
+    )
+    derm_pct = round(100 * derm_count / total_pubs, 1) if total_pubs else 0
 
-## Entity Resolution Pipeline
-
-The ACD Research Intelligence Platform uses a **multi-stage, ML-assisted entity resolution pipeline**
-to match each dermatologist in the input registry to their correct OpenAlex author profile.
-
-### Stage 1 — Candidate Retrieval
-For each dermatologist, the pipeline issues two OpenAlex API queries:
-1. **Exact name search** — `display_name.search:"First Last"`
-2. **Institution-boosted search** — name + known AU/NZ institution hint
-
-Up to 10 candidates are retrieved per query (20 total), deduplicated by OpenAlex author ID.
-
-### Stage 2 — Multi-Signal Scoring
-Each candidate is scored against 8 independent signals:
-
-| Signal | Max Points | Description |
-|--------|-----------|-------------|
-| Name similarity | 30 | Fuzzy token-set ratio (rapidfuzz) against normalised display name |
-| Country evidence | 20 | AU/NZ affiliation in last 5 years |
-| Institution match | 15 | Fuzzy match against known AU/NZ dermatology institutions |
-| AHPRA proof | 10 | AHPRA number pattern in works/affiliations |
-| Topic density | 10 | Fraction of works in dermatology-relevant OpenAlex topics |
-| Works volume | 5 | Reasonable publication count (not suspiciously high) |
-| h-index plausibility | 5 | h-index consistent with career stage |
-| Last active | 5 | Active within last 5 years |
-
-Candidates scoring **≥ 90 points** are accepted as **HIGH confidence**.
-Candidates scoring **70–89 points** are flagged as **REVIEW** (manual verification recommended).
-Candidates scoring **< 70 points** are rejected.
-
-### Stage 3 — Ambiguity Detection (replaces co-authorship bootstrap)
-Instead of using co-authorship clustering (which introduced false positives in RMSANZ),
-the ACD pipeline uses **LLM-assisted disambiguation** for borderline cases:
-
-- **COMMON_NAME flag** — surname appears in > 3 distinct OpenAlex profiles with AU/NZ affiliation
-- **HIGH_VOLUME flag** — accepted profile has > 500 works (possible merge of multiple authors)
-- **WEAK_TOPIC flag** — < 20% of works are dermatology-relevant
-- **COUNTRY_MISMATCH flag** — best candidate has no AU/NZ affiliation in last 3 years
-- **LLM_UNCERTAIN flag** — Claude Haiku was invoked for disambiguation and returned < 80% confidence
-- **NAME_ONLY flag** — match was accepted on name similarity alone (no institution/topic corroboration)
-
-All flagged profiles are written to `data/processed/review_queue.csv` for human review.
-
-### Stage 4 — Strict Acceptance Policy
-Final acceptance requires ALL of:
-- `total_score ≥ 90` (HIGH) or `total_score ≥ 70` (REVIEW)
-- At least one AU/NZ affiliation ever recorded
-- Name fuzzy score ≥ 25 (prevents pure-score gaming)
-
-### Stage 5 — Manual Override Support
-Operators can place corrections in:
-- `data/input/manual_resolver_overrides.csv` — force-accept a specific OpenAlex ID
-- `data/input/manual_fp_overrides.csv` — force-reject a false positive
-- `data/input/manual_resolver_blacklist.csv` — permanently exclude an OpenAlex ID
-
----
-
-## Publication Relevance Tagging
-
-Publications are tagged `is_derm_relevant = True` if they match any of:
-1. OpenAlex **Topic_Field** contains a dermatology-relevant field (e.g. "Dermatology", "Skin")
-2. **MeSH descriptors** include dermatology terms
-3. **Title or abstract** contains high-signal dermatology stems (e.g. "melanoma", "psoriasis",
-   "atopic dermatitis", "skin cancer", "eczema", "acne", "rosacea", "vitiligo")
-
----
-
-## Clinical Trials Matching
-
-ANZCTR bulk export is matched to ACD members using:
-1. **Exact normalised name match** against Principal Investigator names
-2. **Fuzzy match** (rapidfuzz token_set_ratio ≥ 92) with last-name token intersection guard
-
-Only members with HIGH or REVIEW confidence are included in trial matching.
-
----
-
-## Confidence Tiers
-
-| Tier | Criteria | Dashboard Treatment |
-|------|----------|---------------------|
-| **HIGH** | Score ≥ 90, AU/NZ-ever, name fuzzy ≥ 25 | Fully included in all analyses |
-| **REVIEW** | Score 70–89 | Included but flagged; shown in amber |
-| **NOT_FOUND** | No candidate met threshold | Excluded from publication/trial analyses |
-
----
-
-## Data Lineage
-
-All intermediate files are written to `data/processed/`. The pipeline is fully
-reproducible — re-running any script overwrites its output deterministically.
-Checkpoints are saved after each stage so the pipeline can be resumed after interruption.
-
----
-
-## Attribution
-
-Data sourced from [OpenAlex](https://openalex.org) (CC0) and
-[ANZCTR](https://www.anzctr.org.au) (public registry).
-Platform developed by [Dr Yagiz Aksoy MD PhD](https://www.linkedin.com/in/yagizalpaksoy/)
-for [PanaceaAI](https://www.panaceainsights.com.au).
-"""
-
-
-def layout():
     return html.Div([
         html.Div([
-            dcc.Markdown(
-                _METHODOLOGY_MD,
-                style={"color": WARM_CREAM, "fontSize": "14px", "lineHeight": "1.7"},
+            dmc.Title("Methodology", order=2, mb="md"),
+            dmc.Text(
+                "This page explains how the Research Intelligence Dashboard "
+                "identifies ACD members' research profiles and classifies "
+                "their publications.",
+                size="sm", c="dimmed", mb="lg",
             ),
-        ], className="acd-card"),
+        ]),
+        html.Div([
+            # Section 1: Data Sources
+            html.H2("Data Sources"),
+            html.P("The dashboard draws on four primary data sources:"),
+            dmc.List([
+                dmc.ListItem(
+                    f"ACD membership register ({total_members:,} members and "
+                    f"non-member dermatologists)"
+                ),
+                dmc.ListItem("AHPRA practitioner register (practitioner numbers, specialties)"),
+                dmc.ListItem("OpenAlex open research database (publications, citations, funding)"),
+                dmc.ListItem("Survey respondents (self-reported contacts for validation)"),
+            ], mb="lg"),
+
+            # Section 2: Scope
+            html.H2("Who Is Included"),
+            html.P(
+                "The dashboard includes all ACD members and non-members registered "
+                "with AHPRA as dermatology specialists. Anyone identified through "
+                "HealthShare only is excluded."
+            ),
+            dmc.Alert(
+                f"Current roster: {total_members:,} physicians. Of these, "
+                f"{total_resolved:,} ({resolved_pct:.0f}%) have been matched to a "
+                f"research profile with high confidence. The remainder are clinicians "
+                f"without detectable research output or could not be matched with "
+                f"sufficient certainty.",
+                title="Current Coverage",
+                color="acd-copper",
+                variant="light",
+                mb="lg",
+            ),
+
+            # Section 3: Matching
+            html.H2("How Members Are Matched to Research Profiles"),
+            html.P(
+                "For each member, the system searches the OpenAlex database and scores "
+                "candidates against eight independent signals:"
+            ),
+            dmc.Table(
+                data={
+                    "head": ["Signal", "What it checks"],
+                    "body": [
+                        ["Name similarity",
+                         "How closely the registered name matches the profile name"],
+                        ["Country",
+                         "Whether the researcher's institution is in AU/NZ"],
+                        ["Institution type",
+                         "Whether the institution is a known health/dermatology service"],
+                        ["Research topics",
+                         "Whether publications relate to dermatology"],
+                        ["Co-authorship",
+                         "Whether the researcher has published with other ACD members"],
+                        ["State match",
+                         "Whether the institution state matches AHPRA registration"],
+                        ["Historical affiliation",
+                         "Whether there is any historical AU/NZ connection"],
+                        ["Hospital match",
+                         "Whether the institution is a specific dermatology hospital"],
+                    ],
+                },
+                striped=True,
+                highlightOnHover=True,
+                mb="lg",
+            ),
+            html.P(
+                "A match is accepted only when multiple signals converge "
+                "(typically 5-6 must agree). This prevents false positives "
+                "from common names."
+            ),
+
+            # Section 4: Derm Relevance
+            html.H2("Dermatology Relevance Classification"),
+            html.P(
+                "Not all publications by dermatologists relate directly to the specialty. "
+                "Each publication is classified as 'derm-relevant' if its subject field, "
+                "keywords, MeSH terms, or title/abstract contain dermatology-related "
+                "terminology."
+            ),
+            dmc.Alert(
+                f"Of {total_pubs:,} publications from matched members, {derm_count:,} "
+                f"({derm_pct}%) are classified as derm-relevant. The dashboard allows "
+                f"filtering by this flag.",
+                title="Classification Results",
+                color="teal",
+                variant="light",
+                mb="lg",
+            ),
+
+            # Section 5: Quality Measures
+            html.H2("Data Quality Measures"),
+            dmc.List([
+                dmc.ListItem(
+                    "Common-name validation shortlist: members with ambiguous names "
+                    "flagged for ACD manual review"
+                ),
+                dmc.ListItem(
+                    "AHPRA verification: confirmed practitioner numbers anchor identity"
+                ),
+                dmc.ListItem(
+                    "Manual override mechanism: known corrections applied without "
+                    "re-running the full process"
+                ),
+                dmc.ListItem(
+                    "Survey cross-reference: respondents' email domains compared "
+                    "to resolved institutions"
+                ),
+            ], mb="lg"),
+
+            # Section 6: Limitations
+            html.H2("Limitations"),
+            dmc.List([
+                dmc.ListItem(
+                    "OpenAlex may not capture all publications (some grey literature, "
+                    "recent papers may be missing)"
+                ),
+                dmc.ListItem(
+                    "Common names retain some ambiguity despite eight matching signals"
+                ),
+                dmc.ListItem(
+                    "Many trainees and early-career fellows have no publications yet"
+                ),
+                dmc.ListItem(
+                    "Institutional affiliations reflect time of publication, not "
+                    "necessarily current employer"
+                ),
+            ], mb="lg"),
+
+            # Section 7: Glossary
+            html.H2("Glossary"),
+            dmc.Table(
+                data={
+                    "head": ["Term", "Definition"],
+                    "body": [
+                        ["AHPRA", "Australian Health Practitioner Regulation Agency"],
+                        ["FACD", "Fellow of the Australasian College of Dermatologists"],
+                        ["FWCI", "Field-Weighted Citation Impact (1.0 = world average)"],
+                        ["h-index", "N papers each cited at least N times"],
+                        ["MeSH", "Medical Subject Headings (biomedical vocabulary)"],
+                        ["OpenAlex", "Open-access database of 200M+ research profiles"],
+                    ],
+                },
+                striped=True,
+                highlightOnHover=True,
+            ),
+        ], className="methodology-content"),
     ])
+
+
+layout = render

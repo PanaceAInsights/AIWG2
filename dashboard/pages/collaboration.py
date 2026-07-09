@@ -1,168 +1,323 @@
-"""ACD Dashboard — Collaboration network page."""
+"""Collaboration tab — co-authorship graph (Cytoscape) + summary stats.
+
+Builds the graph from the publications table: two members are connected
+if they share an OpenAlex work. Edge weight = shared-work count.
+"""
 from __future__ import annotations
 
-from dash import html, dcc, callback, Input, Output
-import dash_bootstrap_components as dbc
-import plotly.graph_objects as go
-import pandas as pd
-import numpy as np
+from collections import Counter, defaultdict
 
-from dashboard.theme import (
-    COPPER, MAUVE_PURPLE, LIGHT_COPPER, BLUE_VIOLET, BG_CARD,
-    TEXT_MUTED, WHITE, WARM_CREAM, apply_plotly_theme,
-)
-from dashboard.data import load_publications, get_all_states
+import dash_cytoscape as cyto
+import dash_mantine_components as dmc
+from dash import dcc, html
+from dash_iconify import DashIconify
+
+from .. import data, theme
 
 PAGE_TITLE = "Collaboration"
 PAGE_HREF  = "/collaboration"
 
 
-def layout():
-    states = ["All"] + get_all_states()
-    return html.Div([
-        html.Div([
-            dbc.Row([
-                dbc.Col([
-                    html.Label("State", style={"fontSize": "12px", "color": TEXT_MUTED}),
-                    dcc.Dropdown(
-                        id="collab-state-filter",
-                        options=[{"label": s, "value": s} for s in states],
-                        value="All", clearable=False,
-                        style={"backgroundColor": BG_CARD},
-                    ),
-                ], md=3),
-                dbc.Col([
-                    html.Label("Min. Shared Publications", style={"fontSize": "12px", "color": TEXT_MUTED}),
-                    dcc.Slider(id="collab-min-shared", min=1, max=10, step=1, value=2,
-                               marks={i: str(i) for i in range(1, 11)},
-                               tooltip={"placement": "bottom"}),
-                ], md=5),
-            ]),
-        ], className="acd-card"),
+def _build_coauthorship() -> tuple[list[dict], list[dict], dict]:
+    """Return (nodes, edges, stats)."""
+    pubs    = data.load_publications()
+    authors = data.resolved_roster()
+    if pubs.empty or authors.empty:
+        return [], [], {"members": 0, "pairs": 0, "max_weight": 0, "density": 0.0}
 
-        html.Div([
-            html.Div("Co-authorship Network", className="acd-section-header"),
-            html.P(
-                "Nodes represent dermatologists; edges indicate co-authorship. "
-                "Node size reflects publication count. Increase the minimum shared publications "
-                "threshold to reduce clutter.",
-                style={"fontSize": "12px", "color": TEXT_MUTED, "marginBottom": "12px"},
+    name_col = next((c for c in ("acd_name", "rams_name") if c in authors.columns), None)
+    if name_col is None:
+        return [], [], {"members": 0, "pairs": 0, "max_weight": 0, "density": 0.0}
+
+    resolved_names  = {n for n in authors[name_col].tolist() if isinstance(n, str)}
+
+    # Author_Names uses "Firstname Initials Lastname" (pipe-separated), not full names.
+    # Build last-name + first-initial lookup for fuzzy matching.
+    def _strip_title(parts: list[str]) -> list[str]:
+        while parts and parts[0].lower() in ("dr", "prof", "assoc", "a/prof", "mr", "ms", "mrs"):
+            parts = parts[1:]
+        return parts
+
+    last_to_resolved: dict[str, list[tuple[str, str]]] = {}
+    for n in resolved_names:
+        parts = _strip_title(n.strip().split())
+        if not parts:
+            continue
+        last = parts[-1].lower()
+        finit = parts[0][0].lower()
+        last_to_resolved.setdefault(last, []).append((finit, n))
+
+    work_col = "Unique ID" if "Unique ID" in pubs.columns else None
+    if work_col is None:
+        return [], [], {"members": 0, "pairs": 0, "max_weight": 0, "density": 0.0}
+
+    work_to_members: dict[str, set[str]] = defaultdict(set)
+    seen_works: set[str] = set()
+    for _idx, row in pubs[[work_col, "Author_Names"]].dropna().iterrows():
+        wid = str(row[work_col])
+        if wid in seen_works:
+            continue
+        seen_works.add(wid)
+        names_field = str(row["Author_Names"] or "")
+        if not names_field:
+            continue
+        for raw in names_field.split("|"):
+            raw = raw.strip()
+            if not raw:
+                continue
+            raw_parts = raw.split()
+            if not raw_parts:
+                continue
+            raw_last  = raw_parts[-1].lower()
+            raw_finit = raw_parts[0][0].lower()
+            if raw_last in last_to_resolved:
+                for (finit, full_name) in last_to_resolved[raw_last]:
+                    if finit == raw_finit:
+                        work_to_members[wid].add(full_name)
+                        break
+
+    pair_counts: Counter = Counter()
+    for members in work_to_members.values():
+        if len(members) < 2:
+            continue
+        mem_list = sorted(members)
+        for i in range(len(mem_list)):
+            for j in range(i + 1, len(mem_list)):
+                pair_counts[(mem_list[i], mem_list[j])] += 1
+
+    MIN_WEIGHT = 2
+    active_members: set[str] = set()
+    for (a, b), w in pair_counts.items():
+        if w >= MIN_WEIGHT:
+            active_members.add(a)
+            active_members.add(b)
+
+    degree: Counter = Counter()
+    for (a, b), w in pair_counts.items():
+        if w >= MIN_WEIGHT:
+            degree[a] += w
+            degree[b] += w
+
+    nodes = []
+    for m in active_members:
+        d = degree[m]
+        nodes.append({
+            "data": {"id": m, "label": m, "weight": d},
+            "classes": "hub" if d >= 15 else ("strong" if d >= 6 else "normal"),
+        })
+
+    edges = []
+    for (a, b), w in pair_counts.items():
+        if w >= MIN_WEIGHT:
+            edges.append({"data": {"source": a, "target": b, "weight": w}})
+
+    n_members = len(active_members)
+    max_pairs = n_members * (n_members - 1) / 2 if n_members > 1 else 1
+    stats = {
+        "members":    n_members,
+        "pairs":      sum(1 for w in pair_counts.values() if w >= MIN_WEIGHT),
+        "max_weight": max(pair_counts.values()) if pair_counts else 0,
+        "density":    round(
+            100.0 * sum(1 for w in pair_counts.values() if w >= MIN_WEIGHT) / max_pairs, 2
+        ),
+    }
+    return nodes, edges, stats
+
+
+CYTO_STYLE = [
+    {"selector": "node", "style": {
+        "background-color": theme.PRIMARY,
+        "label": "data(label)",
+        "width":  "mapData(weight, 0, 30, 14, 48)",
+        "height": "mapData(weight, 0, 30, 14, 48)",
+        "color": theme.GRAY_700,
+        "font-size": "9px",
+        "text-valign": "bottom", "text-halign": "center",
+        "text-margin-y": 6,
+        "text-outline-width": 2, "text-outline-color": "#ffffff",
+        "border-width": 1, "border-color": "#ffffff",
+    }},
+    {"selector": "node.hub", "style": {
+        "background-color": theme.VIOLET,
+        "border-color": theme.ACCENT, "border-width": 3,
+        "font-size": "11px", "font-weight": "bold",
+    }},
+    {"selector": "node.strong", "style": {"background-color": theme.CYAN}},
+    {"selector": "edge", "style": {
+        "width": "mapData(weight, 2, 20, 0.5, 4)",
+        "line-color": theme.GRAY_300, "opacity": 0.55,
+        "curve-style": "bezier",
+    }},
+    {"selector": "node:selected", "style": {
+        "background-color": theme.ACCENT,
+        "border-width": 3, "border-color": theme.ACCENT,
+    }},
+    {"selector": "edge:selected", "style": {
+        "line-color": theme.ACCENT, "opacity": 1, "width": 3,
+    }},
+]
+
+
+def build_collab_detail(name: str) -> html.Div:
+    """Build a detail card for a clicked node in the co-authorship graph."""
+    detail = data.member_detail(name)
+    if not detail:
+        return dmc.Alert(f"No data found for {name}.", color="yellow", variant="light")
+
+    children = [dmc.Text(name, fw=700, size="lg")]
+    inst = detail.get("last_known_institution")
+    if inst and str(inst) not in ("", "nan"):
+        children.append(dmc.Text(str(inst), size="sm", c="dimmed"))
+    state_val = detail.get("state")
+    if state_val and str(state_val) not in ("", "nan"):
+        children.append(dmc.Badge(str(state_val), color="blue", variant="light", size="sm"))
+
+    stats = []
+    for label, key, fmt in [
+        ("Publications", "pub_count",      "{:,.0f}"),
+        ("Citations",    "citation_count", "{:,.0f}"),
+        ("h-index",      "h_index",        "{:.0f}"),
+        ("Mean FWCI",    "fwci_mean",      "{:.2f}"),
+        ("Grants",       "grants_count",   "{:,.0f}"),
+    ]:
+        val = detail.get(key)
+        if val is not None and str(val) not in ("", "nan"):
+            try:
+                formatted = fmt.format(float(val))
+            except (ValueError, TypeError):
+                formatted = str(val)
+            stats.append(
+                dmc.Group([
+                    dmc.Text(label, size="xs", c="dimmed", style={"minWidth": "90px"}),
+                    dmc.Text(formatted, size="sm", fw=600),
+                ], gap="xs")
+            )
+    if stats:
+        children.append(dmc.Divider(my="xs"))
+        children.append(dmc.Stack(stats, gap="xs"))
+
+    children.append(dmc.Space(h=8))
+    children.append(dmc.Anchor("View full profile", href="/profiles", size="sm"))
+
+    return dmc.Card(
+        children,
+        shadow="md", radius="md", withBorder=True, padding="md",
+        style={"maxWidth": "360px", "marginTop": "0.5rem"},
+    )
+
+
+def _stat_chip(label: str, value, icon: str) -> dmc.Card:
+    return dmc.Card(
+        dmc.Group([
+            DashIconify(icon=icon, width=20, color=theme.PRIMARY),
+            dmc.Stack([
+                dmc.Text(label, size="xs", c="dimmed", tt="uppercase",
+                         fw=600, style={"letterSpacing": "0.05em"}),
+                dmc.Text(f"{value}", fw=700, size="md"),
+            ], gap=0),
+        ], gap="sm"),
+        shadow="xs", radius="lg", withBorder=True, padding="md",
+        style={"minWidth": "170px"},
+    )
+
+
+def render() -> html.Div:
+    nodes, edges, stats = _build_coauthorship()
+
+    header = dmc.Group([
+        dmc.Stack([
+            dmc.Text("Collaboration", fw=700, size="xl"),
+            dmc.Text(
+                "Members are nodes; edges are shared publications (\u22652). "
+                "Hub nodes (violet) sit above 15 shared works. Drag, zoom, "
+                "click any node to isolate its neighbourhood.",
+                size="sm", c="dimmed",
             ),
-            dcc.Graph(id="collab-network", config={"displayModeBar": True},
-                      style={"height": "600px"}),
-        ], className="acd-card"),
+        ], gap=2),
+        dmc.Button(
+            "Export network data",
+            id="collab-export-btn",
+            leftSection=DashIconify(icon="tabler:download", width=16),
+            variant="light",
+            color="acd-copper",
+            size="xs",
+        ),
+    ], justify="space-between", mb="md")
 
-        html.Div([
-            html.Div("Top Collaboration Pairs", className="acd-card-title"),
-            html.Div(id="collab-top-pairs"),
-        ], className="acd-card"),
+    explanation_box = dmc.Alert(
+        [
+            dmc.Text(
+                "This network shows co-authorship relationships between "
+                "dermatologists included in the dashboard. Each node "
+                "represents a researcher. A link between two nodes means they "
+                "have co-authored at least one publication. Larger nodes indicate "
+                "more publications. The network is based on publications indexed "
+                "in OpenAlex.",
+                size="sm",
+            ),
+            dmc.Space(h=8),
+            dmc.Text(
+                "The collaboration view includes co-authorship between researchers "
+                "included in this dashboard only. External collaborators are not shown.",
+                size="xs", c="dimmed", fs="italic",
+            ),
+        ],
+        color="blue", variant="light", mb="md",
+    )
+
+    stats_row = dmc.Group([
+        _stat_chip("Members in graph", stats["members"], "tabler:users"),
+        _stat_chip("Edges (\u22652 shared)", stats["pairs"], "tabler:link"),
+        _stat_chip(
+            "Strongest edge",
+            f"{stats['max_weight']} works" if stats["max_weight"] else "-",
+            "tabler:flame",
+        ),
+        _stat_chip("Graph density", f"{stats['density']}%", "tabler:chart-dots"),
+    ], gap="sm", mb="md")
+
+    empty = stats["members"] == 0
+    if empty:
+        graph_card = html.Div(
+            dmc.Stack([
+                dmc.Text("No co-authorship edges found yet.", fw=600),
+                dmc.Text(
+                    "Once publications are fully ingested and members "
+                    "share works, they will appear here.",
+                    size="sm", c="dimmed",
+                ),
+            ], align="center"),
+            className="empty-state section-card",
+            style={"minHeight": "560px"},
+        )
+    else:
+        graph_card = html.Div(
+            cyto.Cytoscape(
+                id="coauth-graph",
+                elements=nodes + edges,
+                layout={
+                    "name": "cose",
+                    "animate": False,
+                    "nodeRepulsion": 9000,
+                    "gravity": 0.6,
+                    "componentSpacing": 60,
+                    "padding": 30,
+                },
+                style={"width": "100%", "height": "100%"},
+                stylesheet=CYTO_STYLE,
+                minZoom=0.25, maxZoom=2.5,
+            ),
+            className="cy-container",
+        )
+
+    return html.Div([
+        header,
+        explanation_box,
+        stats_row,
+        graph_card,
+        html.Div(id="collab-detail-panel", style={"marginTop": "1rem"}),
+        dcc.Download(id="collab-download"),
     ])
 
 
-def _build_network(pubs: pd.DataFrame, min_shared: int) -> tuple[list, list, list, list]:
-    """Return (node_x, node_y, node_text, edge_traces) for a co-authorship network."""
-    if pubs.empty or "acd_name" not in pubs.columns:
-        return [], [], [], []
-
-    # Build co-authorship from shared DOI/work_id
-    id_col = next((c for c in ["DOI", "work_id", "WorkID"] if c in pubs.columns), None)
-    if not id_col:
-        return [], [], [], []
-
-    # Group by work → list of authors
-    work_authors = pubs.groupby(id_col)["acd_name"].apply(list)
-    pairs: dict[tuple, int] = {}
-    for authors in work_authors:
-        authors = [a for a in authors if pd.notna(a)]
-        for i in range(len(authors)):
-            for j in range(i + 1, len(authors)):
-                pair = tuple(sorted([authors[i], authors[j]]))
-                pairs[pair] = pairs.get(pair, 0) + 1
-
-    if not pairs:
-        return [], [], [], []
-
-    # Filter by min_shared
-    pairs = {k: v for k, v in pairs.items() if v >= min_shared}
-    if not pairs:
-        return [], [], [], []
-
-    # Build node positions (circular layout)
-    nodes = list({n for pair in pairs for n in pair})
-    n = len(nodes)
-    angles = np.linspace(0, 2 * np.pi, n, endpoint=False)
-    pos = {node: (np.cos(a), np.sin(a)) for node, a in zip(nodes, angles)}
-
-    node_counts = pubs["acd_name"].value_counts().to_dict()
-
-    node_x = [pos[n][0] for n in nodes]
-    node_y = [pos[n][1] for n in nodes]
-    node_text = [f"{n} ({node_counts.get(n, 0)} pubs)" for n in nodes]
-    node_sizes = [max(8, min(30, node_counts.get(n, 1) * 0.5)) for n in nodes]
-
-    edge_traces = []
-    for (a, b), weight in list(pairs.items())[:500]:  # cap for performance
-        x0, y0 = pos[a]
-        x1, y1 = pos[b]
-        edge_traces.append(go.Scatter(
-            x=[x0, x1, None], y=[y0, y1, None],
-            mode="lines",
-            line=dict(width=min(weight * 0.5, 3), color=MAUVE_PURPLE),
-            hoverinfo="none",
-            showlegend=False,
-        ))
-
-    return node_x, node_y, node_text, node_sizes, edge_traces, pairs
-
-
-@callback(
-    Output("collab-network", "figure"),
-    Output("collab-top-pairs", "children"),
-    Input("collab-state-filter", "value"),
-    Input("collab-min-shared", "value"),
-)
-def update_network(state, min_shared):
-    pubs = load_publications()
-    if pubs.empty:
-        return go.Figure(), html.Div("No data.", style={"color": TEXT_MUTED})
-
-    result = _build_network(pubs, min_shared)
-    if len(result) == 0 or not result[0]:
-        return go.Figure(), html.Div("No co-authorship pairs found with this threshold.",
-                                     style={"color": TEXT_MUTED})
-
-    node_x, node_y, node_text, node_sizes, edge_traces, pairs = result
-
-    node_trace = go.Scatter(
-        x=node_x, y=node_y,
-        mode="markers+text",
-        text=[t.split(" (")[0] for t in node_text],
-        textposition="top center",
-        textfont=dict(size=9, color=WARM_CREAM),
-        hovertext=node_text,
-        hoverinfo="text",
-        marker=dict(
-            size=node_sizes,
-            color=COPPER,
-            line=dict(width=1, color=LIGHT_COPPER),
-        ),
-    )
-
-    fig = go.Figure(data=edge_traces + [node_trace])
-    apply_plotly_theme(fig)
-    fig.update_layout(
-        showlegend=False,
-        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-        height=600,
-    )
-
-    # Top pairs table
-    top_pairs = sorted(pairs.items(), key=lambda x: -x[1])[:20]
-    items = [
-        html.Div(f"{a} ↔ {b} — {count} shared publications",
-                 style={"fontSize": "12px", "color": WARM_CREAM, "marginBottom": "4px"})
-        for (a, b), count in top_pairs
-    ]
-
-    return fig, html.Div(items)
+layout = render

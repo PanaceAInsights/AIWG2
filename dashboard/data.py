@@ -355,6 +355,30 @@ def get_summary_kpis() -> dict:
 
 
 # ---------------------------------------------------------------------------
+# RMSANZ-compatible aliases (used by pages that mirror the RMSANZ pattern)
+# ---------------------------------------------------------------------------
+
+def load_summary() -> pd.DataFrame:
+    """Alias for load_stats() — matches RMSANZ data.py API."""
+    return load_stats()
+
+
+def member_publications(acd_name: str) -> pd.DataFrame:
+    """Alias for publications_for_member() — matches RMSANZ data.py API."""
+    return publications_for_member(acd_name)
+
+
+def member_funding(acd_name: str) -> pd.DataFrame:
+    """Alias for funding_for_member() — matches RMSANZ data.py API."""
+    return funding_for_member(acd_name)
+
+
+def member_trials(acd_name: str) -> pd.DataFrame:
+    """Alias for trials_for_member() — matches RMSANZ data.py API."""
+    return trials_for_member(acd_name)
+
+
+# ---------------------------------------------------------------------------
 # Per-member helpers for profile pages
 # ---------------------------------------------------------------------------
 

@@ -1,207 +1,208 @@
-"""ACD Dashboard — AI Assistant (chatbot) page."""
+"""Ask AI — floating chat widget for free-text data exploration.
+
+Builds a fixed-position chat bubble + expandable panel that sits on
+every page. Injected into the shell layout (layout.py).
+"""
 from __future__ import annotations
 
-import time
-from dash import html, dcc, callback, Input, Output, State, no_update
-import dash_bootstrap_components as dbc
+import os
 
-from dashboard.theme import (
-    COPPER, MAUVE_PURPLE, LIGHT_COPPER, BG_CARD, BORDER_COLOR,
-    TEXT_MUTED, WHITE, WARM_CREAM, DARK_PLUM,
-)
-from dashboard.ai_tools import SUGGESTED_QUESTIONS, stream_response, build_context_snapshot
+import dash_mantine_components as dmc
+from dash import dcc, html
+from dash_iconify import DashIconify
+
+from .. import theme
+
+_HAS_KEY = bool(os.environ.get("ANTHROPIC_API_KEY"))
 
 PAGE_TITLE = "AI Assistant"
 PAGE_HREF  = "/chatbot"
 
-_SNAPSHOT_CACHE: dict[str, str] = {}
+EXAMPLE_QUESTIONS = [
+    "Who are the top dermatology researchers?",
+    "Compare NSW vs VIC research strength",
+    "Where are the strategic research gaps?",
+    "Which members are emerging stars?",
+    "Summarise the cohort for a board paper",
+]
 
 
-def layout():
-    return html.Div([
-        dbc.Row([
-            # Chat panel
-            dbc.Col([
-                html.Div([
-                    html.Div("ACD Research Intelligence Assistant", className="acd-section-header"),
-                    html.P(
-                        "Ask me anything about the ACD dermatology research dataset — "
-                        "publications, citations, funding, clinical trials, or expert identification.",
-                        style={"fontSize": "13px", "color": TEXT_MUTED, "marginBottom": "16px"},
-                    ),
-                    # Message history
-                    html.Div(
-                        id="chatbot-messages",
-                        style={
-                            "minHeight": "400px", "maxHeight": "500px",
-                            "overflowY": "auto", "marginBottom": "16px",
-                            "padding": "8px",
-                        },
-                    ),
-                    # Input area
-                    html.Div([
-                        dcc.Textarea(
-                            id="chatbot-input",
-                            placeholder="Ask a question about the ACD research data...",
-                            style={
-                                "width": "100%", "minHeight": "60px",
-                                "backgroundColor": BG_CARD,
-                                "border": f"1px solid {BORDER_COLOR}",
-                                "borderRadius": "6px", "color": WARM_CREAM,
-                                "padding": "10px", "resize": "none",
-                                "fontFamily": "Inter, sans-serif", "fontSize": "13px",
-                            },
-                        ),
-                        html.Div([
-                            html.Button("Send", id="chatbot-send-btn",
-                                        className="btn-copper",
-                                        style={"padding": "8px 24px", "marginTop": "8px"}),
-                            html.Button("Clear", id="chatbot-clear-btn",
-                                        className="btn-outline-copper",
-                                        style={"padding": "8px 16px", "marginTop": "8px", "marginLeft": "8px"}),
-                        ]),
-                    ], className="chat-input-area"),
-                    # Loading indicator
-                    dcc.Loading(
-                        id="chatbot-loading",
-                        type="dot",
-                        color=COPPER,
-                        children=html.Div(id="chatbot-loading-output"),
-                    ),
-                    # Store for conversation history
-                    dcc.Store(id="chatbot-history", data=[]),
-                    dcc.Store(id="chatbot-snapshot", data=""),
-                ], className="acd-card"),
-            ], md=8),
-
-            # Suggestions panel
-            dbc.Col([
-                html.Div([
-                    html.Div("Suggested Questions", className="acd-card-title"),
-                    html.Div([
-                        html.Div(
-                            q,
-                            id={"type": "suggestion-btn", "index": i},
-                            n_clicks=0,
-                            style={
-                                "padding": "10px 12px",
-                                "backgroundColor": DARK_PLUM,
-                                "border": f"1px solid {BORDER_COLOR}",
-                                "borderRadius": "6px",
-                                "marginBottom": "8px",
-                                "cursor": "pointer",
-                                "fontSize": "13px",
-                                "color": WARM_CREAM,
-                                "transition": "background-color 0.2s",
-                            },
-                        )
-                        for i, q in enumerate(SUGGESTED_QUESTIONS)
-                    ]),
-                ], className="acd-card"),
-
-                html.Div([
-                    html.Div("Data Coverage", className="acd-card-title"),
-                    html.Div(id="chatbot-coverage-info",
-                             style={"fontSize": "12px", "color": TEXT_MUTED}),
-                ], className="acd-card"),
-            ], md=4),
-        ]),
-    ])
+def render() -> html.Div:
+    """Placeholder — chatbot is a floating widget, not a page."""
+    return html.Div(
+        dmc.Text(
+            "The research assistant is available as a floating "
+            "chat widget in the bottom-right corner of every page.",
+            size="sm", c="dimmed",
+        ),
+        style={"padding": "3rem", "textAlign": "center"},
+    )
 
 
-@callback(
-    Output("chatbot-messages", "children"),
-    Output("chatbot-history", "data"),
-    Output("chatbot-input", "value"),
-    Output("chatbot-loading-output", "children"),
-    Input("chatbot-send-btn", "n_clicks"),
-    State("chatbot-input", "value"),
-    State("chatbot-history", "data"),
-    State("chatbot-snapshot", "data"),
-    prevent_initial_call=True,
-)
-def send_message(n_clicks, user_input, history, snapshot):
-    if not user_input or not user_input.strip():
-        return no_update, no_update, no_update, no_update
+def build_widget() -> html.Div:
+    """Return the floating chat widget for the layout shell."""
+    if not _HAS_KEY:
+        return html.Div([
+            html.Div(id="ai-fab", style={"display": "none"}),
+            html.Div(id="ai-chat-panel", style={"display": "none"}),
+            html.Div(id="ai-close-btn", style={"display": "none"}),
+            html.Div(id="ai-chat-messages", style={"display": "none"}),
+            dcc.Input(id="ai-chat-input", type="hidden"),
+            html.Div(id="ai-send-btn", style={"display": "none"}),
+            *[html.Div(id=f"ai-ex-{i}", style={"display": "none"}) for i in range(5)],
+            dcc.Store(id="ai-chat-history", data=[]),
+            dcc.Store(id="ai-panel-open", data=False),
+        ], style={"display": "none"})
 
-    history = history or []
-    history.append({"role": "user", "content": user_input.strip()})
+    fab = dmc.ActionIcon(
+        DashIconify(icon="tabler:message-circle-question", width=26),
+        id="ai-fab",
+        variant="filled",
+        color="acd-copper",
+        size="xl",
+        radius="xl",
+        style={
+            "position": "fixed", "bottom": "24px", "right": "24px",
+            "zIndex": 1100,
+            "width": "54px", "height": "54px",
+            "boxShadow": "0 4px 16px rgba(184,115,51,0.35)",
+        },
+    )
 
-    # Get snapshot if not cached
-    if not snapshot:
-        snapshot = build_context_snapshot()
+    example_row = html.Div(
+        [
+            dmc.Button(
+                q, id=f"ai-ex-{i}",
+                variant="light", color="gray", size="compact-xs",
+                radius="xl",
+                style={"fontSize": "0.7rem"},
+            )
+            for i, q in enumerate(EXAMPLE_QUESTIONS)
+        ],
+        style={"display": "flex", "gap": "4px", "flexWrap": "wrap",
+               "padding": "6px 12px 8px"},
+    )
 
-    # Stream response (collect full response for display)
-    response_parts = []
-    for chunk in stream_response(history, snapshot):
-        response_parts.append(chunk)
-    response = "".join(response_parts)
+    messages_area = html.Div(
+        id="ai-chat-messages",
+        children=[_welcome_bubble()],
+        style={"flex": "1 1 0", "overflowY": "auto", "padding": "12px"},
+    )
 
-    history.append({"role": "assistant", "content": response})
+    input_row = html.Div(
+        [
+            dcc.Input(
+                id="ai-chat-input",
+                type="text",
+                placeholder="Ask me to analyse, compare, or summarise...",
+                debounce=False,
+                style={
+                    "flex": 1, "border": f"1px solid {theme.GRAY_200}",
+                    "borderRadius": "8px", "padding": "8px 12px",
+                    "fontSize": "0.85rem", "outline": "none",
+                    "fontFamily": "Inter, sans-serif",
+                },
+            ),
+            dmc.ActionIcon(
+                DashIconify(icon="tabler:send", width=18),
+                id="ai-send-btn",
+                variant="filled", color="acd-copper", size="lg", radius="md",
+            ),
+        ],
+        style={"display": "flex", "gap": "8px", "padding": "8px 12px 12px",
+               "borderTop": f"1px solid {theme.GRAY_200}"},
+    )
 
-    # Build message bubbles
-    bubbles = []
-    for msg in history:
-        if msg["role"] == "user":
-            bubbles.append(html.Div(msg["content"], className="chat-bubble-user"))
-        else:
-            bubbles.append(html.Div(
-                dcc.Markdown(msg["content"],
-                             style={"color": WARM_CREAM, "fontSize": "13px"}),
-                className="chat-bubble-assistant",
-            ))
+    panel_header = html.Div(
+        [
+            html.Div(
+                [
+                    DashIconify(icon="tabler:sparkles", width=16, color=theme.PRIMARY),
+                    html.Span("Research Intelligence Analyst",
+                              style={"fontWeight": 600, "fontSize": "0.85rem"}),
+                ],
+                style={"display": "flex", "alignItems": "center", "gap": "6px"},
+            ),
+            dmc.ActionIcon(
+                DashIconify(icon="tabler:x", width=16),
+                id="ai-close-btn",
+                variant="subtle", color="gray", size="sm",
+            ),
+        ],
+        style={"display": "flex", "justifyContent": "space-between",
+               "alignItems": "center", "padding": "10px 14px",
+               "borderBottom": f"1px solid {theme.GRAY_200}"},
+    )
 
-    return bubbles, history, "", ""
+    panel = html.Div(
+        [panel_header, example_row, messages_area, input_row],
+        id="ai-chat-panel",
+        style={
+            "position": "fixed",
+            "bottom": "88px", "right": "24px",
+            "width": "440px", "height": "580px",
+            "zIndex": 1099,
+            "background": theme.WHITE,
+            "borderRadius": "16px",
+            "border": f"1px solid {theme.GRAY_200}",
+            "boxShadow": "0 8px 32px rgba(0,0,0,0.15)",
+            "display": "none",
+            "flexDirection": "column",
+            "fontFamily": "Inter, sans-serif",
+        },
+    )
 
+    stores = [
+        dcc.Store(id="ai-chat-history", data=[]),
+        dcc.Store(id="ai-panel-open", data=False),
+    ]
 
-@callback(
-    Output("chatbot-messages", "children", allow_duplicate=True),
-    Output("chatbot-history", "data", allow_duplicate=True),
-    Input("chatbot-clear-btn", "n_clicks"),
-    prevent_initial_call=True,
-)
-def clear_chat(_):
-    return [], []
-
-
-@callback(
-    Output("chatbot-input", "value", allow_duplicate=True),
-    Input({"type": "suggestion-btn", "index": 0}, "n_clicks"),
-    Input({"type": "suggestion-btn", "index": 1}, "n_clicks"),
-    Input({"type": "suggestion-btn", "index": 2}, "n_clicks"),
-    Input({"type": "suggestion-btn", "index": 3}, "n_clicks"),
-    Input({"type": "suggestion-btn", "index": 4}, "n_clicks"),
-    Input({"type": "suggestion-btn", "index": 5}, "n_clicks"),
-    Input({"type": "suggestion-btn", "index": 6}, "n_clicks"),
-    Input({"type": "suggestion-btn", "index": 7}, "n_clicks"),
-    prevent_initial_call=True,
-)
-def fill_suggestion(*args):
-    from dash import ctx
-    if not ctx.triggered_id:
-        return no_update
-    idx = ctx.triggered_id.get("index", 0)
-    return SUGGESTED_QUESTIONS[idx]
-
-
-@callback(
-    Output("chatbot-snapshot", "data"),
-    Input("chatbot-send-btn", "id"),
-)
-def load_snapshot(_):
-    return build_context_snapshot()
+    return html.Div([fab, panel, *stores])
 
 
-@callback(
-    Output("chatbot-coverage-info", "children"),
-    Input("chatbot-send-btn", "id"),
-)
-def show_coverage(_):
-    from dashboard.data import get_summary_kpis
-    kpis = get_summary_kpis()
-    return html.Div([
-        html.Div(f"Dermatologists: {kpis.get('n_total', 0)}", style={"marginBottom": "4px"}),
-        html.Div(f"Resolved: {kpis.get('n_resolved', 0)}", style={"marginBottom": "4px"}),
-        html.Div(f"Publications: {kpis.get('n_pubs', 0):,}", style={"marginBottom": "4px"}),
-        html.Div(f"Clinical Trials: {kpis.get('n_trials', 0)}", style={"marginBottom": "4px"}),
-    ])
+def _welcome_bubble() -> html.Div:
+    return html.Div(
+        html.Div(
+            "I'm your Research Intelligence Analyst. I can synthesise data across "
+            "all ACD members — compare states, identify strategic gaps, rank "
+            "researchers, analyse trends, and prepare evidence summaries. "
+            "Ask me anything about the cohort.",
+            style={"fontSize": "0.82rem", "lineHeight": 1.6},
+        ),
+        style={
+            "background": theme.GRAY_50,
+            "borderRadius": "12px 12px 12px 2px",
+            "padding": "8px 12px", "marginBottom": "6px",
+            "maxWidth": "90%",
+        },
+    )
+
+
+def build_user_bubble(text: str) -> html.Div:
+    return html.Div(
+        html.Div(text, style={"fontSize": "0.82rem", "lineHeight": 1.6,
+                               "color": theme.WHITE}),
+        style={
+            "background": theme.PRIMARY,
+            "borderRadius": "12px 12px 2px 12px",
+            "padding": "8px 12px", "marginBottom": "6px",
+            "marginLeft": "auto",
+            "maxWidth": "80%", "width": "fit-content",
+        },
+    )
+
+
+def build_assistant_bubble(text: str) -> html.Div:
+    return html.Div(
+        dcc.Markdown(text, style={"fontSize": "0.82rem", "lineHeight": 1.6},
+                     className="ai-response-md"),
+        style={
+            "background": theme.GRAY_50,
+            "borderRadius": "12px 12px 12px 2px",
+            "padding": "8px 12px", "marginBottom": "6px",
+            "maxWidth": "90%",
+        },
+    )
+
+
+layout = render

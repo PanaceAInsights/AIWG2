@@ -1,170 +1,194 @@
-"""ACD Dashboard — Clinical Trials page."""
+"""Clinical Trials page — trial activity for ACD members.
+Charts, KPIs and grid are callback-driven so they react to global filters.
+"""
 from __future__ import annotations
 
-from dash import html, dcc, callback, Input, Output
-import dash_bootstrap_components as dbc
-from dash import dash_table
-import plotly.express as px
-import plotly.graph_objects as go
+import dash_ag_grid as dag
+import dash_mantine_components as dmc
 import pandas as pd
+import plotly.graph_objects as go
+from dash import dcc, html
+from dash_iconify import DashIconify
 
-from dashboard.theme import (
-    COPPER, MAUVE_PURPLE, LIGHT_COPPER, BG_CARD, BORDER_COLOR,
-    TEXT_MUTED, WHITE, WARM_CREAM, CHART_PALETTE, DARK_PLUM,
-    apply_plotly_theme,
-)
-from dashboard.data import load_clinical_trials
+from .. import data, theme
 
 PAGE_TITLE = "Clinical Trials"
 PAGE_HREF  = "/trials"
 
 
-def layout():
-    return html.Div([
-        html.Div([
-            dbc.Row([
-                dbc.Col([
-                    html.Label("Status", style={"fontSize": "12px", "color": TEXT_MUTED}),
-                    dcc.Dropdown(
-                        id="trials-status-filter",
-                        options=[{"label": "All", "value": "All"}],
-                        value="All", clearable=False,
-                        style={"backgroundColor": BG_CARD},
-                    ),
-                ], md=3),
-                dbc.Col([
-                    html.Label("Search", style={"fontSize": "12px", "color": TEXT_MUTED}),
-                    dcc.Input(
-                        id="trials-search", type="text",
-                        placeholder="Search by title, condition...",
-                        debounce=True,
-                        style={"width": "100%", "backgroundColor": BG_CARD,
-                               "border": f"1px solid {BORDER_COLOR}", "borderRadius": "6px",
-                               "color": WARM_CREAM, "padding": "8px 12px"},
-                    ),
-                ], md=5),
-                dbc.Col([
-                    html.Div(style={"height": "20px"}),
-                    html.Button("Export CSV", id="trials-export-btn",
-                                className="btn-outline-copper",
-                                style={"padding": "8px 16px"}),
-                    dcc.Download(id="trials-download"),
-                ], md=2),
-            ]),
-        ], className="acd-card"),
-
-        dbc.Row([
-            dbc.Col(html.Div([
-                html.Div("Trials by Status", className="acd-card-title"),
-                dcc.Graph(id="trials-status-pie", config={"displayModeBar": False}),
-            ], className="acd-card"), md=4),
-            dbc.Col(html.Div([
-                html.Div("Trials Started per Year", className="acd-card-title"),
-                dcc.Graph(id="trials-year-bar", config={"displayModeBar": False}),
-            ], className="acd-card"), md=8),
-        ]),
-
-        html.Div([
-            html.Div("Clinical Trials Registry", className="acd-section-header"),
-            html.Div(id="trials-table-container"),
-        ], className="acd-card"),
-    ])
+def _detect_col(df: pd.DataFrame, candidates: list[str]) -> str | None:
+    for c in candidates:
+        if c in df.columns:
+            return c
+    return None
 
 
-@callback(
-    Output("trials-status-filter", "options"),
-    Input("trials-status-filter", "id"),
-)
-def populate_status_options(_):
-    trials = load_clinical_trials()
-    if trials.empty or "status" not in trials.columns:
-        return [{"label": "All", "value": "All"}]
-    statuses = trials["status"].dropna().unique().tolist()
-    return [{"label": "All", "value": "All"}] + [{"label": s, "value": s} for s in sorted(statuses)]
-
-
-@callback(
-    Output("trials-status-pie", "figure"),
-    Input("trials-status-filter", "value"),
-)
-def update_status_pie(_):
-    trials = load_clinical_trials()
-    if trials.empty or "status" not in trials.columns:
-        return go.Figure()
-    counts = trials["status"].fillna("Unknown").value_counts().reset_index()
-    counts.columns = ["Status", "Count"]
-    fig = px.pie(counts, names="Status", values="Count",
-                 color_discrete_sequence=CHART_PALETTE, hole=0.4)
-    apply_plotly_theme(fig)
-    fig.update_traces(textfont_color=WHITE)
-    return fig
-
-
-@callback(
-    Output("trials-year-bar", "figure"),
-    Input("trials-status-filter", "value"),
-)
-def update_year_bar(_):
-    trials = load_clinical_trials()
-    if trials.empty or "start_date" not in trials.columns:
-        return go.Figure()
-    trials = trials.copy()
-    trials["start_year"] = pd.to_datetime(trials["start_date"], errors="coerce").dt.year
-    yearly = trials.dropna(subset=["start_year"]).groupby("start_year").size().reset_index(name="Trials")
-    yearly = yearly[yearly["start_year"].between(2000, 2026)]
-    fig = px.bar(yearly, x="start_year", y="Trials", color_discrete_sequence=[MAUVE_PURPLE])
-    apply_plotly_theme(fig)
-    fig.update_traces(marker_line_width=0)
-    return fig
-
-
-@callback(
-    Output("trials-table-container", "children"),
-    Input("trials-status-filter", "value"),
-    Input("trials-search", "value"),
-)
-def update_table(status, search):
-    trials = load_clinical_trials()
-    if trials.empty:
-        return html.Div("No clinical trials data loaded.", style={"color": TEXT_MUTED, "padding": "20px"})
-    if status and status != "All" and "status" in trials.columns:
-        trials = trials[trials["status"] == status]
-    if search:
-        mask = (
-            trials.get("title", pd.Series(dtype=str)).str.contains(search, case=False, na=False)
-            | trials.get("condition", pd.Series(dtype=str)).str.contains(search, case=False, na=False)
-            | trials.get("acd_name", pd.Series(dtype=str)).str.contains(search, case=False, na=False)
-        )
-        trials = trials[mask]
-
-    display_cols = [c for c in ["acd_name", "trial_id", "title", "status", "condition",
-                                 "phase", "start_date", "sponsor", "url"] if c in trials.columns]
-    return dash_table.DataTable(
-        data=trials[display_cols].head(500).to_dict("records"),
-        columns=[{"name": c.replace("_", " ").title(), "id": c,
-                  "presentation": "markdown" if c == "url" else "input"}
-                 for c in display_cols],
-        page_size=20,
-        sort_action="native",
-        filter_action="native",
-        style_table={"overflowX": "auto"},
-        style_cell={"backgroundColor": BG_CARD, "color": WARM_CREAM,
-                    "border": f"1px solid {BORDER_COLOR}", "fontSize": "13px",
-                    "padding": "8px 12px", "maxWidth": "300px",
-                    "overflow": "hidden", "textOverflow": "ellipsis"},
-        style_header={"backgroundColor": DARK_PLUM, "color": COPPER,
-                      "fontWeight": "600", "fontSize": "12px",
-                      "textTransform": "uppercase"},
+def build_trials_kpi(df: pd.DataFrame) -> dmc.SimpleGrid:
+    total = len(df)
+    name_col = _detect_col(df, ["acd_name", "rams_name"])
+    members = df[name_col].nunique() if name_col and not df.empty else 0
+    return dmc.SimpleGrid(
+        cols={"base": 1, "sm": 3}, spacing="lg", mb="lg",
+        children=[
+            dmc.Card([dmc.Text("Total trials", size="xs", c="dimmed", tt="uppercase"),
+                      dmc.Text(f"{total:,}", size="xl", fw=700)]),
+            dmc.Card([dmc.Text("Members involved", size="xs", c="dimmed", tt="uppercase"),
+                      dmc.Text(f"{members}", size="xl", fw=700)]),
+            dmc.Card([dmc.Text("Registry sources", size="xs", c="dimmed", tt="uppercase"),
+                      dmc.Text("ANZCTR + CT.gov", size="xl", fw=700)]),
+        ],
     )
 
 
-@callback(
-    Output("trials-download", "data"),
-    Input("trials-export-btn", "n_clicks"),
-    prevent_initial_call=True,
-)
-def export_trials(_):
-    trials = load_clinical_trials()
+def build_status_chart(df: pd.DataFrame) -> go.Figure:
+    fig = go.Figure()
+    col = _detect_col(df, ["status", "overall_status", "trial_status", "Status"])
+    if col and not df.empty:
+        counts = df[col].fillna("Unknown").value_counts()
+        fig.add_trace(go.Bar(
+            x=counts.values, y=counts.index,
+            orientation="h", marker_color=theme.PRIMARY,
+        ))
+        fig.update_layout(title="Trials by Status", height=300,
+                          margin=dict(l=180, r=20, t=50, b=30),
+                          xaxis_title="Number of trials")
+    return fig
+
+
+def build_year_chart(df: pd.DataFrame) -> go.Figure:
+    fig = go.Figure()
+    col = _detect_col(df, ["start_date", "start_year", "year"])
+    if col and not df.empty:
+        years = pd.to_numeric(
+            df[col].astype(str).str[:4], errors="coerce"
+        ).dropna().astype(int)
+        counts = years.value_counts().sort_index()
+        fig.add_trace(go.Bar(x=counts.index, y=counts.values,
+                             marker_color=theme.PRIMARY_LIGHT))
+        fig.update_layout(title="Trials by Start Year", height=300,
+                          margin=dict(l=50, r=20, t=50, b=30),
+                          xaxis_title="Year", yaxis_title="Trials")
+    return fig
+
+
+def build_investigator_chart(df: pd.DataFrame) -> go.Figure:
+    fig = go.Figure()
+    name_col = _detect_col(df, ["acd_name", "rams_name"])
+    if name_col and not df.empty:
+        counts = df[name_col].value_counts().head(15)
+        if not counts.empty:
+            fig.add_trace(go.Bar(x=counts.values, y=counts.index,
+                                 orientation="h", marker_color=theme.ACCENT))
+            fig.update_layout(title="Most Active Trial Investigators",
+                              height=400, margin=dict(l=200, r=20, t=50, b=30),
+                              xaxis_title="Number of trials")
+    return fig
+
+
+def render() -> html.Div:
+    trials = data.load_clinical_trials()
+
     if trials.empty:
-        return dcc.no_update
-    return dcc.send_data_frame(trials.to_csv, "acd_clinical_trials.csv", index=False)
+        return html.Div([
+            dmc.Title("Clinical Trials", order=2, mb="md"),
+            dmc.Alert(
+                "Clinical trial data is being compiled. This view will be "
+                "populated once trial registry matching is complete.",
+                title="Coming soon", color="acd-copper", variant="light",
+            ),
+            dcc.Download(id="trials-download"),
+        ])
+
+    name_col = _detect_col(trials, ["acd_name", "rams_name"]) or "acd_name"
+    grid_cols = [c for c in (name_col, "title", "trial_id", "registry",
+                              "status", "phase", "start_date",
+                              "condition", "intervention", "url")
+                 if c in trials.columns]
+
+    col_defs = []
+    for c in grid_cols:
+        header = c.replace("_", " ").title()
+        if c == name_col:
+            header = "Member"
+        d = {
+            "field": c, "headerName": header, "minWidth": 160,
+            "filter": "agTextColumnFilter",
+            "wrapText": c in ("title", "condition"),
+            "autoHeight": c in ("title", "condition"),
+        }
+        if c == "trial_id":
+            d["cellRenderer"] = "markdown"
+            d["valueFormatter"] = {
+                "function": (
+                    "params.value ? '[' + params.value + ']"
+                    "(https://clinicaltrials.gov/study/' + params.value + ')' : ''"
+                )
+            }
+            d["minWidth"] = 180
+        if c == "url":
+            d["cellRenderer"] = "markdown"
+            d["valueFormatter"] = {
+                "function": "params.value ? '[Link](' + params.value + ')' : ''"
+            }
+            d["maxWidth"] = 100
+        col_defs.append(d)
+
+    grid_data = trials[grid_cols].fillna("").to_dict("records")
+
+    return html.Div([
+        dmc.Group([
+            dmc.Stack([
+                dmc.Title("Clinical Trials", order=2),
+                dmc.Text(
+                    "Trial registry activity for ACD members (ANZCTR + ClinicalTrials.gov)",
+                    size="sm", c="dimmed",
+                ),
+            ], gap=2),
+            dmc.Button(
+                "Export trials", id="trials-export-btn",
+                leftSection=DashIconify(icon="tabler:download", width=16),
+                variant="light", color="acd-copper", size="xs",
+            ),
+        ], justify="space-between", mb="md"),
+        html.Div(id="trials-kpi-row"),
+        dmc.Grid([
+            dmc.GridCol(
+                html.Div(
+                    dcc.Graph(id="trials-status-chart",
+                              config={"displayModeBar": False},
+                              style={"height": "300px"}),
+                    className="section-card", style={"minHeight": "350px"},
+                ),
+                span={"base": 12, "md": 6},
+            ),
+            dmc.GridCol(
+                html.Div(
+                    dcc.Graph(id="trials-year-chart",
+                              config={"displayModeBar": False},
+                              style={"height": "300px"}),
+                    className="section-card", style={"minHeight": "350px"},
+                ),
+                span={"base": 12, "md": 6},
+            ),
+        ], gutter="lg", mb="lg"),
+        html.Div(id="trials-investigator-wrap"),
+        html.Div([
+            html.Div("All trials (searchable)", className="section-title"),
+            dag.AgGrid(
+                id="trials-grid",
+                rowData=grid_data,
+                columnDefs=col_defs,
+                defaultColDef={"sortable": True, "filter": True, "resizable": True,
+                               "floatingFilter": True},
+                dashGridOptions={"pagination": True, "paginationPageSize": 25,
+                                 "animateRows": True, "rowHeight": 42},
+                className="ag-theme-alpine",
+                style={"height": "480px", "width": "100%"},
+                dangerously_allow_code=True,
+            ),
+        ], className="section-card", style={"padding": "0.5rem"}),
+        dcc.Download(id="trials-download"),
+    ])
+
+
+layout = render

@@ -1,152 +1,266 @@
-"""ACD Dashboard — Expert Finder page."""
+"""Expert Finder page — search for researchers by topic/expertise area.
+
+Lets users type a research area (e.g. "melanoma", "psoriasis",
+"eczema") and returns ACD members ranked by publication volume in
+that topic. Built on the publications + summary data.
+"""
 from __future__ import annotations
 
-from dash import html, dcc, callback, Input, Output
-import dash_bootstrap_components as dbc
-import pandas as pd
+from pathlib import Path
 
-from dashboard.theme import (
-    COPPER, MAUVE_PURPLE, LIGHT_COPPER, BG_CARD, BORDER_COLOR,
-    TEXT_MUTED, WHITE, WARM_CREAM, TIER_HIGH, TIER_REVIEW,
-)
-from dashboard.data import load_publications, load_authors, get_all_states, get_all_subtopics
+import dash_ag_grid as dag
+import dash_mantine_components as dmc
+import pandas as pd
+from dash import dcc, html
+from dash_iconify import DashIconify
+
+from .. import data, theme
 
 PAGE_TITLE = "Expert Finder"
 PAGE_HREF  = "/experts"
 
-
-def layout():
-    states = ["All"] + get_all_states()
-    subtopics = get_all_subtopics()
-    return html.Div([
-        html.Div([
-            html.Div("Find Experts by Research Topic", className="acd-section-header"),
-            dbc.Row([
-                dbc.Col([
-                    html.Label("Research Topic / Keyword", style={"fontSize": "12px", "color": TEXT_MUTED}),
-                    dcc.Dropdown(
-                        id="experts-topic",
-                        options=[{"label": s, "value": s} for s in subtopics],
-                        placeholder="Select or search a topic...",
-                        style={"backgroundColor": BG_CARD},
-                    ),
-                ], md=4),
-                dbc.Col([
-                    html.Label("Free-text Keyword", style={"fontSize": "12px", "color": TEXT_MUTED}),
-                    dcc.Input(
-                        id="experts-keyword", type="text",
-                        placeholder="e.g. melanoma, psoriasis, atopic dermatitis...",
-                        debounce=True,
-                        style={"width": "100%", "backgroundColor": BG_CARD,
-                               "border": f"1px solid {BORDER_COLOR}", "borderRadius": "6px",
-                               "color": WARM_CREAM, "padding": "8px 12px"},
-                    ),
-                ], md=4),
-                dbc.Col([
-                    html.Label("State", style={"fontSize": "12px", "color": TEXT_MUTED}),
-                    dcc.Dropdown(
-                        id="experts-state",
-                        options=[{"label": s, "value": s} for s in states],
-                        value="All", clearable=False,
-                        style={"backgroundColor": BG_CARD},
-                    ),
-                ], md=2),
-                dbc.Col([
-                    html.Div(style={"height": "20px"}),
-                    html.Button("Find Experts", id="experts-search-btn",
-                                className="btn-copper",
-                                style={"width": "100%", "padding": "8px"}),
-                ], md=2),
-            ]),
-        ], className="acd-card"),
-
-        html.Div(id="experts-results"),
-    ])
+_ROOT      = Path(__file__).resolve().parents[2]
+_PROCESSED = _ROOT / "data" / "processed"
 
 
-@callback(
-    Output("experts-results", "children"),
-    Input("experts-search-btn", "n_clicks"),
-    Input("experts-topic", "value"),
-    Input("experts-keyword", "value"),
-    Input("experts-state", "value"),
-    prevent_initial_call=True,
-)
-def find_experts(_, topic, keyword, state):
-    pubs = load_publications()
-    authors = load_authors()
-
-    if pubs.empty:
-        return html.Div("No publications data loaded.", style={"color": TEXT_MUTED, "padding": "20px"})
-
-    # Filter publications by topic
-    filtered = pubs.copy()
-    if topic and "SubTopic" in filtered.columns:
-        filtered = filtered[filtered["SubTopic"] == topic]
-
-    if keyword:
-        kw = keyword.lower()
-        mask = pd.Series(False, index=filtered.index)
-        for col in ["Title", "Keywords", "Abstract", "SubTopic", "Topic_Field"]:
-            if col in filtered.columns:
-                mask |= filtered[col].fillna("").str.lower().str.contains(kw, na=False)
-        filtered = filtered[mask]
-
-    if filtered.empty:
-        return html.Div("No experts found for this query.", style={"color": TEXT_MUTED, "padding": "20px"})
-
-    # Aggregate by researcher
-    cite_col = next((c for c in ["CitedByCount", "cited_by_count"] if c in filtered.columns), None)
-    if cite_col:
-        agg = filtered.groupby("acd_name").agg(
-            pubs=("acd_name", "count"),
-            citations=(cite_col, "sum"),
-        ).reset_index()
+def _build_expertise_index() -> pd.DataFrame:
+    """Pre-compute a member x topic matrix from publications."""
+    for fname in ("publications_clean.csv", "publications.csv"):
+        p = _PROCESSED / fname
+        if p.exists():
+            break
     else:
-        agg = filtered.groupby("acd_name").size().reset_index(name="pubs")
-        agg["citations"] = 0
+        return pd.DataFrame()
 
-    # Merge author metadata
-    if not authors.empty and "acd_name" in authors.columns:
-        meta_cols = ["acd_name", "state", "confidence", "last_known_institution", "openalex_id"]
-        meta_cols = [c for c in meta_cols if c in authors.columns]
-        agg = agg.merge(authors[meta_cols], on="acd_name", how="left")
+    import csv
+    with open(p, newline="", encoding="utf-8") as f:
+        header = next(csv.reader(f))
 
-    # Filter by state
-    if state and state != "All" and "state" in agg.columns:
-        agg = agg[agg["state"] == state]
+    author_col = next((c for c in ("acd_name", "RAMS_Author") if c in header), None)
+    topic_col  = next((c for c in ("SubTopic", "Topic_Field") if c in header), None)
+    cit_col    = next((c for c in ("citations", "Citations") if c in header), None)
+    if author_col is None or topic_col is None:
+        return pd.DataFrame()
 
-    agg = agg.sort_values("pubs", ascending=False).head(30)
+    usecols = [c for c in [author_col, topic_col, cit_col] if c]
+    pubs = pd.read_csv(p, usecols=usecols, low_memory=False)
 
-    if agg.empty:
-        return html.Div("No experts found for this query.", style={"color": TEXT_MUTED, "padding": "20px"})
+    accepted = data._accepted_name_set()
+    if accepted:
+        pubs = pubs[pubs[author_col].isin(accepted)]
 
-    cards = []
-    for rank, (_, row) in enumerate(agg.iterrows(), 1):
-        conf = str(row.get("confidence", "")).upper()
-        badge_cls = {"HIGH": "badge-high", "REVIEW": "badge-review"}.get(conf, "badge-notfound")
-        cards.append(
-            dbc.Col(html.Div([
-                html.Div([
-                    html.Span(f"#{rank}", style={"fontSize": "11px", "color": TEXT_MUTED, "marginRight": "8px"}),
-                    html.Span(row.get("acd_name", ""), style={"fontSize": "15px", "fontWeight": "600", "color": WHITE}),
-                    html.Span(conf, className=badge_cls, style={"marginLeft": "8px"}),
-                ], style={"marginBottom": "8px"}),
-                html.Div([
-                    html.Span(f"{int(row.get('pubs', 0))} publications", style={"color": COPPER, "fontSize": "13px", "marginRight": "12px"}),
-                    html.Span(f"{int(row.get('citations', 0))} citations", style={"color": LIGHT_COPPER, "fontSize": "13px"}),
-                ]),
-                html.Div(row.get("state", ""), style={"fontSize": "12px", "color": TEXT_MUTED, "marginTop": "4px"}),
-                html.Div(str(row.get("last_known_institution", ""))[:60],
-                         style={"fontSize": "11px", "color": TEXT_MUTED, "marginTop": "2px"}),
-            ], className="acd-card", style={"minHeight": "110px"}), md=4)
-        )
+    pubs[topic_col] = pubs[topic_col].fillna("Other")
+    if cit_col:
+        pubs[cit_col] = pd.to_numeric(pubs[cit_col], errors="coerce").fillna(0)
+    else:
+        pubs["_cit"] = 0
+        cit_col = "_cit"
 
-    rows = []
-    for i in range(0, len(cards), 3):
-        rows.append(dbc.Row(cards[i:i+3]))
+    idx = (
+        pubs.groupby([author_col, topic_col])
+        .agg(pub_count=(topic_col, "size"), citation_sum=(cit_col, "sum"))
+        .reset_index()
+        .rename(columns={author_col: "acd_name", topic_col: "topic"})
+    )
+    return idx
+
+
+def _get_all_topics() -> list[str]:
+    idx = _build_expertise_index()
+    if idx.empty:
+        return []
+    topics = sorted(idx["topic"].unique().tolist())
+    if "Other" in topics:
+        topics.remove("Other")
+        topics.append("Other")
+    return topics
+
+
+def render() -> html.Div:
+    topics = _get_all_topics()
+    topic_options = [{"label": t, "value": t} for t in topics]
 
     return html.Div([
-        html.Div(f"Found {len(agg)} experts", style={"color": TEXT_MUTED, "fontSize": "13px", "marginBottom": "12px"}),
-        *rows,
+        dmc.Title("Expert Finder", order=2, mb="md"),
+        dmc.Text(
+            "Find ACD members with the highest research output in a "
+            "specific topic area. Select a research topic or type a keyword "
+            "to search.",
+            size="sm", c="dimmed", mb="lg",
+        ),
+        dmc.Grid([
+            dmc.GridCol(
+                dmc.Select(
+                    id="expert-topic-select",
+                    label="Select research topic",
+                    placeholder="Choose a topic area...",
+                    data=topic_options,
+                    searchable=True,
+                    clearable=True,
+                    size="md",
+                ),
+                span={"base": 12, "md": 5},
+            ),
+            dmc.GridCol(
+                dmc.TextInput(
+                    id="expert-keyword-search",
+                    label="Or search by keyword",
+                    placeholder="e.g. melanoma, psoriasis, eczema...",
+                    size="md",
+                ),
+                span={"base": 12, "md": 5},
+            ),
+            dmc.GridCol(
+                dmc.Group([
+                    dmc.Button("Search", id="expert-search-btn",
+                               color="acd-copper", size="md",
+                               style={"marginTop": "25px"}),
+                    dmc.Button("Export", id="expert-export-btn",
+                               leftSection=DashIconify(icon="tabler:download", width=16),
+                               variant="light", color="acd-copper", size="md",
+                               style={"marginTop": "25px"}),
+                ], gap="xs"),
+                span={"base": 12, "md": 2},
+            ),
+        ], gutter="lg", mb="lg"),
+        html.Div(id="expert-results", children=_empty_results()),
+        dcc.Download(id="expert-download"),
     ])
+
+
+def _empty_results() -> html.Div:
+    return html.Div(
+        dmc.Alert(
+            "Select a research topic from the dropdown or enter a keyword to "
+            "find members with expertise in that area.",
+            title="Search for experts",
+            color="gray",
+            variant="light",
+        ),
+        style={"marginTop": "1rem"},
+    )
+
+
+def build_expert_results(topic: str | None, keyword: str | None) -> html.Div:
+    """Called by callback when user searches for experts."""
+    idx     = _build_expertise_index()
+    summary = data.load_summary()
+    authors = data.load_authors()
+
+    if idx.empty:
+        return _empty_results()
+
+    if topic and topic.strip():
+        results = idx[idx["topic"] == topic].copy()
+        search_label = f"Topic: {topic}"
+
+    elif keyword and keyword.strip():
+        kw = keyword.strip().lower()
+        matching_topics = idx[idx["topic"].str.lower().str.contains(kw, na=False)]
+
+        # Also search publication titles
+        title_matches = pd.DataFrame()
+        for fname in ("publications_clean.csv", "publications.csv"):
+            p = _PROCESSED / fname
+            if p.exists():
+                import csv
+                with open(p, newline="", encoding="utf-8") as f:
+                    hdr = next(csv.reader(f))
+                author_col = next((c for c in ("acd_name", "RAMS_Author") if c in hdr), None)
+                title_col  = next((c for c in ("title", "Title") if c in hdr), None)
+                cit_col    = next((c for c in ("citations", "Citations") if c in hdr), None)
+                if author_col and title_col:
+                    usecols = [c for c in [author_col, title_col, cit_col] if c]
+                    pubs = pd.read_csv(p, usecols=usecols, low_memory=False)
+                    accepted = data._accepted_name_set()
+                    if accepted:
+                        pubs = pubs[pubs[author_col].isin(accepted)]
+                    hits = pubs[pubs[title_col].str.lower().str.contains(kw, na=False)]
+                    if not hits.empty:
+                        cit_col2 = cit_col or title_col
+                        title_matches = (
+                            hits.groupby(author_col)
+                            .agg(pub_count=(title_col, "size"),
+                                 citation_sum=(cit_col2, lambda x:
+                                     pd.to_numeric(x, errors="coerce").sum()))
+                            .reset_index()
+                            .rename(columns={author_col: "acd_name"})
+                        )
+                        title_matches["topic"] = f"Title match: '{keyword}'"
+                break
+
+        results = pd.concat([matching_topics, title_matches], ignore_index=True)
+        if results.empty:
+            return html.Div(dmc.Alert(
+                f"No experts found for keyword '{keyword}'. Try a broader term.",
+                title="No results", color="yellow", variant="light",
+            ))
+        results = (
+            results.groupby("acd_name")
+            .agg(pub_count=("pub_count", "sum"), citation_sum=("citation_sum", "sum"))
+            .reset_index()
+        )
+        results["topic"] = keyword
+        search_label = f"Keyword: {keyword}"
+    else:
+        return _empty_results()
+
+    if results.empty:
+        return html.Div(dmc.Alert(
+            "No experts found for this search. Try a different topic.",
+            title="No results", color="yellow", variant="light",
+        ))
+
+    results = results.sort_values("pub_count", ascending=False).head(25)
+
+    name_col = next((c for c in ("acd_name", "rams_name") if c in authors.columns), None)
+    if name_col and not authors.empty:
+        member_info = authors[[name_col, "last_known_institution",
+                               "institution_country", "state"]].drop_duplicates(name_col)
+        member_info = member_info.rename(columns={name_col: "acd_name"})
+        results = results.merge(member_info, on="acd_name", how="left")
+
+    if not summary.empty:
+        sname = next((c for c in ("acd_name", "rams_name") if c in summary.columns), None)
+        if sname:
+            stats_cols = [sname, "h_index", "fwci_mean"]
+            available = [c for c in stats_cols if c in summary.columns]
+            if available:
+                s = summary[available].rename(columns={sname: "acd_name"})
+                results = results.merge(s, on="acd_name", how="left")
+
+    col_defs = [
+        {"field": "acd_name", "headerName": "Member", "minWidth": 200, "pinned": "left"},
+        {"field": "pub_count", "headerName": "Pubs in topic", "maxWidth": 140,
+         "type": "numericColumn", "sort": "desc"},
+        {"field": "citation_sum", "headerName": "Citations", "maxWidth": 120,
+         "type": "numericColumn",
+         "valueFormatter": {"function": "d3.format(',')(params.value)"}},
+        {"field": "h_index", "headerName": "h-index", "maxWidth": 100,
+         "type": "numericColumn"},
+        {"field": "fwci_mean", "headerName": "Mean FWCI", "maxWidth": 110,
+         "type": "numericColumn",
+         "valueFormatter": {"function": "params.value && params.value.toFixed(2)"}},
+        {"field": "last_known_institution", "headerName": "Institution", "minWidth": 250},
+        {"field": "state", "headerName": "State", "maxWidth": 80},
+    ]
+
+    grid = dag.AgGrid(
+        rowData=results.fillna("").to_dict("records"),
+        columnDefs=col_defs,
+        defaultColDef={"resizable": True, "sortable": True},
+        dashGridOptions={"animateRows": True, "rowHeight": 42, "suppressCellFocus": True},
+        className="ag-theme-alpine",
+        style={"height": "500px", "width": "100%"},
+    )
+
+    return html.Div([
+        dmc.Group([
+            dmc.Badge(search_label, color="acd-copper", variant="light", size="lg"),
+            dmc.Text(f"{len(results)} experts found", size="sm", c="dimmed"),
+        ], gap="md", mb="md"),
+        html.Div(grid, className="section-card", style={"padding": "0.5rem"}),
+    ])
+
+
+layout = render

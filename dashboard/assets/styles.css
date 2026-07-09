@@ -1,294 +1,325 @@
-/* ACD Research Intelligence Platform — Global Styles */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+/* ACD Research Intelligence Platform — corporate branded styles */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
-  --deep-aubergine: #1B1424;
-  --dark-plum: #3D3149;
-  --mauve-purple: #814C7E;
-  --muted-violet: #553E51;
-  --copper: #C27D4E;
-  --burnt-copper: #AD6A3C;
-  --light-copper: #D99561;
-  --warm-cream: #ECE7DF;
-  --white: #FFFFFE;
-  --blue-violet: #575571;
-  --bg-card: #2A1F33;
-  --text-muted: #A89DB8;
-  --border: #553E51;
+  --ink: #1A1A2E;
+  --gray-50: #FAFAFA;
+  --gray-100: #F4F4F4;
+  --gray-200: #E8E8E8;
+  --gray-300: #D4D4D4;
+  --gray-700: #4A4A5A;
+  --primary: #B87333;        /* ACD copper */
+  --primary-light: #D4956A;  /* lighter copper */
+  --accent: #6B4C8A;         /* mauve-purple */
+  --success: #10B981;
+  --violet: #6C3483;
+  --pink: #C0392B;
+  --cyan: #148F77;
 }
 
-* { box-sizing: border-box; }
+html, body, #_dash-app-content {
+  background: var(--gray-100) !important;
+  font-family: "Inter", -apple-system, system-ui, sans-serif !important;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
-body {
-  background-color: var(--deep-aubergine) !important;
-  color: var(--warm-cream) !important;
-  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif !important;
+/* Page container */
+.acd-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem 2.5rem;
+}
+
+/* Hero card — ACD copper gradient */
+.acd-hero {
+  background: linear-gradient(135deg, #7A4A1E 0%, #B87333 60%, #D4956A 130%);
+  color: #fff;
+  border-radius: 1.25rem;
+  padding: 2.5rem 2.5rem 2rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 35px -15px rgba(184, 115, 51, 0.5);
+}
+
+.acd-hero::after {
+  content: "";
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 240px; height: 240px;
+  background: radial-gradient(circle, rgba(255,255,255,0.12), transparent 60%);
+  pointer-events: none;
+}
+
+.acd-hero h1 {
+  font-size: 2rem;
+  font-weight: 700;
   margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.acd-hero p {
+  opacity: 0.88;
+  max-width: 52rem;
+  margin-top: 0.5rem;
+}
+
+/* KPI grid */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+/* Section card */
+.section-card {
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: 1rem;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 180ms ease;
+  overflow: hidden;
+}
+
+.section-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.section-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gray-700);
+  margin: 0 0 0.75rem;
+}
+
+/* Section header (larger) */
+.acd-section-header {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 0.5rem;
+}
+
+/* Shell nav — copper sidebar */
+.acd-shell-title {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-size: 1.15rem;
+  color: #FFFFFF;
+}
+
+.acd-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 0.55rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.acd-nav-link:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #FFFFFF;
+}
+
+.acd-nav-link.is-active {
+  background: rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+/* AG Grid tweaks — ACD-aligned */
+.ag-theme-alpine, .ag-theme-alpine-dark {
+  --ag-header-background-color: var(--gray-50);
+  --ag-header-foreground-color: var(--gray-700);
+  --ag-row-hover-color: #FDF3E7;
+  --ag-selected-row-background-color: #FAE0C5;
+  --ag-odd-row-background-color: #FEFEFE;
+  --ag-border-color: var(--gray-200);
+  --ag-font-family: "Inter", -apple-system, system-ui, sans-serif;
+  --ag-font-size: 13px;
+  --ag-row-height: 42px;
+  --ag-header-height: 42px;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 8px; height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--gray-300);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-700);
+}
+
+/* Derm-pub badge */
+.derm-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  margin-right: 6px;
+}
+
+/* Mantine overrides */
+.mantine-Card-root {
+  background: #fff !important;
+  border-color: var(--gray-200) !important;
+}
+
+.mantine-Tabs-tab[data-active="true"] {
+  color: var(--primary) !important;
+}
+
+/* Cytoscape card */
+.cy-container {
+  height: 560px;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: 1rem;
+  padding: 0.5rem;
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  color: var(--gray-700);
+  text-align: center;
+}
+
+.metric-label { font-size: 0.75rem; color: var(--gray-700); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+.metric-value { font-size: 1.4rem; font-weight: 700; color: var(--ink); }
+
+/* Methodology page */
+.methodology-content {
+  max-width: 800px;
+  line-height: 1.7;
+  font-size: 0.95rem;
+}
+
+.methodology-content h2 {
+  color: var(--primary);
+  font-size: 1.3rem;
+  margin-top: 2rem;
+}
+
+.methodology-content h3 {
+  color: var(--ink);
+  font-size: 1.1rem;
+  margin-top: 1.5rem;
+}
+
+/* AI Chat — floating widget */
+#ai-fab:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 24px rgba(184,115,51,0.45) !important;
+}
+
+#ai-chat-input:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px rgba(184,115,51,0.12);
+}
+
+/* AI Chat — response markdown */
+.ai-response-md {
+  line-height: 1.7;
+}
+
+.ai-response-md p {
+  margin: 0 0 0.5rem;
+}
+
+.ai-response-md ul, .ai-response-md ol {
+  margin: 0.25rem 0 0.5rem 1.25rem;
   padding: 0;
 }
 
-/* ── Scrollbar ─────────────────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--deep-aubergine); }
-::-webkit-scrollbar-thumb { background: var(--muted-violet); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--mauve-purple); }
-
-/* ── Navigation links ──────────────────────────────────────────────────── */
-.acd-nav-link { display: block; }
-.acd-nav-link:hover > div {
-  background-color: var(--muted-violet) !important;
-  color: var(--white) !important;
-}
-.acd-nav-link.active > div {
-  background-color: var(--mauve-purple) !important;
-  color: var(--white) !important;
+.ai-response-md li {
+  margin-bottom: 0.2rem;
 }
 
-/* ── Cards ─────────────────────────────────────────────────────────────── */
-.acd-card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-  margin-bottom: 16px;
+.ai-response-md code {
+  background: var(--gray-100);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.82rem;
 }
 
-.acd-card-title {
+.ai-response-md pre {
+  background: var(--gray-100);
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  font-size: 0.82rem;
+}
+
+.ai-response-md table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.82rem;
+  margin: 0.5rem 0;
+}
+
+.ai-response-md th, .ai-response-md td {
+  border: 1px solid var(--gray-200);
+  padding: 0.35rem 0.6rem;
+  text-align: left;
+}
+
+.ai-response-md th {
+  background: var(--gray-50);
+  font-weight: 600;
+}
+
+.ai-response-md strong {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* Legacy btn classes (used by old chatbot.py) */
+.btn-copper {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 8px;
-}
-
-/* ── KPI cards ─────────────────────────────────────────────────────────── */
-.acd-kpi-value {
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--copper);
-  line-height: 1.1;
-}
-
-.acd-kpi-label {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-top: 4px;
-}
-
-/* ── Tables ────────────────────────────────────────────────────────────── */
-.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner table {
-  background-color: var(--bg-card) !important;
-  color: var(--warm-cream) !important;
-  border: none !important;
-}
-
-.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner th {
-  background-color: var(--dark-plum) !important;
-  color: var(--copper) !important;
-  font-size: 12px !important;
-  font-weight: 600 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.5px !important;
-  border-bottom: 1px solid var(--border) !important;
-  padding: 10px 12px !important;
-}
-
-.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner td {
-  background-color: var(--bg-card) !important;
-  color: var(--warm-cream) !important;
-  border-bottom: 1px solid var(--border) !important;
-  font-size: 13px !important;
-  padding: 8px 12px !important;
-}
-
-.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner tr:hover td {
-  background-color: var(--dark-plum) !important;
-}
-
-/* ── Dropdowns ─────────────────────────────────────────────────────────── */
-.Select-control {
-  background-color: var(--bg-card) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 6px !important;
-  color: var(--warm-cream) !important;
-}
-
-.Select-menu-outer {
-  background-color: var(--dark-plum) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 6px !important;
-}
-
-.Select-option {
-  background-color: var(--dark-plum) !important;
-  color: var(--warm-cream) !important;
-}
-
-.Select-option:hover, .Select-option.is-focused {
-  background-color: var(--muted-violet) !important;
-  color: var(--white) !important;
-}
-
-.Select-value-label { color: var(--warm-cream) !important; }
-.Select-placeholder { color: var(--text-muted) !important; }
-
-/* ── Inputs ────────────────────────────────────────────────────────────── */
-input[type="text"], textarea {
-  background-color: var(--bg-card) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: 6px !important;
-  color: var(--warm-cream) !important;
-  padding: 8px 12px !important;
-}
-
-input[type="text"]:focus, textarea:focus {
-  border-color: var(--copper) !important;
-  outline: none !important;
-  box-shadow: 0 0 0 2px rgba(194,125,78,0.25) !important;
-}
-
-/* ── Buttons ───────────────────────────────────────────────────────────── */
-.btn-copper {
-  background-color: var(--copper) !important;
-  border-color: var(--copper) !important;
-  color: var(--white) !important;
-  font-weight: 600 !important;
-  border-radius: 6px !important;
-  transition: background-color 0.2s ease !important;
 }
 
 .btn-copper:hover {
-  background-color: var(--burnt-copper) !important;
-  border-color: var(--burnt-copper) !important;
+  background: var(--primary-light);
 }
 
 .btn-outline-copper {
-  background-color: transparent !important;
-  border: 1px solid var(--copper) !important;
-  color: var(--copper) !important;
-  border-radius: 6px !important;
-  font-weight: 500 !important;
-  transition: all 0.2s ease !important;
+  background: transparent;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .btn-outline-copper:hover {
-  background-color: var(--copper) !important;
-  color: var(--white) !important;
+  background: var(--primary);
+  color: #fff;
 }
-
-/* ── Confidence badges ─────────────────────────────────────────────────── */
-.badge-high     { background-color: #4CAF50; color: #fff; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
-.badge-review   { background-color: #FF9800; color: #fff; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
-.badge-low      { background-color: #F44336; color: #fff; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
-.badge-notfound { background-color: #9E9E9E; color: #fff; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
-
-/* ── Chatbot ───────────────────────────────────────────────────────────── */
-.chat-bubble-user {
-  background-color: var(--mauve-purple);
-  color: var(--white);
-  border-radius: 12px 12px 4px 12px;
-  padding: 10px 14px;
-  margin-bottom: 10px;
-  max-width: 80%;
-  margin-left: auto;
-  font-size: 14px;
-}
-
-.chat-bubble-assistant {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border);
-  color: var(--warm-cream);
-  border-radius: 12px 12px 12px 4px;
-  padding: 10px 14px;
-  margin-bottom: 10px;
-  max-width: 90%;
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.chat-input-area {
-  border-top: 1px solid var(--border);
-  padding-top: 12px;
-  display: flex;
-  gap: 8px;
-  align-items: flex-end;
-}
-
-/* ── Tabs ──────────────────────────────────────────────────────────────── */
-.tab--selected {
-  border-bottom: 2px solid var(--copper) !important;
-  color: var(--copper) !important;
-  background-color: transparent !important;
-}
-
-.tab {
-  color: var(--text-muted) !important;
-  background-color: transparent !important;
-  border: none !important;
-  padding: 10px 16px !important;
-  font-size: 13px !important;
-  font-weight: 500 !important;
-}
-
-.tab:hover { color: var(--warm-cream) !important; }
-
-/* ── Tooltips ──────────────────────────────────────────────────────────── */
-.dash-tooltip {
-  background-color: var(--dark-plum) !important;
-  border: 1px solid var(--copper) !important;
-  color: var(--warm-cream) !important;
-  border-radius: 6px !important;
-  font-size: 12px !important;
-}
-
-/* ── Section headers ───────────────────────────────────────────────────── */
-.acd-section-header {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--white);
-  margin-bottom: 16px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border);
-}
-
-/* ── Ambiguity flag chips ──────────────────────────────────────────────── */
-.flag-chip {
-  display: inline-block;
-  background-color: var(--muted-violet);
-  color: var(--warm-cream);
-  border-radius: 4px;
-  padding: 2px 7px;
-  font-size: 10px;
-  font-weight: 600;
-  margin-right: 4px;
-  letter-spacing: 0.5px;
-}
-
-.flag-chip.COMMON_NAME   { background-color: #F44336; }
-.flag-chip.HIGH_VOLUME   { background-color: #FF9800; }
-.flag-chip.WEAK_TOPIC    { background-color: #9C27B0; }
-.flag-chip.LLM_UNCERTAIN { background-color: #2196F3; }
-.flag-chip.COUNTRY_MISMATCH { background-color: #795548; }
-.flag-chip.NAME_ONLY     { background-color: #607D8B; }
-
-/* ── Loading spinner ───────────────────────────────────────────────────── */
-._dash-loading-callback {
-  background-color: rgba(27,20,36,0.8) !important;
-}
-
-/* ── Plotly modebar ────────────────────────────────────────────────────── */
-.modebar { background-color: transparent !important; }
-.modebar-btn path { fill: var(--text-muted) !important; }
-.modebar-btn:hover path { fill: var(--copper) !important; }
-
-/* ── Report incorrect match modal ─────────────────────────────────────── */
-.modal-content {
-  background-color: var(--dark-plum) !important;
-  border: 1px solid var(--border) !important;
-  color: var(--warm-cream) !important;
-}
-.modal-header { border-bottom: 1px solid var(--border) !important; }
-.modal-footer { border-top: 1px solid var(--border) !important; }

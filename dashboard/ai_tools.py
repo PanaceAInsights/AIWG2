@@ -195,3 +195,77 @@ def get_single_response(
 ) -> str:
     """Non-streaming response for programmatic use."""
     return "".join(stream_response(messages, system_snapshot))
+
+
+# ---------------------------------------------------------------------------
+# RMSANZ-compatible chat function (used by app.py callback)
+# ---------------------------------------------------------------------------
+def chat(
+    user_message: str,
+    history: list[dict] | None = None,
+) -> tuple[str, list[dict]]:
+    """Single-call chat with extended thinking and prompt caching.
+
+    Falls back gracefully: thinking → standard → plain.
+    Returns (assistant_text, updated_history).
+    """
+    import anthropic
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        return "Error: ANTHROPIC_API_KEY not configured.", list(history or [])
+
+    client = anthropic.Anthropic(api_key=api_key)
+    snapshot = build_context_snapshot()
+    system_text = _SYSTEM_PROMPT.format(snapshot=snapshot)
+    system_blocks = [
+        {"type": "text", "text": system_text, "cache_control": {"type": "ephemeral"}}
+    ]
+    messages = list(history or [])
+    messages.append({"role": "user", "content": user_message})
+
+    def _extract(response) -> str:
+        return "\n".join(
+            b.text for b in response.content
+            if getattr(b, "type", None) == "text" and hasattr(b, "text")
+        )
+
+    def _finalise(text: str) -> tuple[str, list[dict]]:
+        messages.append({"role": "assistant", "content": text})
+        trimmed = messages[-12:] if len(messages) > 12 else messages
+        return text, trimmed
+
+    # Attempt 1: extended thinking + caching
+    try:
+        resp = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=16_000,
+            thinking={"type": "enabled", "budget_tokens": 10_000},
+            system=system_blocks,
+            messages=messages,
+        )
+        return _finalise(_extract(resp))
+    except Exception as exc:
+        err = str(exc).lower()
+        if not any(k in err for k in ("thinking", "not supported", "invalid", "parameter")):
+            logger.warning("Thinking call failed (%s), trying standard", exc)
+
+    # Attempt 2: standard + caching
+    try:
+        resp = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=4_096,
+            system=system_blocks,
+            messages=messages,
+        )
+        return _finalise(_extract(resp))
+    except Exception as exc:
+        logger.warning("Cached call failed (%s), trying plain", exc)
+
+    # Attempt 3: plain
+    resp = client.messages.create(
+        model="claude-sonnet-4-20250514",
+        max_tokens=4_096,
+        system=system_text,
+        messages=messages,
+    )
+    return _finalise(_extract(resp))

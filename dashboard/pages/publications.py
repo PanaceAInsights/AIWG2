@@ -1,179 +1,206 @@
-"""ACD Dashboard — Publications page."""
+"""Publications tab — filterable AG Grid + DOI click-out + detail panel.
+
+Supports global filters, summary KPI tiles, publication detail panel
+on row selection, and per-view CSV export.
+"""
 from __future__ import annotations
 
-from dash import html, dcc, callback, Input, Output
-import dash_bootstrap_components as dbc
-from dash import dash_table
-import plotly.express as px
-import plotly.graph_objects as go
 import pandas as pd
+import dash_ag_grid as dag
+import dash_mantine_components as dmc
+from dash import dcc, html
+from dash_iconify import DashIconify
 
-from dashboard.theme import (
-    COPPER, MAUVE_PURPLE, LIGHT_COPPER, BG_CARD, BORDER_COLOR,
-    TEXT_MUTED, WHITE, WARM_CREAM, CHART_PALETTE, DARK_PLUM,
-    apply_plotly_theme, CARD_STYLE,
-)
-from dashboard.data import load_publications, get_all_subtopics
+from .. import data, theme
 
 PAGE_TITLE = "Publications"
 PAGE_HREF  = "/publications"
 
 
-def layout():
-    subtopics = ["All"] + get_all_subtopics()
-    return html.Div([
-        # Filters
-        html.Div([
-            dbc.Row([
-                dbc.Col([
-                    html.Label("Topic", style={"fontSize": "12px", "color": TEXT_MUTED}),
-                    dcc.Dropdown(
-                        id="pubs-topic-filter",
-                        options=[{"label": s, "value": s} for s in subtopics],
-                        value="All", clearable=False,
-                        style={"backgroundColor": BG_CARD, "color": WARM_CREAM},
-                    ),
-                ], md=3),
-                dbc.Col([
-                    html.Label("Year Range", style={"fontSize": "12px", "color": TEXT_MUTED}),
-                    dcc.RangeSlider(
-                        id="pubs-year-slider",
-                        min=2000, max=2026, step=1,
-                        marks={y: str(y) for y in range(2000, 2027, 5)},
-                        value=[2000, 2026],
-                        tooltip={"placement": "bottom", "always_visible": False},
-                    ),
-                ], md=5),
-                dbc.Col([
-                    html.Label("Derm-Relevant Only", style={"fontSize": "12px", "color": TEXT_MUTED}),
-                    dcc.Checklist(
-                        id="pubs-derm-only",
-                        options=[{"label": " Dermatology-relevant only", "value": "derm"}],
-                        value=[],
-                        style={"color": WARM_CREAM, "fontSize": "13px", "marginTop": "8px"},
-                    ),
-                ], md=2),
-                dbc.Col([
-                    html.Div(style={"height": "20px"}),
-                    html.Button("Export CSV", id="pubs-export-btn",
-                                className="btn-outline-copper",
-                                style={"width": "100%", "padding": "8px"}),
-                    dcc.Download(id="pubs-download"),
-                ], md=2),
-            ]),
-        ], className="acd-card"),
+def render() -> html.Div:
+    pubs = data.load_publications().copy()
 
-        # Charts
-        dbc.Row([
-            dbc.Col(html.Div([
-                html.Div("Publications by Year", className="acd-card-title"),
-                dcc.Graph(id="pubs-year-chart", config={"displayModeBar": False}),
-            ], className="acd-card"), md=8),
-            dbc.Col(html.Div([
-                html.Div("Open Access Status", className="acd-card-title"),
-                dcc.Graph(id="pubs-oa-pie", config={"displayModeBar": False}),
-            ], className="acd-card"), md=4),
+    keep_cols = [
+        "acd_name", "Year", "title", "type",
+        "fwci", "citations", "doi", "is_derm_relevant",
+    ]
+    for c in keep_cols:
+        if c not in pubs.columns:
+            pubs[c] = None
+    pubs = pubs[keep_cols]
+
+    col_defs = [
+        {"field": "acd_name", "headerName": "Member", "pinned": "left",
+         "minWidth": 180, "filter": "agTextColumnFilter"},
+        {"field": "Year", "headerName": "Year", "maxWidth": 90,
+         "type": "numericColumn", "sort": "desc"},
+        {"field": "title", "headerName": "Title", "minWidth": 420,
+         "tooltipField": "title", "filter": "agTextColumnFilter",
+         "wrapText": True, "autoHeight": True},
+        {"field": "type", "headerName": "Type", "maxWidth": 140,
+         "filter": "agTextColumnFilter"},
+        {"field": "fwci", "headerName": "FWCI", "maxWidth": 100,
+         "type": "numericColumn",
+         "headerTooltip": "Field-Weighted Citation Impact: >1.0 = above world average",
+         "valueFormatter": {"function": "params.value && params.value.toFixed(2)"}},
+        {"field": "citations", "headerName": "Citations", "maxWidth": 110,
+         "type": "numericColumn",
+         "valueFormatter": {"function": "params.value && d3.format(',')(params.value)"}},
+        {"field": "is_derm_relevant", "headerName": "Derm",
+         "maxWidth": 100, "filter": "agTextColumnFilter",
+         "headerTooltip": "Flagged as dermatology-relevant by keyword/MeSH classifier",
+         "cellStyle": {
+             "styleConditions": [
+                 {"condition": "params.value === true || params.value === 'True'",
+                  "style": {"color": "#10B981", "fontWeight": 600}},
+             ]
+         }},
+        {"field": "doi", "headerName": "DOI", "minWidth": 220,
+         "cellRenderer": "markdown",
+         "valueFormatter": {"function":
+             "params.value ? '[' + params.value + '](https://doi.org/' + params.value + ')' : ''"}},
+    ]
+
+    grid = dag.AgGrid(
+        id="pubs-grid",
+        rowData=pubs.fillna("").to_dict("records"),
+        columnDefs=col_defs,
+        defaultColDef={"sortable": True, "filter": True, "floatingFilter": True,
+                       "resizable": True},
+        dashGridOptions={
+            "pagination": True, "paginationPageSize": 50,
+            "animateRows": True, "rowHeight": 50,
+            "rowSelection": "single",
+            "suppressCellFocus": True,
+        },
+        className="ag-theme-alpine",
+        style={"height": "720px", "width": "100%"},
+        dangerously_allow_code=True,
+    )
+
+    kpi_row = html.Div(id="pubs-kpi-row", style={"marginBottom": "1rem"})
+
+    header = dmc.Group([
+        dmc.Stack([
+            dmc.Text("Publications", fw=700, size="xl"),
+            dmc.Text(
+                "Search, filter and explore publications. Click a row to see "
+                "details. Use DOI links to access the full text.",
+                size="sm", c="dimmed",
+            ),
+        ], gap=2),
+        dmc.Group([
+            dmc.Button(
+                "Export filtered",
+                id="pubs-export-btn",
+                leftSection=DashIconify(icon="tabler:download", width=16),
+                variant="light",
+                color="acd-copper",
+                size="xs",
+            ),
         ]),
+    ], justify="space-between", mb="md")
 
-        # Table
-        html.Div([
-            html.Div("Publication List", className="acd-section-header"),
-            html.Div(id="pubs-table-container"),
-        ], className="acd-card"),
+    detail_panel = html.Div(id="pub-detail-panel", style={"marginTop": "1rem"})
+
+    return html.Div([
+        header,
+        kpi_row,
+        html.Div(grid, className="section-card", style={"padding": "0.5rem"}),
+        detail_panel,
+        dcc.Download(id="pubs-download"),
     ])
 
 
-def _filter_pubs(topic, year_range, derm_only):
-    pubs = load_publications()
-    if pubs.empty:
-        return pubs
-    if topic and topic != "All" and "SubTopic" in pubs.columns:
-        pubs = pubs[pubs["SubTopic"] == topic]
-    if year_range and "Year" in pubs.columns:
-        pubs = pubs[pubs["Year"].between(year_range[0], year_range[1])]
-    if derm_only and "derm" in derm_only and "is_derm_relevant" in pubs.columns:
-        pubs = pubs[pubs["is_derm_relevant"] == True]
-    return pubs
+def build_pubs_kpi(row_data: list[dict]) -> dmc.SimpleGrid:
+    """Build reactive KPI tiles from the current (possibly filtered) grid data."""
+    df = pd.DataFrame(row_data) if row_data else pd.DataFrame()
+    total_pubs = len(df)
+    total_citations = int(
+        pd.to_numeric(df.get("citations", pd.Series()), errors="coerce").sum()
+    ) if total_pubs else 0
+    derm_count = 0
+    if "is_derm_relevant" in df.columns and total_pubs:
+        derm_count = int(df["is_derm_relevant"].apply(
+            lambda x: 1 if x is True or str(x).strip().lower() in ("true", "1") else 0
+        ).sum())
+    derm_pct = round(100 * derm_count / total_pubs, 1) if total_pubs else 0
+    fwci_vals = pd.to_numeric(df.get("fwci", pd.Series()), errors="coerce")
+    mean_fwci = round(float(fwci_vals.mean()), 2) if fwci_vals.notna().any() else 0
 
-
-@callback(
-    Output("pubs-year-chart", "figure"),
-    Input("pubs-topic-filter", "value"),
-    Input("pubs-year-slider", "value"),
-    Input("pubs-derm-only", "value"),
-)
-def update_year_chart(topic, year_range, derm_only):
-    pubs = _filter_pubs(topic, year_range, derm_only)
-    if pubs.empty or "Year" not in pubs.columns:
-        return go.Figure()
-    yearly = pubs.groupby("Year").size().reset_index(name="Publications")
-    fig = px.bar(yearly, x="Year", y="Publications", color_discrete_sequence=[COPPER])
-    apply_plotly_theme(fig)
-    fig.update_traces(marker_line_width=0)
-    return fig
-
-
-@callback(
-    Output("pubs-oa-pie", "figure"),
-    Input("pubs-topic-filter", "value"),
-    Input("pubs-year-slider", "value"),
-    Input("pubs-derm-only", "value"),
-)
-def update_oa_pie(topic, year_range, derm_only):
-    pubs = _filter_pubs(topic, year_range, derm_only)
-    oa_col = next((c for c in ["OA_Type", "Open_Access", "OA_Status", "open_access_status", "is_oa"] if c in pubs.columns), None)
-    if pubs.empty or not oa_col:
-        return go.Figure()
-    counts = pubs[oa_col].fillna("Unknown").value_counts().reset_index()
-    counts.columns = ["Status", "Count"]
-    fig = px.pie(counts, names="Status", values="Count",
-                 color_discrete_sequence=CHART_PALETTE, hole=0.4)
-    apply_plotly_theme(fig)
-    fig.update_traces(textfont_color=WHITE)
-    return fig
-
-
-@callback(
-    Output("pubs-table-container", "children"),
-    Input("pubs-topic-filter", "value"),
-    Input("pubs-year-slider", "value"),
-    Input("pubs-derm-only", "value"),
-)
-def update_table(topic, year_range, derm_only):
-    pubs = _filter_pubs(topic, year_range, derm_only)
-    if pubs.empty:
-        return html.Div("No publications found.", style={"color": TEXT_MUTED, "padding": "20px"})
-
-    display_cols = ["acd_name", "Title", "Year", "Journal", "CitedByCount", "SubTopic", "DOI"]
-    display_cols = [c for c in display_cols if c in pubs.columns]
-
-    return dash_table.DataTable(
-        data=pubs[display_cols].head(500).to_dict("records"),
-        columns=[{"name": c.replace("_", " ").title(), "id": c} for c in display_cols],
-        page_size=20,
-        sort_action="native",
-        filter_action="native",
-        style_table={"overflowX": "auto"},
-        style_cell={"backgroundColor": BG_CARD, "color": WARM_CREAM,
-                    "border": f"1px solid {BORDER_COLOR}", "fontSize": "13px",
-                    "padding": "8px 12px", "textAlign": "left",
-                    "maxWidth": "300px", "overflow": "hidden", "textOverflow": "ellipsis"},
-        style_header={"backgroundColor": DARK_PLUM, "color": COPPER,
-                      "fontWeight": "600", "fontSize": "12px",
-                      "textTransform": "uppercase", "letterSpacing": "0.5px"},
+    return dmc.SimpleGrid(
+        cols={"base": 2, "sm": 4},
+        spacing="sm",
+        children=[
+            dmc.Card([
+                dmc.Text("Total publications", size="xs", c="dimmed", tt="uppercase"),
+                dmc.Text(f"{total_pubs:,}", size="xl", fw=700),
+            ]),
+            dmc.Card([
+                dmc.Text("Total citations", size="xs", c="dimmed", tt="uppercase"),
+                dmc.Text(f"{total_citations:,}", size="xl", fw=700),
+            ]),
+            dmc.Card([
+                dmc.Text("Derm-relevant", size="xs", c="dimmed", tt="uppercase"),
+                dmc.Text(f"{derm_count:,} ({derm_pct}%)", size="xl", fw=700),
+            ]),
+            dmc.Card([
+                dmc.Text("Mean FWCI", size="xs", c="dimmed", tt="uppercase"),
+                dmc.Text(f"{mean_fwci}", size="xl", fw=700),
+            ]),
+        ],
     )
 
 
-@callback(
-    Output("pubs-download", "data"),
-    Input("pubs-export-btn", "n_clicks"),
-    Input("pubs-topic-filter", "value"),
-    Input("pubs-year-slider", "value"),
-    Input("pubs-derm-only", "value"),
-    prevent_initial_call=True,
-)
-def export_pubs(_, topic, year_range, derm_only):
-    pubs = _filter_pubs(topic, year_range, derm_only)
-    if pubs.empty:
-        return dcc.no_update
-    return dcc.send_data_frame(pubs.to_csv, "acd_publications.csv", index=False)
+def build_pub_detail(row: dict) -> html.Div:
+    """Build a detail card for a selected publication."""
+    title    = row.get("title", "Untitled")
+    doi      = row.get("doi", "")
+    year     = row.get("Year", "")
+    pub_type = row.get("type", "")
+    fwci     = row.get("fwci", "")
+    citations = row.get("citations", "")
+    member   = row.get("acd_name", "")
+    derm     = row.get("is_derm_relevant", False)
+
+    doi_link = None
+    if doi:
+        doi_link = dmc.Anchor(doi, href=f"https://doi.org/{doi}",
+                              target="_blank", size="sm")
+
+    derm_badge = dmc.Badge(
+        "Derm-relevant" if derm else "Not flagged",
+        color="green" if derm else "gray",
+        variant="light", size="sm",
+    )
+
+    return dmc.Card([
+        dmc.Group([
+            dmc.Text("Publication Detail", fw=600, size="md"),
+            derm_badge,
+        ], justify="space-between"),
+        dmc.Text(title, fw=500, size="sm", mt="xs", style={"lineHeight": 1.4}),
+        dmc.SimpleGrid(
+            cols={"base": 2, "sm": 4},
+            spacing="xs", mt="sm",
+            children=[
+                dmc.Stack([dmc.Text("Member", size="xs", c="dimmed"),
+                           dmc.Text(str(member), size="sm", fw=500)], gap=2),
+                dmc.Stack([dmc.Text("Year", size="xs", c="dimmed"),
+                           dmc.Text(str(year), size="sm", fw=500)], gap=2),
+                dmc.Stack([dmc.Text("Type", size="xs", c="dimmed"),
+                           dmc.Text(str(pub_type), size="sm", fw=500)], gap=2),
+                dmc.Stack([dmc.Text("FWCI", size="xs", c="dimmed"),
+                           dmc.Text(str(fwci) if fwci else "N/A", size="sm", fw=500)], gap=2),
+            ],
+        ),
+        dmc.Group([
+            dmc.Stack([dmc.Text("Citations", size="xs", c="dimmed"),
+                       dmc.Text(str(citations), size="sm", fw=500)], gap=2),
+            dmc.Stack([dmc.Text("DOI", size="xs", c="dimmed"),
+                       doi_link or dmc.Text("N/A", size="sm")], gap=2),
+        ], gap="xl", mt="sm"),
+    ], withBorder=True, mt="md", className="section-card")
+
+
+layout = render

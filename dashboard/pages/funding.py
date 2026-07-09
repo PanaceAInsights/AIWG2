@@ -1,140 +1,176 @@
-"""ACD Dashboard — Funding page."""
+"""Funding tab — funder breakdown + grant concentration + awards grid.
+
+All charts, KPIs and the awards grid are callback-driven so they react
+to the global filter bar.
+"""
 from __future__ import annotations
 
-from dash import html, dcc, callback, Input, Output
-import dash_bootstrap_components as dbc
-from dash import dash_table
-import plotly.express as px
-import plotly.graph_objects as go
+import dash_ag_grid as dag
+import dash_mantine_components as dmc
 import pandas as pd
+import plotly.graph_objects as go
+from dash import dcc, html
+from dash_iconify import DashIconify
 
-from dashboard.theme import (
-    COPPER, MAUVE_PURPLE, LIGHT_COPPER, BG_CARD, BORDER_COLOR,
-    TEXT_MUTED, WHITE, WARM_CREAM, CHART_PALETTE, DARK_PLUM,
-    apply_plotly_theme,
-)
-from dashboard.data import load_funding, get_all_states
+from .. import data, theme
 
 PAGE_TITLE = "Funding"
 PAGE_HREF  = "/funding"
 
 
-def layout():
-    states = ["All"] + get_all_states()
-    return html.Div([
-        html.Div([
-            dbc.Row([
-                dbc.Col([
-                    html.Label("State", style={"fontSize": "12px", "color": TEXT_MUTED}),
-                    dcc.Dropdown(
-                        id="funding-state-filter",
-                        options=[{"label": s, "value": s} for s in states],
-                        value="All", clearable=False,
-                        style={"backgroundColor": BG_CARD},
-                    ),
-                ], md=3),
-                dbc.Col([
-                    html.Div(style={"height": "20px"}),
-                    html.Button("Export CSV", id="funding-export-btn",
-                                className="btn-outline-copper",
-                                style={"padding": "8px 16px"}),
-                    dcc.Download(id="funding-download"),
-                ], md=2),
-            ]),
-        ], className="acd-card"),
-
-        dbc.Row([
-            dbc.Col(html.Div([
-                html.Div("Top Funded Researchers", className="acd-card-title"),
-                dcc.Graph(id="funding-top-bar", config={"displayModeBar": False}),
-            ], className="acd-card"), md=7),
-            dbc.Col(html.Div([
-                html.Div("Funding by Source", className="acd-card-title"),
-                dcc.Graph(id="funding-source-pie", config={"displayModeBar": False}),
-            ], className="acd-card"), md=5),
-        ]),
-
-        html.Div([
-            html.Div("Funding Grants", className="acd-section-header"),
-            html.Div(id="funding-table-container"),
-        ], className="acd-card"),
-    ])
-
-
-@callback(
-    Output("funding-top-bar", "figure"),
-    Input("funding-state-filter", "value"),
-)
-def update_top_bar(state):
-    df = load_funding()
-    if df.empty:
+def build_funders_bar(df: pd.DataFrame, n: int = 15) -> go.Figure:
+    if df.empty or "funder_name" not in df.columns:
         return go.Figure()
-    amount_col = next((c for c in ["amount", "Amount", "award_amount"] if c in df.columns), None)
-    if not amount_col:
-        # Count grants
-        top = df.groupby("acd_name").size().reset_index(name="grants").nlargest(20, "grants")
-        fig = px.bar(top, x="grants", y="acd_name", orientation="h",
-                     color_discrete_sequence=[COPPER])
-    else:
-        top = df.groupby("acd_name")[amount_col].sum().reset_index().nlargest(20, amount_col)
-        fig = px.bar(top, x=amount_col, y="acd_name", orientation="h",
-                     color_discrete_sequence=[COPPER])
-    apply_plotly_theme(fig)
-    fig.update_layout(yaxis=dict(autorange="reversed"), margin=dict(l=10, r=10, t=10, b=10))
-    fig.update_traces(marker_line_width=0)
+    top = (
+        df["funder_name"].fillna("").replace("", "(unknown)")
+        .value_counts().head(n).iloc[::-1]
+    )
+    fig = go.Figure(go.Bar(
+        y=top.index, x=top.values,
+        orientation="h", marker_color=theme.PINK,
+        hovertemplate="%{y}<br>%{x} awards<extra></extra>",
+    ))
+    fig.update_layout(
+        title=f"Top {n} funders by award count",
+        xaxis_title="Awards", yaxis_title="",
+        height=460, margin=dict(l=260),
+    )
     return fig
 
 
-@callback(
-    Output("funding-source-pie", "figure"),
-    Input("funding-state-filter", "value"),
-)
-def update_source_pie(_):
-    df = load_funding()
-    funder_col = next((c for c in ["funder_name", "funder", "Funder", "source", "agency"] if c in df.columns), None)
-    if df.empty or not funder_col:
+def build_grants_treemap(summary: pd.DataFrame) -> go.Figure:
+    if summary.empty or "grants_count" not in summary.columns:
         return go.Figure()
-    counts = df[funder_col].fillna("Unknown").value_counts().head(10).reset_index()
-    counts.columns = ["Funder", "Count"]
-    fig = px.pie(counts, names="Funder", values="Count",
-                 color_discrete_sequence=CHART_PALETTE, hole=0.4)
-    apply_plotly_theme(fig)
-    fig.update_traces(textfont_color=WHITE)
+    df = summary.dropna(subset=["grants_count"]).copy()
+    df = df[df["grants_count"] > 0].sort_values("grants_count", ascending=False).head(60)
+    if df.empty:
+        return go.Figure()
+    name_col = next((c for c in ("acd_name", "rams_name") if c in df.columns), None)
+    if name_col is None:
+        return go.Figure()
+    fig = go.Figure(go.Treemap(
+        labels=df[name_col],
+        parents=[""] * len(df),
+        values=df["grants_count"].astype(int),
+        hovertemplate="%{label}<br>%{value} grants<extra></extra>",
+        marker=dict(
+            colors=df["grants_count"].astype(int),
+            colorscale=[[0, theme.PRIMARY_SOFT], [1, theme.PRIMARY]],
+            showscale=False,
+        ),
+        tiling=dict(packing="squarify"),
+    ))
+    fig.update_layout(
+        title="Grant concentration across the top 60 members",
+        height=480, margin=dict(l=8, r=8, t=48, b=8),
+    )
     return fig
 
 
-@callback(
-    Output("funding-table-container", "children"),
-    Input("funding-state-filter", "value"),
-)
-def update_table(state):
-    df = load_funding()
-    if df.empty:
-        return html.Div("No funding data loaded.", style={"color": TEXT_MUTED, "padding": "20px"})
-    display_cols = [c for c in ["acd_name", "funder_name", "award_id", "award_name", "title", "funder", "amount", "year", "grant_id"] if c in df.columns]
-    return dash_table.DataTable(
-        data=df[display_cols].head(500).to_dict("records"),
-        columns=[{"name": c.replace("_", " ").title(), "id": c} for c in display_cols],
-        page_size=20,
-        sort_action="native",
-        filter_action="native",
-        style_table={"overflowX": "auto"},
-        style_cell={"backgroundColor": BG_CARD, "color": WARM_CREAM,
-                    "border": f"1px solid {BORDER_COLOR}", "fontSize": "13px",
-                    "padding": "8px 12px"},
-        style_header={"backgroundColor": DARK_PLUM, "color": COPPER,
-                      "fontWeight": "600", "fontSize": "12px",
-                      "textTransform": "uppercase"},
+def build_funding_kpi(df: pd.DataFrame) -> dmc.SimpleGrid:
+    total_awards   = len(df)
+    unique_funders = df["funder_name"].nunique() if "funder_name" in df.columns else 0
+    name_col = next((c for c in ("acd_name", "rams_name") if c in df.columns), None)
+    unique_members = df[name_col].nunique() if name_col else 0
+    return dmc.SimpleGrid(
+        cols={"base": 2, "sm": 3},
+        spacing="sm", mb="md",
+        children=[
+            dmc.Card([dmc.Text("Total awards", size="xs", c="dimmed", tt="uppercase"),
+                      dmc.Text(f"{total_awards:,}", size="xl", fw=700)]),
+            dmc.Card([dmc.Text("Unique funders", size="xs", c="dimmed", tt="uppercase"),
+                      dmc.Text(f"{unique_funders:,}", size="xl", fw=700)]),
+            dmc.Card([dmc.Text("Members funded", size="xs", c="dimmed", tt="uppercase"),
+                      dmc.Text(f"{unique_members:,}", size="xl", fw=700)]),
+        ],
     )
 
 
-@callback(
-    Output("funding-download", "data"),
-    Input("funding-export-btn", "n_clicks"),
-    prevent_initial_call=True,
-)
-def export_funding(_):
-    df = load_funding()
-    if df.empty:
-        return dcc.no_update
-    return dcc.send_data_frame(df.to_csv, "acd_funding.csv", index=False)
+def render() -> html.Div:
+    funding  = data.load_funding()
+    name_col = next((c for c in ("acd_name", "rams_name") if c in funding.columns), "acd_name")
+    cols = [c for c in (name_col, "funder_name", "award_id", "award_name", "funder_ror")
+            if c in funding.columns]
+    grid_data = funding[cols].fillna("").to_dict("records") if not funding.empty else []
+
+    grid_col_defs = [
+        {"field": name_col, "headerName": "Member", "minWidth": 180,
+         "filter": "agTextColumnFilter", "pinned": "left"},
+        {"field": "funder_name", "headerName": "Funder", "minWidth": 260,
+         "filter": "agTextColumnFilter"},
+        {"field": "award_id", "headerName": "Award ID", "minWidth": 140},
+        {"field": "award_name", "headerName": "Award name", "minWidth": 360,
+         "wrapText": True, "autoHeight": True},
+    ]
+
+    header = dmc.Group([
+        dmc.Stack([
+            dmc.Text("Funding", fw=700, size="xl"),
+            dmc.Text(
+                "Who is funding ACD-aligned research? Funders, award "
+                "counts, and per-member concentration.",
+                size="sm", c="dimmed",
+            ),
+            dmc.Text(
+                "The term 'funding' covers grants, fellowships and "
+                "other funding records identified through OpenAlex.",
+                size="xs", c="dimmed", fs="italic",
+            ),
+        ], gap=2),
+        dmc.Button(
+            "Export funding",
+            id="funding-export-btn",
+            leftSection=DashIconify(icon="tabler:download", width=16),
+            variant="light",
+            color="acd-copper",
+            size="xs",
+        ),
+    ], justify="space-between", mb="md")
+
+    kpi_row = html.Div(id="funding-kpi-row")
+
+    row1 = dmc.Grid([
+        dmc.GridCol(
+            html.Div([
+                html.Div("Funders", className="section-title"),
+                dcc.Graph(id="funding-funders-bar",
+                          config={"displayModeBar": False},
+                          style={"height": "460px"}),
+            ], className="section-card", style={"minHeight": "510px"}),
+            span={"base": 12, "md": 6},
+        ),
+        dmc.GridCol(
+            html.Div([
+                html.Div("Grant concentration", className="section-title"),
+                dcc.Graph(id="funding-treemap",
+                          config={"displayModeBar": False},
+                          style={"height": "480px"}),
+            ], className="section-card", style={"minHeight": "530px"}),
+            span={"base": 12, "md": 6},
+        ),
+    ], gutter="lg")
+
+    row2 = dmc.Grid([
+        dmc.GridCol(
+            html.Div([
+                html.Div("All awards", className="section-title"),
+                dag.AgGrid(
+                    id="funding-grid",
+                    rowData=grid_data,
+                    columnDefs=grid_col_defs,
+                    defaultColDef={"sortable": True, "filter": True,
+                                   "resizable": True, "floatingFilter": True},
+                    dashGridOptions={"pagination": True, "paginationPageSize": 25,
+                                     "animateRows": True, "rowHeight": 40},
+                    className="ag-theme-alpine",
+                    style={"height": "520px", "width": "100%"},
+                ),
+            ], className="section-card", style={"padding": "0.5rem"}),
+            span=12,
+        ),
+    ], mt="lg")
+
+    return html.Div([header, kpi_row, row1, row2, dcc.Download(id="funding-download")])
+
+
+layout = render
