@@ -82,10 +82,16 @@ def _build_tile(row: pd.Series) -> html.Div:
     )
 
 
-def _build_tiles(df: pd.DataFrame) -> html.Div:
-    tiles = [_build_tile(row) for _, row in df.iterrows()]
-    if not tiles:
+PAGE_SIZE = 48
+
+
+def _build_tiles(df: pd.DataFrame, page: int = 1) -> html.Div:
+    """Render one page of tiles (PAGE_SIZE per page) to avoid browser hang."""
+    if df.empty:
         return html.Div("No members match the current filters.", className="empty-state")
+    start = (page - 1) * PAGE_SIZE
+    end   = start + PAGE_SIZE
+    tiles = [_build_tile(row) for _, row in df.iloc[start:end].iterrows()]
     return html.Div(tiles, className="profile-grid")
 
 
@@ -300,7 +306,24 @@ def render(
                   "marginBottom": 16, "flexWrap": "wrap", "gap": 12}),
 
         # ── Tile grid ─────────────────────────────────────────────────────────
-        html.Div(id="profiles-tile-grid", children=_build_tiles(authors)),
+        html.Div(id="profiles-tile-grid", children=_build_tiles(authors, 1)),
+        # ── Pagination ────────────────────────────────────────────────────────
+        html.Div(
+            dmc.Pagination(
+                id="profiles-page",
+                total=max(1, math.ceil(total / PAGE_SIZE)),
+                value=1,
+                siblings=2,
+                color="copper",
+                size="sm",
+            ),
+            style={"display": "flex", "justifyContent": "center",
+                   "marginTop": 24, "marginBottom": 8},
+        ),
+        # Store the serialised author list for the pagination callback
+        dcc.Store(id="profiles-authors-store",
+                  data=authors[["acd_name"] + [c for c in authors.columns
+                                               if c != "acd_name"]].to_json(orient="records")),
 
         # ── Detail drawer ─────────────────────────────────────────────────────
         dmc.Drawer(

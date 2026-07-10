@@ -206,16 +206,20 @@ def profile_tile_clicked(n_clicks_list):
 
 @callback(
     Output("profiles-tile-grid", "children"),
+    Output("profiles-authors-store", "data"),
+    Output("profiles-page", "total"),
+    Output("profiles-page", "value"),
     Input("roster-search", "value"),
     Input("roster-scope", "value"),
     Input("global-filters", "data"),
 )
 def apply_roster_filters(search_value: str, scope: str, gf: dict):
-    """Re-render tile grid based on search, scope and global filters."""
-    from .pages.profiles import _build_tiles
+    """Re-render tile grid (page 1) and update pagination on filter change."""
+    import math as _math
+    from .pages.profiles import _build_tiles, PAGE_SIZE
     authors = data.load_authors().copy()
     if authors.empty:
-        return []
+        return [], "[]", 1, 1
     summary = data.load_summary()
     _want = ["acd_name", "pub_count", "citation_count", "h_index",
              "fwci_mean", "oa_rate", "grants_count", "derm_relevance_rate",
@@ -246,7 +250,25 @@ def apply_roster_filters(search_value: str, scope: str, gf: dict):
     authors = authors.sort_values(
         ["accepted", "h_index"], ascending=[False, False], na_position="last"
     ).reset_index(drop=True)
-    return _build_tiles(authors)
+    total_pages = max(1, _math.ceil(len(authors) / PAGE_SIZE))
+    store_data  = authors.to_json(orient="records")
+    return _build_tiles(authors, 1), store_data, total_pages, 1
+
+
+@callback(
+    Output("profiles-tile-grid", "children", allow_duplicate=True),
+    Input("profiles-page", "value"),
+    State("profiles-authors-store", "data"),
+    prevent_initial_call=True,
+)
+def paginate_profiles(page: int, store_data: str):
+    """Render the requested page of tiles from the cached author store."""
+    import json
+    from .pages.profiles import _build_tiles, PAGE_SIZE
+    if not store_data:
+        return no_update
+    authors = pd.DataFrame(json.loads(store_data))
+    return _build_tiles(authors, page or 1)
 
 
 @callback(
