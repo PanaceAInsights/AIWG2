@@ -227,6 +227,9 @@ def apply_roster_filters(search_value: str, scope: str, gf: dict):
     if not summary.empty:
         _available = [c for c in _want if c in summary.columns]
         if "acd_name" in _available and "acd_name" in authors.columns:
+            # Drop columns from authors that also exist in summary to avoid _x/_y suffixes
+            _overlap = [c for c in _available if c != "acd_name" and c in authors.columns]
+            authors = authors.drop(columns=_overlap, errors="ignore")
             authors = authors.merge(summary[_available], on="acd_name", how="left")
     for c in _want[1:]:
         if c not in authors.columns:
@@ -289,6 +292,8 @@ def export_roster_csv(n_clicks, scope, search_value, gf):
     if not summary.empty:
         _available = [c for c in _want if c in summary.columns]
         if "acd_name" in _available:
+            _overlap = [c for c in _available if c != "acd_name" and c in authors.columns]
+            authors = authors.drop(columns=_overlap, errors="ignore")
             authors = authors.merge(summary[_available], on="acd_name", how="left")
     if scope == "resolved":
         authors = authors[authors["accepted"] == True]

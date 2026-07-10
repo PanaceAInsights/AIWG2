@@ -221,6 +221,9 @@ def render(
     if not summary.empty:
         avail = [c for c in merge_cols if c in summary.columns]
         if "acd_name" in avail:
+            # Drop overlapping columns from authors to avoid _x/_y suffixes after merge
+            _overlap = [c for c in avail if c != "acd_name" and c in authors.columns]
+            authors = authors.drop(columns=_overlap, errors="ignore")
             authors = authors.merge(summary[avail], on="acd_name", how="left")
 
     for c in merge_cols[1:]:
