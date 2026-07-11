@@ -48,37 +48,48 @@ def _build_tile(row: pd.Series) -> html.Div:
     citations = _fmt(row.get("citation_count"))
     fwci      = _fmt(row.get("fwci_mean"), 2)
 
+    # Clinical expertise (truncated for tile)
+    _ce = row.get("clinical_expertise")
+    clinical_exp = str(_ce).split("|")[0].strip()[:80] if _ce and not (isinstance(_ce, float) and math.isnan(_ce)) else ""
+
     meta_parts = [p for p in [state, inst] if p and p != "—" and isinstance(p, str)]
     meta_str   = " · ".join(meta_parts) if meta_parts else "Location unknown"
+
+    children = [
+        _confidence_badge(conf, accepted),
+        html.Div(name, className="profile-tile-name"),
+        html.Div(meta_str, className="profile-tile-meta"),
+        html.Div([html.Span(spec, className="profile-tile-tag")],
+                 className="profile-tile-tags"),
+        html.Div([
+            html.Div([
+                html.Div(pub_count, className="profile-tile-metric-value"),
+                html.Div("Pubs", className="profile-tile-metric-label"),
+            ], className="profile-tile-metric"),
+            html.Div([
+                html.Div(h_index, className="profile-tile-metric-value"),
+                html.Div("h-index", className="profile-tile-metric-label"),
+            ], className="profile-tile-metric"),
+            html.Div([
+                html.Div(citations, className="profile-tile-metric-value"),
+                html.Div("Citations", className="profile-tile-metric-label"),
+            ], className="profile-tile-metric"),
+            html.Div([
+                html.Div(fwci, className="profile-tile-metric-value"),
+                html.Div("FWCI", className="profile-tile-metric-label"),
+            ], className="profile-tile-metric"),
+        ], className="profile-tile-metrics"),
+    ]
+
+    if clinical_exp:
+        children.append(
+            html.Div(clinical_exp, className="profile-tile-expertise")
+        )
 
     return html.Div(
         id={"type": "profile-tile", "index": name},
         className="profile-tile",
-        children=[
-            _confidence_badge(conf, accepted),
-            html.Div(name, className="profile-tile-name"),
-            html.Div(meta_str, className="profile-tile-meta"),
-            html.Div([html.Span(spec, className="profile-tile-tag")],
-                     className="profile-tile-tags"),
-            html.Div([
-                html.Div([
-                    html.Div(pub_count, className="profile-tile-metric-value"),
-                    html.Div("Pubs", className="profile-tile-metric-label"),
-                ], className="profile-tile-metric"),
-                html.Div([
-                    html.Div(h_index, className="profile-tile-metric-value"),
-                    html.Div("h-index", className="profile-tile-metric-label"),
-                ], className="profile-tile-metric"),
-                html.Div([
-                    html.Div(citations, className="profile-tile-metric-value"),
-                    html.Div("Citations", className="profile-tile-metric-label"),
-                ], className="profile-tile-metric"),
-                html.Div([
-                    html.Div(fwci, className="profile-tile-metric-value"),
-                    html.Div("FWCI", className="profile-tile-metric-label"),
-                ], className="profile-tile-metric"),
-            ], className="profile-tile-metrics"),
-        ],
+        children=children,
     )
 
 
@@ -164,6 +175,12 @@ def build_profile_card(name: str) -> html.Div:
     grants_count = len(funding_df) if funding_df is not None and not funding_df.empty else 0
     trials_count = len(trials_df) if trials_df is not None and not trials_df.empty else 0
 
+    # Expertise fields
+    _ce = row.get("clinical_expertise")
+    clinical_exp = str(_ce) if _ce and not (isinstance(_ce, float) and math.isnan(_ce)) else ""
+    _re = row.get("research_expertise")
+    research_exp = str(_re) if _re and not (isinstance(_re, float) and math.isnan(_re)) else ""
+
     children = [
         html.Div(name, style={"fontWeight": 700, "fontSize": 16,
                                "color": theme.TEXT_PRIMARY, "marginBottom": 4}),
@@ -179,6 +196,24 @@ def build_profile_card(name: str) -> html.Div:
             _stat("Derm-relevant",
                   f"{derm_pct*100:.0f}%" if derm_pct is not None else "—"),
         ], style={"marginBottom": 16}),
+    ]
+
+    # Clinical expertise section
+    if clinical_exp:
+        children.append(html.Div([
+            html.Div("Clinical Expertise", className="profile-detail-expertise-title"),
+            html.Div(clinical_exp, className="profile-detail-expertise-text"),
+        ], className="profile-detail-expertise"))
+
+    # Research expertise section (as chips)
+    if research_exp:
+        topics = [t.strip() for t in research_exp.split(";") if t.strip()]
+        children.append(html.Div([
+            html.Div("Research Topics", className="profile-detail-expertise-title"),
+            html.Div([html.Span(t, className="expertise-chip") for t in topics[:6]]),
+        ], className="profile-detail-expertise"))
+
+    children.extend([
         html.Div("Publication timeline",
                  style={"fontWeight": 600, "fontSize": 13,
                         "color": theme.TEXT_PRIMARY, "marginBottom": 4}),
@@ -190,7 +225,7 @@ def build_profile_card(name: str) -> html.Div:
         html.Div(pub_rows if pub_rows else
                  [html.Div("No publications on record.",
                            style={"color": theme.TEXT_MUTED, "fontSize": 12})]),
-    ]
+    ])
 
     if profile_url:
         children.append(html.Div(
@@ -217,7 +252,7 @@ def render(
 
     merge_cols = ["acd_name", "pub_count", "citation_count", "h_index",
                   "fwci_mean", "oa_rate", "grants_count", "derm_relevance_rate",
-                  "intl_collab_rate"]
+                  "intl_collab_rate", "clinical_expertise", "research_expertise"]
     if not summary.empty:
         avail = [c for c in merge_cols if c in summary.columns]
         if "acd_name" in avail:
@@ -247,7 +282,9 @@ def render(
         q = search_text.lower()
         mask = (
             authors["acd_name"].str.lower().str.contains(q, na=False) |
-            authors["last_known_institution"].fillna("").str.lower().str.contains(q, na=False)
+            authors["last_known_institution"].fillna("").str.lower().str.contains(q, na=False) |
+            authors["clinical_expertise"].fillna("").str.lower().str.contains(q, na=False) |
+            authors["research_expertise"].fillna("").str.lower().str.contains(q, na=False)
         )
         authors = authors[mask]
 

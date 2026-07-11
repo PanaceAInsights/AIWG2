@@ -223,7 +223,7 @@ def apply_roster_filters(search_value: str, scope: str, gf: dict):
     summary = data.load_summary()
     _want = ["acd_name", "pub_count", "citation_count", "h_index",
              "fwci_mean", "oa_rate", "grants_count", "derm_relevance_rate",
-             "intl_collab_rate"]
+             "intl_collab_rate", "clinical_expertise", "research_expertise"]
     if not summary.empty:
         _available = [c for c in _want if c in summary.columns]
         if "acd_name" in _available and "acd_name" in authors.columns:
@@ -247,7 +247,9 @@ def apply_roster_filters(search_value: str, scope: str, gf: dict):
     if q:
         mask = (
             authors["acd_name"].str.lower().str.contains(q, na=False) |
-            authors["last_known_institution"].fillna("").str.lower().str.contains(q, na=False)
+            authors["last_known_institution"].fillna("").str.lower().str.contains(q, na=False) |
+            authors["clinical_expertise"].fillna("").str.lower().str.contains(q, na=False) |
+            authors["research_expertise"].fillna("").str.lower().str.contains(q, na=False)
         )
         authors = authors[mask]
     authors = authors.sort_values(
@@ -288,7 +290,8 @@ def export_roster_csv(n_clicks, scope, search_value, gf):
     authors = data.load_authors().copy()
     summary = data.load_summary()
     _want = ["acd_name", "pub_count", "citation_count", "h_index",
-             "fwci_mean", "oa_rate", "grants_count", "derm_relevance_rate"]
+             "fwci_mean", "oa_rate", "grants_count", "derm_relevance_rate",
+             "clinical_expertise", "research_expertise"]
     if not summary.empty:
         _available = [c for c in _want if c in summary.columns]
         if "acd_name" in _available:
@@ -305,7 +308,9 @@ def export_roster_csv(n_clicks, scope, search_value, gf):
     if q:
         mask = (
             authors["acd_name"].str.lower().str.contains(q, na=False) |
-            authors["last_known_institution"].fillna("").str.lower().str.contains(q, na=False)
+            authors["last_known_institution"].fillna("").str.lower().str.contains(q, na=False) |
+            authors["clinical_expertise"].fillna("").str.lower().str.contains(q, na=False) |
+            authors["research_expertise"].fillna("").str.lower().str.contains(q, na=False)
         )
         authors = authors[mask]
     buf = io.StringIO()
