@@ -177,11 +177,16 @@ def load_stats() -> pd.DataFrame:
     for c in numeric_cols:
         if c in df.columns:
             df[c] = pd.to_numeric(df[c], errors="coerce")
-    # Column aliases for backward compatibility
+    # Column aliases for backward compatibility (both directions)
     if "citation_count" in df.columns and "total_citations" not in df.columns:
         df["total_citations"] = df["citation_count"]
     if "pub_count" in df.columns and "total_works" not in df.columns:
         df["total_works"] = df["pub_count"]
+    # Reverse aliases: works_count/total_citations → pub_count/citation_count
+    if "works_count" in df.columns and "pub_count" not in df.columns:
+        df["pub_count"] = df["works_count"]
+    if "total_citations" in df.columns and "citation_count" not in df.columns:
+        df["citation_count"] = df["total_citations"]
     # Join state
     if "state" not in df.columns and "acd_name" in df.columns:
         authors = load_authors()
