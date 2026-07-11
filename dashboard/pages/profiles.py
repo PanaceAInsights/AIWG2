@@ -120,7 +120,53 @@ def build_profile_card(name: str) -> html.Div:
                      style={"color": theme.TEXT_MUTED, "fontSize": 12, "marginTop": 6}),
         ])
 
+    # --- Data loading ---
     pubs_df = data.member_publications(name)
+    counts_by_year = data.member_counts_by_year(name)
+    grants_detail = data.member_grants_detail(name)
+    topics_detail = data.member_topics_detail(name)
+
+    # --- Publication timeline chart (from OpenAlex counts_by_year) ---
+    pub_chart = go.Figure()
+    cite_chart = go.Figure()
+    if counts_by_year:
+        years = [c["year"] for c in counts_by_year if c.get("year")]
+        works = [c.get("works_count", 0) for c in counts_by_year if c.get("year")]
+        cites = [c.get("cited_by_count", 0) for c in counts_by_year if c.get("year")]
+        pub_chart.add_trace(go.Bar(
+            x=years, y=works,
+            marker_color=theme.COPPER,
+            hovertemplate="%{x}: %{y} publications<extra></extra>",
+        ))
+        cite_chart.add_trace(go.Bar(
+            x=years, y=cites,
+            marker_color=theme.COPPER_LIGHT,
+            hovertemplate="%{x}: %{y} citations<extra></extra>",
+        ))
+    elif pubs_df is not None and not pubs_df.empty:
+        # Fallback to publications CSV
+        year_col = next((c for c in ("year", "Year") if c in pubs_df.columns), None)
+        if year_col:
+            years = pubs_df[year_col].dropna().astype(int)
+            yc = years.value_counts().sort_index()
+            pub_chart.add_trace(go.Bar(
+                x=yc.index, y=yc.values,
+                marker_color=theme.COPPER,
+                hovertemplate="%{x}: %{y} pubs<extra></extra>",
+            ))
+
+    _chart_layout = dict(
+        height=130, margin=dict(l=36, r=8, t=4, b=28),
+        paper_bgcolor=theme.BG_CARD, plot_bgcolor=theme.BG_CARD,
+        font=dict(color=theme.TEXT_MUTED, size=10),
+        xaxis=dict(gridcolor=theme.BORDER, linecolor=theme.BORDER),
+        yaxis=dict(gridcolor=theme.BORDER, linecolor=theme.BORDER),
+        showlegend=False,
+    )
+    pub_chart.update_layout(**_chart_layout)
+    cite_chart.update_layout(**_chart_layout)
+
+    # --- Recent publications list ---
     pub_rows = []
     if pubs_df is not None and not pubs_df.empty:
         for _, p in pubs_df.head(5).iterrows():
@@ -128,36 +174,16 @@ def build_profile_card(name: str) -> html.Div:
                 html.Div(p.get("title", "Untitled"),
                          style={"fontSize": 12, "color": theme.TEXT_SECONDARY,
                                 "fontWeight": 500}),
-                html.Div(f"{p.get('year', '')}  ·  {p.get('cited_by_count', 0):,} citations",
+                html.Div(f"{p.get('year', '')}  \u00b7  {p.get('cited_by_count', 0):,} citations",
                          style={"fontSize": 11, "color": theme.TEXT_MUTED}),
             ], style={"marginBottom": 8, "paddingBottom": 8,
                       "borderBottom": f"1px solid {theme.BORDER}"}))
 
-    # Pub-year sparkline
-    spark = go.Figure()
-    if pubs_df is not None and not pubs_df.empty:
-        year_col = next((c for c in ("year", "Year") if c in pubs_df.columns), None)
-        if year_col:
-            years = pubs_df[year_col].dropna().astype(int)
-            yc = years.value_counts().sort_index()
-            spark.add_trace(go.Bar(
-                x=yc.index, y=yc.values,
-                marker_color=theme.COPPER,
-                hovertemplate="%{x}: %{y} pubs<extra></extra>",
-            ))
-    spark.update_layout(
-        height=140, margin=dict(l=36, r=8, t=4, b=28),
-        paper_bgcolor=theme.BG_CARD, plot_bgcolor=theme.BG_CARD,
-        font=dict(color=theme.TEXT_MUTED, size=11),
-        xaxis=dict(gridcolor=theme.BORDER, linecolor=theme.BORDER),
-        yaxis=dict(gridcolor=theme.BORDER, linecolor=theme.BORDER),
-        showlegend=False,
-    )
-
+    # --- Helper ---
     def _stat(label, val):
         return html.Div([
             html.Span(label + ": ", style={"color": theme.TEXT_MUTED, "fontSize": 12}),
-            html.Span(str(val) if val is not None else "—",
+            html.Span(str(val) if val is not None else "\u2014",
                       style={"color": theme.COPPER, "fontWeight": 700, "fontSize": 13}),
         ], style={"marginBottom": 4})
 
@@ -170,33 +196,60 @@ def build_profile_card(name: str) -> html.Div:
     derm_pct = row.get("derm_relevance_rate")
     intl     = row.get("intl_collab_rate")
 
+    # Grants count from new detailed data
+    n_funders = len(grants_detail.get("funders", []))
+    n_awards = len(grants_detail.get("awards", []))
+
     funding_df = data.member_funding(name)
     trials_df  = data.member_trials(name)
-    grants_count = len(funding_df) if funding_df is not None and not funding_df.empty else 0
     trials_count = len(trials_df) if trials_df is not None and not trials_df.empty else 0
 
     # Expertise fields
     _ce = row.get("clinical_expertise")
     clinical_exp = str(_ce) if _ce and not (isinstance(_ce, float) and math.isnan(_ce)) else ""
-    _re = row.get("research_expertise")
-    research_exp = str(_re) if _re and not (isinstance(_re, float) and math.isnan(_re)) else ""
+    _rex = row.get("research_expertise")
+    research_exp = str(_rex) if _rex and not (isinstance(_rex, float) and math.isnan(_rex)) else ""
 
+    # ORCID
+    orcid = row.get("orcid", "")
+    if orcid and str(orcid) != "nan":
+        orcid = str(orcid).strip()
+    else:
+        orcid = ""
+
+    # --- Build children ---
     children = [
+        # Header
         html.Div(name, style={"fontWeight": 700, "fontSize": 16,
                                "color": theme.TEXT_PRIMARY, "marginBottom": 4}),
-        html.Div(inst, style={"fontSize": 12, "color": theme.TEXT_MUTED, "marginBottom": 12}),
-        html.Div([
-            _stat("Publications", _fmt(row.get("pub_count"))),
-            _stat("h-index", _fmt(row.get("h_index"))),
-            _stat("Citations", _fmt(row.get("citation_count"))),
-            _stat("Mean FWCI", _fmt(row.get("fwci_mean"), 2)),
-            _stat("Open Access", f"{oa_rate*100:.0f}%" if oa_rate is not None else "—"),
-            _stat("Grants", grants_count),
-            _stat("Clinical Trials", trials_count),
-            _stat("Derm-relevant",
-                  f"{derm_pct*100:.0f}%" if derm_pct is not None else "—"),
-        ], style={"marginBottom": 16}),
+        html.Div(inst, style={"fontSize": 12, "color": theme.TEXT_MUTED, "marginBottom": 4}),
     ]
+
+    # ORCID link
+    if orcid:
+        children.append(html.Div(
+            html.A(f"ORCID: {orcid}", href=f"https://orcid.org/{orcid}",
+                   target="_blank",
+                   style={"color": theme.COPPER_LIGHT, "fontSize": 11,
+                          "textDecoration": "none"}),
+            style={"marginBottom": 12},
+        ))
+    else:
+        children.append(html.Div(style={"marginBottom": 8}))
+
+    # Key metrics grid
+    children.append(html.Div([
+        _stat("Publications", _fmt(row.get("pub_count"))),
+        _stat("h-index", _fmt(row.get("h_index"))),
+        _stat("Citations", _fmt(row.get("citation_count"))),
+        _stat("Mean FWCI", _fmt(row.get("fwci_mean"), 2)),
+        _stat("Open Access", f"{oa_rate*100:.0f}%" if oa_rate is not None else "\u2014"),
+        _stat("Funders", n_funders if n_funders else "\u2014"),
+        _stat("Awards/Grants", n_awards if n_awards else "\u2014"),
+        _stat("Clinical Trials", trials_count if trials_count else "\u2014"),
+        _stat("Derm-relevant",
+              f"{derm_pct:.0f}%" if derm_pct is not None else "\u2014"),
+    ], style={"marginBottom": 16}))
 
     # Clinical expertise section
     if clinical_exp:
@@ -205,20 +258,100 @@ def build_profile_card(name: str) -> html.Div:
             html.Div(clinical_exp, className="profile-detail-expertise-text"),
         ], className="profile-detail-expertise"))
 
-    # Research expertise section (as chips)
-    if research_exp:
+    # Research topics section (from detailed topics data)
+    if topics_detail:
+        topic_chips = []
+        for t in topics_detail[:8]:
+            label = t.get("name", "")
+            count = t.get("count", 0)
+            field = t.get("field", "")
+            chip_text = f"{label} ({count})" if count else label
+            topic_chips.append(
+                html.Span(chip_text, className="expertise-chip",
+                          title=f"Field: {field}")
+            )
+        children.append(html.Div([
+            html.Div("Research Topics (OpenAlex)", className="profile-detail-expertise-title"),
+            html.Div(topic_chips),
+        ], className="profile-detail-expertise"))
+    elif research_exp:
         topics = [t.strip() for t in research_exp.split(";") if t.strip()]
         children.append(html.Div([
             html.Div("Research Topics", className="profile-detail-expertise-title"),
             html.Div([html.Span(t, className="expertise-chip") for t in topics[:6]]),
         ], className="profile-detail-expertise"))
 
+    # Publication timeline chart
     children.extend([
-        html.Div("Publication timeline",
+        html.Div("Publications per Year",
                  style={"fontWeight": 600, "fontSize": 13,
-                        "color": theme.TEXT_PRIMARY, "marginBottom": 4}),
-        dcc.Graph(figure=spark, config={"displayModeBar": False},
-                  style={"height": "140px", "marginBottom": 16}),
+                        "color": theme.TEXT_PRIMARY, "marginBottom": 4, "marginTop": 12}),
+        dcc.Graph(figure=pub_chart, config={"displayModeBar": False},
+                  style={"height": "130px", "marginBottom": 8}),
+    ])
+
+    # Citation trend chart
+    if counts_by_year and any(c.get("cited_by_count", 0) > 0 for c in counts_by_year):
+        children.extend([
+            html.Div("Citations per Year",
+                     style={"fontWeight": 600, "fontSize": 13,
+                            "color": theme.TEXT_PRIMARY, "marginBottom": 4}),
+            dcc.Graph(figure=cite_chart, config={"displayModeBar": False},
+                      style={"height": "130px", "marginBottom": 12}),
+        ])
+
+    # Grants/Funders section
+    if n_funders > 0:
+        funder_items = []
+        for f in grants_detail["funders"][:15]:
+            fname = f.get("name", "Unknown funder")
+            funder_items.append(
+                html.Div(f"\u2022 {fname}",
+                         style={"fontSize": 11, "color": theme.TEXT_SECONDARY,
+                                "marginBottom": 2})
+            )
+        if n_funders > 15:
+            funder_items.append(
+                html.Div(f"... and {n_funders - 15} more",
+                         style={"fontSize": 11, "color": theme.TEXT_MUTED,
+                                "fontStyle": "italic"})
+            )
+        children.append(html.Div([
+            html.Div(f"Funders ({n_funders})",
+                     style={"fontWeight": 600, "fontSize": 13,
+                            "color": theme.TEXT_PRIMARY, "marginBottom": 6}),
+            html.Div(funder_items),
+        ], style={"marginBottom": 12}))
+
+    # Awards section
+    if n_awards > 0:
+        award_items = []
+        for a in grants_detail["awards"][:10]:
+            aname = a.get("name") or a.get("award_id", "")
+            afunder = a.get("funder", "")
+            label = f"{aname}" if aname else f"Award {a.get('award_id', '')}"
+            if afunder:
+                label += f" ({afunder})"
+            award_items.append(
+                html.Div(f"\u2022 {label}",
+                         style={"fontSize": 11, "color": theme.TEXT_SECONDARY,
+                                "marginBottom": 2})
+            )
+        if n_awards > 10:
+            award_items.append(
+                html.Div(f"... and {n_awards - 10} more",
+                         style={"fontSize": 11, "color": theme.TEXT_MUTED,
+                                "fontStyle": "italic"})
+            )
+        children.append(html.Div([
+            html.Div(f"Awards/Grants ({n_awards})",
+                     style={"fontWeight": 600, "fontSize": 13,
+                            "color": theme.TEXT_PRIMARY, "marginBottom": 6}),
+            html.Div(award_items),
+        ], style={"marginBottom": 12}))
+
+    # Recent publications
+    children.extend([
         html.Div("Recent Publications",
                  style={"fontWeight": 600, "fontSize": 13,
                         "color": theme.TEXT_PRIMARY, "marginBottom": 8}),
@@ -227,9 +360,10 @@ def build_profile_card(name: str) -> html.Div:
                            style={"color": theme.TEXT_MUTED, "fontSize": 12})]),
     ])
 
+    # OpenAlex profile link
     if profile_url:
         children.append(html.Div(
-            html.A("View OpenAlex profile →", href=profile_url, target="_blank",
+            html.A("View OpenAlex profile \u2192", href=profile_url, target="_blank",
                    style={"color": theme.COPPER, "fontSize": 13,
                           "fontWeight": 600, "textDecoration": "none"}),
             style={"marginTop": 16},

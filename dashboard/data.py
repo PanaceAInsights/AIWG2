@@ -10,6 +10,7 @@ Mirrors the RMSANZ dashboard data.py pattern:
 from __future__ import annotations
 
 import functools
+import json
 import logging
 import re as _re
 from pathlib import Path
@@ -237,11 +238,94 @@ def load_search_index() -> pd.DataFrame:
     return df
 
 
+@functools.lru_cache(maxsize=1)
+def _load_json(filename: str) -> dict:
+    """Load a JSON file from the processed data directory."""
+    p = _PROCESSED / filename
+    if not p.exists():
+        logger.warning("JSON missing: %s", p)
+        return {}
+    try:
+        with open(p, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as exc:
+        logger.error("Failed to load %s: %s", p, exc)
+        return {}
+
+
+@functools.lru_cache(maxsize=1)
+def load_counts_by_year() -> dict:
+    """Load per-author yearly publication/citation counts."""
+    return _load_json("author_counts_by_year.json")
+
+
+@functools.lru_cache(maxsize=1)
+def load_grants() -> dict:
+    """Load per-author grants/funders/awards data."""
+    return _load_json("author_grants.json")
+
+
+@functools.lru_cache(maxsize=1)
+def load_topics_detail() -> dict:
+    """Load per-author detailed topic breakdown."""
+    return _load_json("author_topics_detail.json")
+
+
+def member_counts_by_year(acd_name: str) -> list[dict]:
+    """Return yearly publication/citation counts for a member."""
+    # Lookup by openalex_id
+    stats = load_stats()
+    if stats.empty or "acd_name" not in stats.columns:
+        return []
+    row = stats[stats["acd_name"] == acd_name]
+    if row.empty or "openalex_id" not in row.columns:
+        return []
+    oa_id = str(row.iloc[0].get("openalex_id", "")).strip()
+    if not oa_id or oa_id == "nan":
+        return []
+    data_dict = load_counts_by_year()
+    entry = data_dict.get(oa_id, {})
+    return entry.get("counts_by_year", [])
+
+
+def member_grants_detail(acd_name: str) -> dict:
+    """Return grants/funders/awards for a member."""
+    stats = load_stats()
+    if stats.empty or "acd_name" not in stats.columns:
+        return {"funders": [], "awards": []}
+    row = stats[stats["acd_name"] == acd_name]
+    if row.empty or "openalex_id" not in row.columns:
+        return {"funders": [], "awards": []}
+    oa_id = str(row.iloc[0].get("openalex_id", "")).strip()
+    if not oa_id or oa_id == "nan":
+        return {"funders": [], "awards": []}
+    data_dict = load_grants()
+    entry = data_dict.get(oa_id, {})
+    return {"funders": entry.get("funders", []), "awards": entry.get("awards", [])}
+
+
+def member_topics_detail(acd_name: str) -> list[dict]:
+    """Return detailed topic breakdown for a member."""
+    stats = load_stats()
+    if stats.empty or "acd_name" not in stats.columns:
+        return []
+    row = stats[stats["acd_name"] == acd_name]
+    if row.empty or "openalex_id" not in row.columns:
+        return []
+    oa_id = str(row.iloc[0].get("openalex_id", "")).strip()
+    if not oa_id or oa_id == "nan":
+        return []
+    data_dict = load_topics_detail()
+    entry = data_dict.get(oa_id, {})
+    return entry.get("topics", [])
+
+
 def reload() -> None:
     """Invalidate all loader caches (useful in debug mode)."""
     for fn in (load_authors, _accepted_name_set, load_publications, load_stats,
                load_funding, load_clinical_trials, load_search_index,
-               _subtopics_map, _keywords_map, _orcid_map):
+               _subtopics_map, _keywords_map, _orcid_map,
+               load_counts_by_year, load_grants, load_topics_detail, _load_json):
         fn.cache_clear()
 
 
