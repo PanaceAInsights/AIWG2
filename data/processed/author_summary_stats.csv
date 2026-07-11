@@ -1,382 +1,382 @@
-acd_name,openalex_id,openalex_display_name,last_known_institution,institution_country,works_count,h_index,aunz_ever,confidence,resolution_method
-A/Prof Anne Howard,A5074376223,Anne Howard,The Royal Melbourne Hospital,AU,198.0,16.0,1.0,HIGH,restored_manual_review
-A/Prof Douglas Gin,A5085969478,Douglas Chan Su Gin,Alfred Health,AU,2.0,1.0,1.0,HIGH,manual_override_corrected
-A/Prof Gayle Fischer,A5044429182,Gayle Fischer,The University of Sydney,AU,294.0,39.0,1.0,HIGH,manual_override_corrected
-Adj A/Prof Gregory Siller,A5041267982,Gregory Siller,Princess Alexandra Hospital,AU,8.0,8.0,1.0,HIGH,manual_override_corrected
-Dr Aakriti  Gupta,A5016354767,Aakriti Gupta,Royal Adelaide Hospital,AU,12.0,0.0,1.0,HIGH,pass2_global
-Dr Aaron James Robinson,A5105758110,Aaron James Robinson,Bangor University,GB,4.0,2.0,0.0,HIGH,manual_override_corrected
-Dr Adam Thomas Sheridan,A5031507930,Adam T Sheridan,The Alfred Hospital,AU,15.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Adrian Cheow Yang See,A5031668156,Adrian See,Institut national de recherche en sciences et technologies du numérique,FR,8.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Adrian Wah-Ying Mar,A5049644243,Adrian Mar,Monash Health,AU,43.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Alain Khoi Tran,A5037615804,Alain Khoi Tran,Skin Health Institute,AU,6.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Alan Michael Donnelly,A5005092540,Alan M Donnelly,Fremantle Hospital,AU,1.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Alana Jane Tuxen,A5112171476,A Tuxen,Royal Children's Hospital,AU,8.0,5.0,1.0,HIGH,manual_override_corrected
-Dr Alexander James Tedman,A5050672966,Alexander Tedman,The University of Sydney,AU,3.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Alexandra Louise Varol,A5111640823,Alexandra Varol,Liverpool Hospital,AU,4.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Alexis Daniel Lara Rivero,A5126815191,Alexis Daniel Lara Rivero,UNSW Sydney,AU,1.0,0.0,1.0,HIGH,pass1_targeted
-Dr Alice Louise Rudd,A5073136865,Alice Rudd,Geelong Hospital,AU,5.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Alvand  Amiri,A5000468851,Alvand Amiri,The George Institute for Global Health,AU,1.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Alvin Heong On Chong,A5135112067,Alvin H. Chong,St Vincent's Hospital Melbourne,AU,1.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Amanda  Glanz,A5034001319,Amanda Glanz,The University of Sydney,AU,7.0,0.0,1.0,HIGH,pass1_targeted
-Dr Amanda Jayne Dore,A5089222759,Amanda Dore,Children's Health Queensland Hospital and Health Service,AU,5.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Amanda Mary Godbolt,A5044499142,Amanda Godbolt,Royal Brisbane and Women's Hospital,AU,10.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Anastasios  Stavrakoglou,A5014189689,Anastasios Stavrakoglou,Alfred Health,AU,9.0,0.0,1.0,HIGH,pass2_global
-Dr Andrea  Jopp-McKay,A5076155144,A.G. Jopp-Mckay,The University of Sydney,AU,12.0,6.0,1.0,HIGH,manual_override_corrected
-Dr Andrea  Tomizawa,A5007381136,Andrea Tomizawa,,,1.0,0.0,0.0,HIGH,manual_override_corrected
-Dr Andrew Campbell Satchell,A5085949418,Andrew C. Satchell,Dubbo Hospital,AU,10.0,0.0,1.0,HIGH,pass2_global
-Dr Andrew Chih-Chieh Chen,A5043282205,Andrew Chih‐Chieh Chen,,,3.0,2.0,0.0,HIGH,manual_override_corrected
-Dr Andrew Peter Jevtic,A5111467713,Andrew Jevtic,Royal Hobart Hospital,AU,6.0,0.0,1.0,HIGH,pass2_global
-Dr Andrew William Swarbrick,A5028545621,Andrew W Swarbrick,Sir Charles Gairdner Hospital,AU,3.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Angelica  Tjokrowidjaja,A5089133510,Angelica Tjokrowidjaja,Liverpool Hospital,AU,1.0,0.0,1.0,HIGH,pass2_global
-Dr Anina Kaisli-Maaria Fitzgibbon,A5087893215,Anina Fitzgibbon,Monash Health,AU,4.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Anita Lee Lasocki,A5067871273,Anita Lasocki,St Vincent's Hospital Melbourne,AU,6.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Ann Radha Boyapati,A5087756316,Ann Boyapati,Monash Health,AU,6.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Ann-Maree  Kurzydlo,A5098506751,Ann‐Maree Kurzydlo,Royal Australian and New Zealand College of Radiologists,AU,1.0,1.0,1.0,HIGH,manual_override_corrected
-Dr Anna  Braue,A5055259312,Anna Braue,The Royal Melbourne Hospital,AU,18.0,0.0,1.0,HIGH,pass1_targeted
-Dr Annabel Irene Stevenson,A5111284685,Annabel Stevenson,Royal Adelaide Hospital,AU,7.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Anne Elizabeth Lewis,A5027321419,Anne Elizabeth Lewis,,,1.0,0.0,0.0,HIGH,manual_override_corrected
-Dr Anne Rosemary Halbert,A5110509081,Anne Halbert,The University of Western Australia,AU,38.0,18.0,1.0,HIGH,restored_manual_review
-Dr Annette Lisa Pearce,A5113596658,Annette Pearce,South Australian Research and Development Institute,AU,5.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Annette Rachel Hamori Wegman,A5031958269,Annette Wegman,Prince of Wales Hospital,AU,3.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Annika  Smith,A5055174077,Annika Smith,The University of Sydney,AU,6.0,0.0,1.0,HIGH,pass1_targeted
-Dr Anosha  Yazdabadi,A5112395904,Anosha Yazdabadi,Eastern Health,AU,7.0,0.0,1.0,HIGH,pass1_targeted
-Dr Anthea Frances Mulcahy,A5011620047,Anthea Mulcahy,Box Hill Hospital,AU,5.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Antoinette  Ciconte,A5060567618,Antoinette Ciconte,Box Hill Hospital,AU,10.0,0.0,1.0,HIGH,pass1_targeted
-Dr Antonia Maria Laino,A5075245713,Antonia Laino,The University of Queensland,AU,9.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Arabella Helen Wallett,A5079840138,Arabella Wallett,Royal Adelaide Hospital,AU,11.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Artiene Hagob John Tatian,A5030580904,Artiene Tatian,UNSW Sydney,AU,26.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Asoka Kumarihamy Herat,A5007414126,Asoka Herat,Mater Adult Hospital,AU,3.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Austen Kathleen Anderson,A5044786864,Austen Anderson,Royal Perth Hospital,AU,15.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Benjamin James Carew,A5072524473,Benjamin Carew,Mater Adult Hospital,AU,6.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Benjamin Silas Daniel,A5086530387,Benjamin S. Daniel,UNSW Sydney,AU,2.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Bernadette Mary Ricciardo,A5023383113,Bernadette Ricciardo,The University of Western Australia,AU,33.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Bert Markou Pruim,A5089262289,Bert Pruim,Royal Darwin Hospital,AU,4.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Bishakha  Rajagopalan,A5052370797,B Rajagopalan,Ballarat Health Services,AU,25.0,6.0,1.0,HIGH,manual_override_corrected
-Dr Bonita Choy,A5042286929,Bonita Choy,The University of Sydney,AU,9.0,6.0,1.0,HIGH,manual_override_corrected
-Dr Bonnie Anne Fergie,A5001549444,Bonnie Fergie,Canberra Hospital,AU,4.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Brian John De'ambrosis,A5017467471,Brian De Ambrosis,Princess Alexandra Hospital,AU,1.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Brogan Kelly Salence,A5072061828,Brogan Kelly Salence,Gosford Hospital,AU,7.0,0.0,1.0,HIGH,pass2_global
-Dr Bruce Colin Leslie McGeorge,A5002455975,Bruce C.L. McGeorge,Royal Darwin Hospital,AU,4.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Bruce James Tate,A5011520227,Bruce Tate,Skin Health Institute,AU,28.0,16.0,1.0,HIGH,restored_manual_review
-Dr Bruna  Melhoranse Gouveia,A5079604816,Bruna Melhoranse Gouveia,The University of Sydney,AU,28.0,0.0,1.0,HIGH,pass1_targeted
-Dr Bruno  Blaya Alvarez,A5013822061,Bruno Blaya Alvarez,St Vincent's Hospital Sydney,AU,2.0,0.0,1.0,HIGH,pass1_targeted
-Dr Bryan Ka Chiu Pang,A5038823958,Bryan K. Pang,Liverpool Hospital,AU,11.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Burcu  Kim,A5014705000,Burcu Kim,The University of Sydney,AU,2.0,0.0,1.0,HIGH,pass1_targeted
-Dr Carol Chiu Yen Oh Adib,A5086133541,Carol Chiu Yen Oh Adib,,,1.0,0.0,0.0,HIGH,manual_override_corrected
-Dr Caroline Hsien-Feng Thoo,A5082011926,Caroline HF Thoo,Skin and Cancer Foundation,AU,1.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Casey Jane Rowe,A5066375948,Casey Rowe,The University of Queensland,AU,27.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Cassandra  Chaptini,A5028799593,Cassandra Chaptini,South Australia Pathology,AU,7.0,0.0,1.0,HIGH,pass1_targeted
-Dr Catherine Frances Faulkner,A5041996671,Catherine Faulkner,,,9.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Catherine Luisa Orana Black,A5077841778,Catherine L. Black,Royal Adelaide Hospital,AU,2.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Cathy Yunjia Zhao,A5087237583,Cathy Zhao,The University of Sydney,AU,76.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Celestine Chu Wen Wong,A5080338163,Celestine Wong,The Royal Melbourne Hospital,AU,20.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Charles Xie,A5110680680,Charles Xie,Peter MacCallum Cancer Centre,AU,9.0,7.0,1.0,HIGH,manual_override_corrected
-Dr Charlotte Emily Forrest,A5112073981,Charlotte E. Forrest,Royal Adelaide Hospital,AU,4.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Charlotte Lucinda Thomas,A5001516708,Charlotte L Thomas,The University of Sydney,AU,18.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Chasari  Tancharoen,A5003143667,Chasari Tancharoen,St Vincent's Hospital Melbourne,AU,10.0,0.0,1.0,HIGH,pass1_targeted
-Dr Chris Khachadour Jalilian,A5076740912,Chris Jalilian,Monash Health,AU,14.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Christina Alexandra Saywell,A5028631511,Christina A Saywell,Bankstown Lidcombe Hospital,AU,1.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Christopher Hudson Heyes,A5087287678,Christopher Heyes,The Royal Melbourne Hospital,AU,6.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Christopher John McCormack,A5059028953,Christopher McCormack,The University of Melbourne,AU,98.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Christopher John Quirk,A5110220825,Christopher J Quirk,Melanoma Institute Australia,AU,23.0,0.0,1.0,HIGH,pass1_targeted
-Dr Christopher John Tyson,A5083400870,Christopher John Tyson,,,1.0,0.0,0.0,HIGH,manual_override_corrected
-Dr Christopher Ramon Kearney,A5087584896,Christopher R Kearney,,,3.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Claire Elizabeth Grills,A5018031642,Claire Grills,Royal Children's Hospital,AU,13.0,7.0,1.0,HIGH,manual_override_corrected
-Dr Claire Margaret Felmingham,A5076757971,Claire Felmingham,Australian Regenerative Medicine Institute,AU,17.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Clare Conway Schofield,A5067290175,Clare Schofield,,,6.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Clare Koh,A5069869788,Clare Koh,Sydney Children's Hospital,AU,2.0,2.0,1.0,HIGH,manual_override_corrected
-Dr Clare Penelope Tait,A5038048309,Clare P Tait,Hollywood Orthopaedic Group,AU,21.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Claudia Elizabeth Spence Curchin,A5057296414,Claudia Curchin,Princess Alexandra Hospital,AU,10.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Colin Gek Ghee Ooi,A5052368133,Colin Ooi,Royal Adelaide Hospital,AU,8.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Colin Soo-Chee Ong,A5053053678,Colin S. Ong,,,13.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Con  Dolianitis,A5041754617,Con Dolianitis,The Royal Melbourne Hospital,AU,35.0,0.0,1.0,HIGH,pass1_targeted
-Dr Corinne  Maiolo,A5008470898,Corinne Maiolo,South Australia Pathology,AU,7.0,0.0,1.0,HIGH,pass1_targeted
-Dr Crystal Nicole Williams,A5103049140,Crystal Williams,Townsville Hospital,AU,20.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Dana Rose-Marie Louise Slape,A5007841453,Dana Slape,Camden and Campbelltown Hospitals,AU,3.0,2.0,1.0,HIGH,manual_override_corrected
-Dr Daram Singh,A5000916743,Daram Singh,Royal Perth Hospital,AU,3.0,2.0,1.0,HIGH,manual_override_corrected
-Dr David  Burdon-Jones,A5036020524,David Burdon‐Jones,Western Health,AU,9.0,6.0,1.0,HIGH,manual_override_corrected
-Dr David Charles Orchard,A5082259725,David Orchard,Royal Children's Hospital,AU,79.0,18.0,1.0,HIGH,restored_manual_review
-Dr David Yu Shun Wong,A5015945824,David Yu-Shun Wong,South Eastern Sydney Local Health District,AU,1.0,1.0,1.0,HIGH,manual_override_corrected
-Dr Davin Sui Lim,A5110273729,Davin Lim,Queensland Health,AU,27.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Dean Jeremy Choong,A5051830872,Dean Jeremy Choong,Fiona Stanley Hospital,AU,5.0,0.0,1.0,HIGH,pass2_global
-Dr Deanna Alicia Wong,A5111814389,Deanna A Wong,,,6.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Derek  Davies,A5016069556,Derek Davies,Calvary Mater Newcastle Hospital,AU,5.0,0.0,1.0,HIGH,pass2_global
-Dr Dev Ruhunage Tilakaratne,A5018532317,Dev Tilakaratne,Royal Darwin Hospital,AU,18.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Devita  Surjana,A5043017139,Devita Surjana,Advanced Dermatology,US,15.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Diana Louise Norris,A5102068039,Diana Norris,St Vincent's Hospital Melbourne,AU,3.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Diana Marie Rubel,A5112556598,Diana Rubel,Australian National University,AU,59.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Diona Lee Damian,A5109680281,Diona L. Damian,The University of Sydney,AU,59.0,30.0,1.0,HIGH,manual_override_corrected
-Dr Dorota  Long,A5059461335,Dorota Long,Flinders Medical Centre,AU,4.0,0.0,1.0,HIGH,pass1_targeted
-Dr Dougal Francis Coates,A5036783494,Dougal Coates,CSIRO Manufacturing,AU,9.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Du-Chien Jean Marie Tan,A5011050671,Jean-Marie Tan,The University of Queensland,AU,6.0,3.0,1.0,HIGH,manual_override_corrected
-Dr Duncan Graham Stanford,A5123953838,Duncan Graham Stanford,University of Wollongong,AU,1.0,0.0,1.0,HIGH,pass1_targeted
-Dr Edmund Pei Yi Wee,A5047279488,Edmund Wee,Cancer Council Western Australia,AU,2.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Edwina Millicent Lamrock,A5037160452,Edwina Lamrock,John Hunter Hospital,AU,6.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Eleni  Yiasemides,A5027682688,Eleni Yiasemides,,,13.0,0.0,1.0,HIGH,pass2_global
-Dr Eleni Peta Anthony,A5061738470,Eleni Anthony,Box Hill Hospital,AU,10.0,3.0,1.0,HIGH,manual_override_corrected
-Dr Elizabeth  Dawes-Higgs,A5087327012,Elizabeth Dawes‐Higgs,Northern Sydney Local Health District,AU,6.0,0.0,1.0,HIGH,pass1_targeted
-Dr Elizabeth Mary Christou,A5025070185,Elizabeth M Christou,Sydney Children's Hospital,AU,6.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Elizabeth Mary Willsteed,A5079553235,Elizabeth Willsteed,,,13.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Elizabeth Teng Yoke Chow,A5112840266,Elizabeth T Chow,Liverpool Hospital,AU,7.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Emma Louise Haverhoek,A5022577585,Emma Haverhoek,Royal Adelaide Hospital,AU,1.0,0.0,1.0,HIGH,pass2_global
-Dr Emma Louise Hiscutt,A5032010584,Emma Hiscutt,The Alfred Hospital,AU,13.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Er Tsing Vivian Tng,A5010131410,Er Tsing Vivian Tng,John Hunter Hospital,AU,6.0,0.0,1.0,HIGH,pass1_targeted
-Dr Eric  Waine,A5026164600,Éric Denis translated by Oliver Waine,,,1.0,0.0,0.0,HIGH,manual_override_corrected
-Dr Erin Kelly McMeniman,A5080054407,Erin McMeniman,Queensland University of Technology,AU,82.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Erin Mullan,A5079690275,Erin Mullan,,,3.0,2.0,0.0,HIGH,manual_override_corrected
-Dr Eshini Ishanka Perera,A5085834804,Eshini Perera,The University of Melbourne,AU,25.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Esther Hong,A5128245715,Esther Hong,The University of Sydney,AU,2.0,0.0,1.0,HIGH,reresolution_proportional_v1
-Dr Fatemeh  Arianejad,A5036395362,Fatemeh Arianejad,Gosford Hospital,AU,2.0,0.0,1.0,HIGH,pass2_global
-Dr Fiona Jane Bruce,A5051286688,Fiona Bruce,Australasian College of Dermatologists,AU,14.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Flora Yuk-Han Poon,A5101922477,Flora Poon,Monash Health,AU,19.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Frances Joan Tefany,A5064796906,Frances J. Tefany,St Vincent's Hospital Sydney,AU,5.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Francis Yi Xing Lai,A5084117414,Francis Yi Xing Lai,Monash Health,AU,40.0,0.0,1.0,HIGH,pass2_global
-Dr Frank  Isaacs,A5020373437,Frank Isaacs,St Vincent's Hospital Sydney,AU,8.0,0.0,1.0,HIGH,pass2_global
-Dr Friyana Keiku Bhabha,A5057697105,Friyana Bhabha,Peter MacCallum Cancer Centre,AU,16.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Gary Raymond Moloney,A5019564463,Gary R. Moloney,Sir Charles Gairdner Hospital,AU,4.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Gayle Loraine Ross,A5034456513,Gayle Ross,The Royal Melbourne Hospital,AU,103.0,17.0,1.0,HIGH,restored_manual_review
-Dr Genevieve Marie Sadler,A5071873118,Genevieve Sadler,Sir Charles Gairdner Hospital,AU,10.0,0.0,1.0,HIGH,pass2_global
-Dr George Andrew Varigos,A5108082559,George A. Varigos,The Royal Melbourne Hospital,AU,53.0,22.0,1.0,HIGH,manual_override_corrected
-Dr Georgia Frances Farrah,A5010910372,Georgia Farrah,Princess Margaret Hospital for Children,AU,4.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Georgina Ruth Lyons,A5022304711,Georgina Lyons,The Alfred Hospital,AU,5.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Germana  Consuegra Romero,A5010162713,Germana Consuegra Romero,Westmead Hospital,AU,4.0,0.0,1.0,HIGH,pass2_global
-Dr Gerrie Becker,A5010032534,Gerrie J. Becker,Coffs Harbour City Council,AU,1.0,1.0,1.0,HIGH,manual_override_corrected
-Dr Gian Dial Singh,A5109942501,Gian D. Singh,Royal Perth Hospital,AU,1.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Gilberto Moreno Bonilla,A5057848257,Gilberto Moreno Bonilla,The University of Sydney,AU,17.0,4.0,1.0,HIGH,manual_override_corrected
-Dr Glen Christopher Foxton,A5025720209,Glen Foxton,Cancer Council Western Australia,AU,3.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Glenda Kaye Wood,A5000971949,Glenda Wood,Prince of Wales Hospital,AU,12.0,0.0,1.0,HIGH,pass2_global
-Dr Glenn  Parham,A5066496800,Glenn Parham,Fremantle Hospital,AU,1.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Graham Alistair Thom,A5112614892,Graham Thom,Royal Perth Hospital,AU,13.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Gwyneth Natalie Tsun Wong,A5076539938,Gwyneth Natalie Wong,Footscray Hospital,AU,8.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Haady  Fallah,A5078953014,Haady Fallah,Concord Repatriation General Hospital,AU,13.0,0.0,1.0,HIGH,pass1_targeted
-Dr Hans Peter Soyer,A5033462323,H. Peter Soyer,Translational Research Institute,AU,1217.0,87.0,1.0,HIGH,manual_override_corrected
-Dr Harini  Rajgopal Bala,A5072742930,Harini Rajgopal Bala,Skin Health Institute,AU,19.0,0.0,1.0,HIGH,pass1_targeted
-Dr Harvey Ronald Smith,A5058201255,H. R. Smith,University Hospitals Bristol NHS Foundation Trust,AU,46.0,18.0,1.0,HIGH,manual_override_corrected
-Dr Heba A.T. Jibreal,A5005859470,Heba Jibreal,Children's Health Queensland Hospital and Health Service,AU,4.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Helen Louise Saunders,A5034761041,Helen Saunders,St Vincent's Hospital Melbourne,AU,1.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Helena  Collgros Totosaus,A5091809379,Helena Collgros Totosaus,,,1.0,1.0,0.0,HIGH,manual_override_corrected
-Dr Helena Anne Lolatgis,A5018300338,Helena Lolatgis,,,4.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Helmut  Schaider,A5079759046,Helmut Schaider,The University of Queensland,AU,198.0,0.0,1.0,HIGH,pass2_global
-Dr Hope Vu Dinh,A5011730685,Hope Dinh,The Alfred Hospital,AU,12.0,0.0,1.0,HIGH,pass2_global
-Dr Howard Mark Studniberg,A5072136399,Howard M. Studniberg,,,3.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Hsien Wern Herbert Chan,A5039904993,Hsien W. Herbert Chan,The University of Sydney,AU,1.0,0.0,1.0,HIGH,pass2_global
-Dr Ian Douglas McCrossin,A5014146539,Ian McCrossin,Ingham Institute,AU,20.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Ilsphi  Browne,A5108998151,Ilsphi Browne,Cairns Hospital,AU,2.0,0.0,1.0,HIGH,pass2_global
-Dr Irene  Grigoris,A5087219559,Irene Grigoris,,,3.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Jacinta Mary Opie,A5029579969,Jacinta Opie,Mercy Hospital for Women,AU,8.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Jacqueline  Matulich,A5085088674,Jacqueline Matulich,Royal North Shore Hospital,AU,4.0,0.0,1.0,HIGH,pass2_global
-Dr James Michael Butler,A5100839584,James Michael Butler,,,4.0,1.0,0.0,HIGH,manual_override_corrected
-Dr Jamie Andrew Von Nida,A5014928991,Jamie Von Nida,Sir Charles Gairdner Hospital,AU,10.0,0.0,1.0,HIGH,pass2_global
-Dr Jeffrey Alan Wayte,A5040819265,Jeffrey Wayte,Royal Adelaide Hospital,AU,7.0,0.0,1.0,HIGH,pass2_global
-Dr Jemima  Fisher,A5053957923,Jemima Fisher,Prince of Wales Hospital,AU,2.0,0.0,1.0,HIGH,pass1_targeted
-Dr Jennifer Louise Cahill,A5026790915,Jennifer Cahill,Skin Health Institute,AU,48.0,17.0,1.0,HIGH,restored_manual_review
-Dr Jenny  Nicolopoulos,A5021107172,Jenny Nicolopoulos,The Royal Melbourne Hospital,AU,22.0,0.0,1.0,HIGH,pass1_targeted
-Dr Jenny  Tu,A5075018055,Jenny Tu,,,12.0,0.0,1.0,HIGH,pass2_global
-Dr Jeremy Paul Banky,A5036323982,Jeremy P Banky,The Alfred Hospital,AU,5.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Jesse James Johnston,A5091847142,Jesse James Johnston,,,1.0,1.0,0.0,HIGH,manual_override_corrected
-Dr Jill Ann Cargnello,A5090723553,Jill A Cargnello,,,10.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Jillian  Wells,A5046545387,Jillian Wells,The University of Sydney,AU,24.0,0.0,1.0,HIGH,pass1_targeted
-Dr Jo-Ann  See,A5103339855,Jo‐Ann See,University of Sydney,AU,29.0,0.0,1.0,HIGH,pass2_global
-Dr Johanna Merilyn Kuchel,A5040114857,Johanna M. Kuchel,Churchill Hospital,GB,11.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Johannes Steffen Kern,A5036841737,Johannes S. Kern,Monash Alfred Psychiatry Research centre,AU,219.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr John  Frewen,A5048693221,John Frewen,Sinclair Dermatology,AU,18.0,4.0,1.0,HIGH,manual_override_corrected
-Dr John Anthony Pagliaro,A5031278243,John Pagliaro,CSIRO Manufacturing,AU,8.0,0.0,1.0,HIGH,pass3_llm_high
-Dr John Chit Su,A5137797462,John C Su,Box Hill Hospital,AU,1.0,0.0,1.0,HIGH,pass3_llm_high
-Dr John Peter Relic,A5058208118,John Relic,John Hunter Hospital,AU,22.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr John Walter Frew,A5024756062,John W. Frew,The University of Sydney,AU,284.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr John William Kelly,A5103679722,John W Kelly,The Alfred Hospital,AU,29.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Joseph  Konya,A5041037832,Joseph Konya,,,8.0,0.0,1.0,HIGH,pass1_targeted
-Dr Josephine Margaret Yeatman,A5007925200,Josephine M Yeatman,,,8.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Joshua Angelo Elakis,A5005735274,Joshua Angelo Elakis,Deakin University,AU,2.0,0.0,1.0,HIGH,pass1_targeted
-Dr Josie Yeatman,A5035494788,Josie Yeatman,Austin Hospital,AU,1.0,1.0,1.0,HIGH,manual_override_corrected
-Dr Joy Sue Ming Yee,A5041848444,Joy Yee,Royal Children's Hospital,AU,1.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Judith Mary Cole,A5020967828,Judith M. Cole,St John of God Subiaco Hospital,AU,22.0,10.0,1.0,HIGH,manual_override_corrected
-Dr Julia Emma Joy Rhodes,A5012538350,Julia Emma Joy Rhodes,,,2.0,2.0,0.0,HIGH,manual_override_corrected
-Dr Juliana  Miglio Bensabat Junger,A5010836097,Juliana Miglio Bensabat Junger,,,1.0,0.0,0.0,HIGH,manual_override_corrected
-Dr Karen Elizabeth Behne,A5038861642,Karen Behne,Royal Brisbane and Women's Hospital,AU,2.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Karen Julie Koh,A5058835394,Karen J Koh,Women's and Children's Hospital,AU,3.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Karl Heinz Rodins,A5054849995,Karl Rodins,,,16.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Karolina Louisa Suzanna Kerkemeyer,A5018566549,Karolina Louisa Suzanna Kerkemeyer,University College London Hospitals NHS Foundation Trust,GB,20.0,0.0,1.0,HIGH,pass2_global
-Dr Karyn Rae Lun,A5047279560,Karyn Lun,Townsville Hospital,AU,15.0,0.0,1.0,HIGH,pass2_global
-Dr Kate DeAmbrosis,A5075556725,Kate DeAmbrosis,Mater Misericordiae Hospital,AU,1.0,1.0,1.0,HIGH,manual_override_corrected
-Dr Kate Margaret Newland,A5077981810,Kate Newland,Flinders Medical Centre,AU,16.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Katherine Julienne Allnutt,A5070852939,Katherine J. Allnutt,Royal Prince Alfred Hospital,AU,6.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Katherine Sarah Armour,A5086779083,Katherine Armour,Skin Health Institute,AU,15.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Kathryn Maree De Ambrosis,A5056801236,Kathryn De Ambrosis,Royal Brisbane and Women's Hospital,AU,1.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Katie Huong Le,A5021570594,Katie Le,Children's Hospital at Westmead,AU,3.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Kavita  Enjeti,A5119124695,Kavita Enjeti,,,1.0,0.0,0.0,HIGH,manual_override_corrected
-Dr Ken Joseph Gudmundsen,A5018379944,Ken J. Gudmundsen,Skin and Cancer Foundation,AU,7.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Kendall Katie Sharpe,A5013987995,Kendall Katie Sharpe,Gold Coast Hospital,AU,3.0,0.0,1.0,HIGH,pass2_global
-Dr Keng-Ee  Thai,A5035955354,Keng‐Ee Thai,Concord Repatriation General Hospital,AU,16.0,0.0,1.0,HIGH,pass2_global
-Dr Kerry Ann Crotty,A5035643981,Kerry A. Crotty,,,58.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Kurt Aaron Josef Gebauer,A5069967041,Kurt Gebauer,Fremantle Hospital,AU,92.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Kyoko  Shirato,A5016674239,Kyoko Shirato,Royal Adelaide Hospital,AU,5.0,0.0,1.0,HIGH,pass2_global
-Dr Lachlan John Warren,A5075404345,Lachlan Warren,Women's and Children's Hospital,AU,25.0,0.0,1.0,HIGH,pass2_global
-Dr Lara  Trindade De Carvalho,A5066500109,Lara Trindade de Carvalho,Sinclair Dermatology,AU,20.0,0.0,1.0,HIGH,pass1_targeted
-Dr Laura  Scardamaglia,A5063349330,Laura Scardamaglia,The Royal Melbourne Hospital,AU,62.0,0.0,1.0,HIGH,pass1_targeted
-Dr Lauren Cordelia Young,A5109870477,Lauren Cordelia Young,City Eye Centre,AU,2.0,0.0,1.0,HIGH,pass2_global
-Dr Lee Mei Yap,A5109236701,Lee‐Mei Yap,St Vincent's Hospital Melbourne,AU,2.0,0.0,1.0,HIGH,pass2_global
-Dr Leith Banney,A5066107659,Leith Banney,The University of Queensland,AU,25.0,9.0,1.0,HIGH,manual_override_corrected
-Dr Lena Alexandra Beatrix Von Schuckmann,A5041437740,Lena A. von Schuckmann,The University of Queensland,AU,41.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Lena My Thanh Ly,A5103245638,Lena Ly,Eastern Health,AU,9.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Leona Wan Yi Yip,A5072554499,Leona Yip,Queensland Health,AU,40.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Linda  Chan,A5009374536,Linda Chan,Westmead Hospital,AU,18.0,0.0,1.0,HIGH,pass1_targeted
-Dr Linda Katherine Martin,A5043969975,Linda K. Martin,The University of Sydney,AU,103.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Lisa Abbott,A5013223539,Lisa M. Abbott,Melanoma Institute Australia,AU,26.0,9.0,1.0,HIGH,restored_manual_review
-Dr Lisa Michelle Byrom,A5082195945,Lisa Byrom,The University of Queensland,AU,33.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Lizbeth Ruth Aragones Wheeler,A5051873726,Lizbeth Ruth Wheeler,UNSW Sydney,AU,1.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Lucy Kate Pitney,A5021814612,Lucy Pitney,,,5.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Ludi  Ge,A5007265383,Ludi Ge,The University of Sydney,AU,17.0,0.0,1.0,HIGH,pass1_targeted
-Dr Lynda Jane Spelman,A5019091788,Lynda Spelman,Queensland Children’s Medical Research Institute,AU,131.0,0.0,1.0,HIGH,pass2_global
-Dr Maddie Gorji,A5089295636,Maddie Gorji,UNSW Sydney,AU,2.0,2.0,1.0,HIGH,manual_override_corrected
-Dr Mahdieh  Gorji,A5053330550,Mahdieh Gorji,Prince of Wales Hospital,AU,16.0,0.0,1.0,HIGH,pass2_global
-Dr Margit Marisa Polcz,A5004010783,Margit Polcz,Royal Prince Alfred Hospital,AU,23.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Margot Julie Whitfeld,A5070811297,Margot Whitfeld,St Vincent's Hospital Sydney,AU,82.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Maria  Jones-Caballero,A5018033064,María Jones‐Caballero,The University of Sydney,AU,50.0,0.0,1.0,HIGH,pass2_global
-Dr Mark  Cicchiello,A5010663231,Mark Cicchiello,The Alfred Hospital,AU,1.0,0.0,1.0,HIGH,pass1_targeted
-Dr Matheen  Mohamed,A5018075216,Matheen Mohamed,St Vincent's Hospital Melbourne,AU,8.0,3.0,1.0,HIGH,manual_override_corrected
-Dr Matthew David Howard,A5071927070,Matthew Howard,Eastern Health,AU,29.0,10.0,1.0,HIGH,manual_override_corrected
-Dr Matthew James Lin,A5078377550,Matthew James Lin,Royal Prince Alfred Hospital,AU,2.0,0.0,1.0,HIGH,pass1_targeted
-Dr Matthew James Palmer,A5103728443,James Matthew Palmer,,,1.0,0.0,0.0,HIGH,manual_override_corrected
-Dr Matthew John Warren,A5104018617,Matthew John Warren,,,1.0,1.0,0.0,HIGH,manual_override_corrected
-Dr Matthew Paul Hishon,A5110522916,Matthew Hishon,The University of Queensland,AU,3.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Matthew Sang-Woo Cho,A5064124613,Matthew Cho,Royal Adelaide Hospital,AU,2.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr May-Lian  Lee,A5110252023,May‐Lian Lee,Royal North Shore Hospital,AU,7.0,0.0,1.0,HIGH,pass2_global
-Dr Mei Mui Tam,A5009396651,Mei Tam,St Vincent's Hospital Melbourne,AU,30.0,15.0,1.0,HIGH,restored_manual_review
-Dr Mei-Heng  Tan,A5108662434,Mei‐Heng Tan,UNSW Sydney,AU,30.0,0.0,1.0,HIGH,pass1_targeted
-Dr Melissa Nicole Manahan,A5001457265,Melissa N Manahan,Princess Alexandra Hospital,AU,8.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Michael George Freeman,A5101421797,Michael Freeman,Bond University,AU,9.0,0.0,1.0,HIGH,pass2_global
-Dr Michael John Bannister,A5079139897,Michael J Bannister,Skin and Cancer Foundation,AU,2.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Michaela  Zallmann,A5079806847,Michaela Zallmann,Alfred Health,AU,7.0,0.0,1.0,HIGH,pass1_targeted
-Dr Michelle Anne Rodrigues,A5136024776,Michelle Rodrigues,Royal Children's Hospital,AU,1.0,0.0,1.0,HIGH,pass2_global
-Dr Michelle Yvonne McRae,A5006951454,Michelle Yvonne McRae,The University of Sydney,AU,7.0,0.0,1.0,HIGH,pass1_targeted
-Dr Millicent Heather Osti,A5070832993,Millicent H. Osti,St Vincent's Hospital Melbourne,AU,12.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Monisha  Gupta,A5079821873,Monisha Gupta,Camden and Campbelltown Hospitals,AU,7.0,0.0,1.0,HIGH,pass1_targeted
-Dr Munther Shabib Ghanim Zureigat,A5050792257,Munther Zureigat,Royal Prince Alfred Hospital,AU,3.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr My Co Tran,A5051251797,My Co Tran,The University of Queensland,AU,1.0,1.0,1.0,HIGH,manual_override_corrected
-Dr Nelly  Jang,A5031981183,Nelly Jang,Royal North Shore Hospital,AU,1.0,0.0,1.0,HIGH,pass2_global
-Dr Nerilee Ann Wall,A5061129503,Nerilee Wall,Children's Health Queensland Hospital and Health Service,AU,5.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Nghi Tu Huynh,A5111866510,Nghi T Huynh,Sydney Local Health District,AU,16.0,0.0,1.0,HIGH,pass2_global
-Dr Niamh Anna O'Sullivan,A5111502123,Niamh‐Anna O'Sullivan,Fiona Stanley Hospital,AU,3.0,2.0,1.0,HIGH,manual_override_corrected
-Dr Nicholas  Aspres,A5044209875,Nicholas Aspres,,,5.0,0.0,1.0,HIGH,pass2_global
-Dr Nikki Rae Adler,A5007918003,Nikki R. Adler,The Alfred Hospital,AU,69.0,15.0,1.0,HIGH,manual_override_corrected
-Dr Nina Yvette Wines,A5019409622,Nina Wines,,,19.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Niranthari  Chinniah,A5012005259,Niranthari Chinniah,The University of Sydney,AU,8.0,0.0,1.0,HIGH,pass1_targeted
-Dr Nisansala Mahenthi Nagodavithana,A5012112653,Nisansala Mahenthi Nagodavithana,Sir Charles Gairdner Hospital,AU,1.0,0.0,1.0,HIGH,pass2_global
-Dr Nita Sally Agar,A5103341737,Nita Agar,Royal Prince Alfred Hospital,AU,15.0,8.0,1.0,HIGH,manual_override_corrected
-Dr Olivia Jean Milne,A5089361198,Olivia Jean Milne,Monash Health,AU,1.0,0.0,1.0,HIGH,pass2_global
-Dr Parastoo  Banan,A5038997376,Parastoo Banan,Translational Research Institute,AU,17.0,0.0,1.0,HIGH,pass2_global
-Dr Pascale Rovel Guitera,A5102807820,Pascale Guitera,The University of Sydney,AU,25.0,0.0,1.0,HIGH,pass2_global
-Dr Patricia Margaret Lowe,A5087214355,Patricia Lowe,Royal Prince Alfred Hospital,AU,56.0,17.0,1.0,HIGH,manual_override_corrected
-Dr Patrick Campbell Walker,A5018705454,Patrick C. Walker,Repatriation General Hospital,AU,2.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Patrick David Mahar,A5050098623,Patrick Mahar,Royal Children's Hospital,AU,72.0,0.0,1.0,HIGH,pass2_global
-Dr Paul  Armenores,A5051861833,Paul Armenores,Repatriation General Hospital,AU,5.0,0.0,1.0,HIGH,pass1_targeted
-Dr Penny Poh Lu Lim,A5110425484,Penny Poh Lu Lim,Skin and Cancer Foundation,AU,1.0,0.0,1.0,HIGH,pass2_global
-Dr Peter Anthony Foley,A5000398504,Peter Foley,Skin Health Institute,AU,299.0,51.0,1.0,HIGH,manual_override_corrected
-Dr Philip Sion Bekhor,A5010144658,Philip Bekhor,Royal Children's Hospital,AU,43.0,0.0,1.0,HIGH,pass2_global
-Dr Philip Tong,A5058283254,Philip L. Tong,Garvan Institute of Medical Research,AU,40.0,12.0,1.0,HIGH,manual_override_corrected
-Dr Philippa Ruth Dickison,A5023714138,Philippa Ruth Dickison,,,1.0,0.0,0.0,HIGH,manual_override_corrected
-Dr Phillip  Artemi,A5025353701,Phillip Artemi,,,7.0,0.0,1.0,HIGH,pass2_global
-Dr Phillip Keith Dwyer,A5030705806,Phillip Dwyer,Skin and Cancer Foundation,AU,3.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Priska Barbara Brodbeck McDonald,A5079035758,Priska BB McDonald,Royal Children's Hospital,AU,2.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Priyamvada  Sobarun,A5072396572,Priyamvada Sobarun,The University of Queensland,AU,2.0,0.0,1.0,HIGH,pass2_global
-Dr Quynh Van Le,A5078053983,Quynh Le,The Alfred Hospital,AU,3.0,2.0,1.0,HIGH,manual_override_corrected
-Dr Rachael Barbra Davenport,A5074170272,Rachael Davenport,St Vincent's Hospital Melbourne,AU,13.0,0.0,1.0,HIGH,pass2_global
-Dr Ramez Ihab Barsoum,A5025985792,Ramez Barsoum,Royal Brisbane and Women's Hospital,AU,7.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Rashi  Malesu,A5087679293,Rashi Malesu,John Hunter Hospital,AU,1.0,0.0,1.0,HIGH,pass2_global
-Dr Raymond Alexander Cocciolone,A5034870896,Raymond Alexander Cocciolone,Launceston General Hospital,AU,1.0,1.0,1.0,HIGH,manual_override_corrected
-Dr Rebecca  Dunn,A5052005265,Rebecca Dunn,Priory Hospital Cheadle Royal,GB,20.0,0.0,1.0,HIGH,pass2_global
-Dr Rebecca Bronwyn Saunderson,A5088798986,Rebecca B. Saunderson,The University of Sydney,AU,44.0,13.0,1.0,HIGH,reresolution_orcid_verified
-Dr Renae Alison Howes,A5019997202,Renae A. Howes,Skin and Cancer Foundation,AU,4.0,0.0,1.0,HIGH,pass2_global
-Dr Richard Anthony Wittal,A5036106926,Richard A. Wittal,Liverpool Hospital,AU,9.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Robert Bruce Stephens,A5079625663,Robert B. Stephens,Royal North Shore Hospital,AU,4.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Robert Ian Kelly,A5128190418,Robert I Kelly,St Vincent's Hospital Melbourne,AU,1.0,0.0,1.0,HIGH,pass2_global
-Dr Robert Rosen,A5042482468,Robert Rosen,Boston Children's Hospital,US,60.0,15.0,1.0,HIGH,reresolution_proportional_v1
-Dr Rochelle  Gild,A5032935976,Rochelle Gild,Princess Alexandra Hospital,AU,3.0,0.0,1.0,HIGH,pass1_targeted
-Dr Romuald Taras Czechowicz,A5009993214,Romuald T Czechowicz,Royal Adelaide Hospital,AU,2.0,0.0,1.0,HIGH,pass2_global
-Dr Rose Congwei Liu,A5083646511,Rose Congwei Liu,The University of Sydney,AU,2.0,0.0,1.0,HIGH,pass1_targeted
-Dr Rosemary Louise Nixon,A5068020081,Rosemary Nixon,Skin Health Institute,AU,276.0,37.0,1.0,HIGH,manual_override_corrected
-Dr Russell Hills,A5004986152,Russell J. Hills,Wesley Hospital,AU,2.0,2.0,1.0,HIGH,manual_override_corrected
-Dr Ryan William Toholka,A5033563079,Ryan Toholka,Royal Children's Hospital,AU,12.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Sally Beth Ball,A5043189734,Sally Ball,South Australia Pathology,AU,13.0,0.0,1.0,HIGH,pass2_global
-Dr Sally Elizabeth De Zwaan,A5053162408,Sally Elizabeth de Zwaan,Royal Prince Alfred Hospital,AU,2.0,0.0,1.0,HIGH,pass2_global
-Dr Salvatore  Scuderi,A5016001248,Salvatore Scuderi,Royal Brisbane and Women's Hospital,AU,7.0,0.0,1.0,HIGH,pass1_targeted
-Dr Sam  Kalouche,A5060033451,Sam Kalouche,The University of Sydney,AU,2.0,0.0,1.0,HIGH,pass1_targeted
-Dr Samantha  Eisman,A5003739980,Samantha Eisman,Sinclair Dermatology,AU,49.0,0.0,1.0,HIGH,pass1_targeted
-Dr Samantha Jane Davidson,A5044679433,Samantha J Davidson,Gold Coast Health,AU,2.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Samantha Leigh Conias,A5038709365,Samantha Conias,Toowoomba Hospital,AU,2.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Samuel Antranig Der Sarkissian,A5103920109,Samuel Antranig Der Sarkissian,University of Wollongong,AU,3.0,0.0,1.0,HIGH,pass1_targeted
-Dr Sara  Sabourirad,A5040861495,Sara Sabourirad,,,13.0,3.0,1.0,HIGH,reresolution_proportional_v1
-Dr Sara Lee De Menezes,A5089259052,Sara Lee de Menezes,Apple (Israel),IL,13.0,5.0,1.0,HIGH,reresolution_proportional_v1
-Dr Sara Marie Tritton,A5071415854,Sara M. Tritton,Princess Alexandra Hospital,AU,8.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Sarah  Shen,A5016825200,Sarah Shen,St Vincent's Hospital Melbourne,AU,20.0,0.0,1.0,HIGH,pass1_targeted
-Dr Sarah Jessica Strathie Page,A5056014271,Sarah Strathie Page,Princess Margaret Hospital for Children,AU,4.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Sarah Kirsten McDonald,A5063609999,S McDonald,Prince of Wales Hospital,AU,4.0,2.0,1.0,HIGH,manual_override_corrected
-Dr Sarah Kym Morton,A5102900465,Sarah Morton,Royal Brisbane and Women's Hospital,AU,15.0,6.0,1.0,HIGH,manual_override_corrected
-Dr Sarah Louise Smithson,A5019074628,Sarah Smithson,Royal Women's Hospital,AU,9.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Sarath Naidu Bodapati,A5082896435,Sarath Bodapati,Royal Brisbane and Women's Hospital,AU,7.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Sarvjit  Kumari,A5038651212,Sarvjit Kumari,,,1.0,1.0,0.0,HIGH,manual_override_corrected
-Dr Scott Andrew Webber,A5026353724,Scott A Webber,Queensland Health,AU,6.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Senhong  Lee,A5001658092,Senhong Lee,Eastern Health,AU,41.0,0.0,1.0,HIGH,pass1_targeted
-Dr Shallu  Khurana,A5032876676,Shallu Khurana,Blacktown & Mount Druitt Hospital,AU,4.0,2.0,1.0,HIGH,manual_override_corrected
-Dr Shelley Ji Eun  Hwang,A5081030831,Shelley Ji Eun Hwang,Australian National University,AU,24.0,0.0,1.0,HIGH,pass1_targeted
-Dr Shevya Manjri Tiwari,A5027316612,Shevya Manjri Tiwari,,,12.0,0.0,1.0,HIGH,pass1_targeted
-Dr Shien-Ning  Chee,A5085950363,Shien‐Ning Chee,The University of Sydney,AU,14.0,0.0,1.0,HIGH,pass2_global
-Dr Shireen Kaur Sidhu,A5102708468,Shireen Sidhu,Royal Adelaide Hospital,AU,35.0,0.0,1.0,HIGH,pass2_global
-Dr Shivam  Kapila,A5010673351,Shivam Kapila,Migration Institute of Australia,AU,19.0,0.0,1.0,HIGH,pass1_targeted
-Dr Shobha  Joseph,A5019135138,Shobha Joseph,Sinclair Dermatology,AU,4.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Shueh-Wei  Lim,A5003894150,Shueh Wei Lim,Royal Adelaide Hospital,AU,2.0,2.0,1.0,HIGH,manual_override_corrected
-Dr Shui Lyn  Koh,A5039354130,Shui-Lyn Claire Koh,,,1.0,1.0,0.0,HIGH,manual_override_corrected
-Dr Shyamala Claire Huilgol,A5040989235,Shyamala C. Huilgol,Royal Adelaide Hospital,AU,118.0,0.0,1.0,HIGH,pass2_global
-Dr Shyamalar  Gunatheesan,A5014180417,Shyamalar Gunatheesan,,,6.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Simon Anthony Yong Gee,A5015375282,Simon Yong Gee,Mater Health Services,AU,1.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Simone Goldinger,A5008000580,Simone M. Goldinger,The University of Queensland,AU,177.0,41.0,1.0,HIGH,manual_override_corrected
-Dr Stephanie Clare Blake,A5007091648,Stephanie Blake,Royal Prince Alfred Hospital,AU,11.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Stephanie Marisa Tizi,A5025208944,Stephanie Tizi,Skin and Cancer Foundation,AU,1.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Stephen James Gilmore,A5041331818,Stephen Gilmore,The University of Queensland,AU,50.0,0.0,1.0,HIGH,pass2_global
-Dr Steven  Kossard,A5086060602,Steven Kossard,Royal College of Pathologists of Australasia,AU,208.0,0.0,1.0,HIGH,pass2_global
-Dr Su-Lin  Chan,A5086053373,Su‐Lin Chan,,,3.0,2.0,0.0,HIGH,manual_override_corrected
-Dr Sudipta  Daly,A5101648549,Sudipta Daly,CSIRO Manufacturing,AU,1.0,1.0,1.0,HIGH,manual_override_corrected
-Dr Sue Yen Michelle Goh,A5010985671,Michelle Goh,The University of Melbourne,AU,79.0,19.0,1.0,HIGH,manual_override_corrected
-Dr Sujith Prasad Wannia Kumarasinghe,A5113754890,Sujith Prasad Kumarasinghe,The University of Western Australia,AU,38.0,0.0,1.0,HIGH,pass2_global
-Dr Supriya  Venugopal,A5041927161,Supriya S. Venugopal,UNSW Sydney,AU,24.0,11.0,1.0,HIGH,manual_override_corrected
-Dr Susan Jade Robertson,A5103468894,Susan J. Robertson,Ministry of Health,MY,3.0,0.0,1.0,HIGH,pass2_global
-Dr Tania Maree Zappala,A5007515796,Tania Zappala,The University of Queensland,AU,15.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Tanumay  Raychaudhury,A5059857804,Tanumay Raychaudhury,Blacktown & Mount Druitt Hospital,AU,13.0,0.0,1.0,HIGH,pass2_global
-Dr Terence Sui Chern Poon,A5080804883,Terence S. C. Poon,,,11.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Tevi Wain,A5003509511,Tevi Wain,Royal Prince Alfred Hospital,AU,5.0,4.0,1.0,HIGH,manual_override_corrected
-Dr Themis  Getsos Colla,A5081949803,Themis Getsos Colla,Sinclair Dermatology,AU,6.0,4.0,1.0,HIGH,manual_override_corrected
-Dr Theone  Papps,A5051188931,Theone Papps,Royal North Shore Hospital,AU,6.0,0.0,1.0,HIGH,pass1_targeted
-Dr Theresa Margaret Skender-Kalnenas,A5034315388,Theresa M Skender-Kalnenas,Hollywood Orthopaedic Group,AU,3.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Thevaki  Wain,A5006758936,Thevaki Wain,Royal Prince Alfred Hospital,AU,3.0,0.0,1.0,HIGH,pass2_global
-Dr Thomas Anthony Delaney,A5021373029,Thomas A Delaney,Royal Perth Hospital,AU,26.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Thomas Macdonald Pitney,A5069342594,Thomas Pitney,Queensland Health,AU,10.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Timothy Gilbert Elliott,A5010913402,Timothy Gilbert Elliott,Skin and Cancer Foundation,AU,3.0,0.0,1.0,HIGH,pass1_targeted
-Dr Tom  Kovitwanichkanont,A5006275678,Tom Kovitwanichkanont,Fundación Juan March,ES,19.0,0.0,1.0,HIGH,pass2_global
-Dr Tony Philip Caccetta,A5073520236,Tony Caccetta,The University of Western Australia,AU,15.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Tristan  Blake,A5113608502,Tristan Blake,Mater Health Services,AU,13.0,0.0,1.0,HIGH,pass1_targeted
-Dr Vanathy  Varathan,A5038845308,Vanathy Varathan,Sinclair Dermatology,AU,3.0,2.0,1.0,HIGH,manual_override_corrected
-Dr Vanessa Anne Morgan,A5060294600,Vanessa Morgan,The Royal Melbourne Hospital,AU,25.0,0.0,1.0,HIGH,pass2_global
-Dr Vanessa Leonie Paddon,A5079511119,Vanessa L. Paddon,Royal Prince Alfred Hospital,AU,1.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Victoria Anne Snaidr,A5084495986,Victoria A. Snaidr,Royal Prince Alfred Hospital,AU,7.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Victoria Jane Mar,A5054196193,Victoria Mar,Australian Regenerative Medicine Institute,AU,158.0,24.0,1.0,HIGH,manual_override_corrected
-Dr Victoria Louise Venning,A5056152244,Victoria L Venning,The University of Sydney,AU,24.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap
-Dr Warren  Weightman,A5058634597,Warren Weightman,Queen Elizabeth Hospital,AU,37.0,0.0,1.0,HIGH,pass1_targeted
-Dr William John Ryman,A5083968131,William Ryman,Royal North Shore Hospital,AU,22.0,0.0,1.0,HIGH,pass2_global
-Dr Yee Jen Tai,A5034837652,Yee J Tai,Australasian College of Dermatologists,AU,9.0,0.0,1.0,HIGH,pass2_global
-Dr Yin Yin Vun,A5004730122,Yin Vun,Princess Alexandra Hospital,AU,12.0,9.0,1.0,HIGH,manual_override_corrected
-Dr Yong Chern  Kho,A5020525594,Yong Chern Kho,St Vincent's Hospital Sydney,AU,7.0,0.0,1.0,HIGH,pass1_targeted
-Dr Yu-Chuan  Lee,A5012670374,Y S Lee,Flinders Medical Centre,AU,7.0,3.0,1.0,HIGH,manual_override_corrected
-Dr Yvonne Bao Ngoc Nguyen,A5113805189,Yvonne Bao Ngoc Nguyen,,,2.0,0.0,0.0,HIGH,manual_override_corrected
-Dr Yvonne Yu-Ping Lee,A5006281551,Yvonne Y Lee,Cairns Hospital,AU,1.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Zachary Graham Boyce,A5003117287,Zachary Boyce,Cairns Hospital,AU,2.0,0.0,1.0,HIGH,pass3_llm_high
-Dr Zahra  Assarian,A5055870509,Zahra Assarian,St Vincent's Hospital Melbourne,AU,5.0,0.0,1.0,HIGH,pass1_targeted
-Dr Zhi Mei  Low,A5078588503,Zhi Mei Low,The Royal Melbourne Hospital,AU,13.0,0.0,1.0,HIGH,pass1_targeted
-Miss Emily  Forward,A5037816337,Emily Forward,Royal Prince Alfred Hospital,AU,15.0,0.0,1.0,HIGH,pass1_targeted
-Prof Deirdre Frances Murrell,A5000758369,Dédée F. Murrell,Sutherland Hospital,IN,779.0,69.0,1.0,HIGH,manual_override_corrected
-Prof Deshan Sebaratnam,A5005957821,Deshan F. Sebaratnam,Liverpool Hospital,AU,172.0,25.0,1.0,HIGH,manual_override_corrected
-Prof Dédée Murrell,A5015473226,Dédée Murrell,UNSW Sydney,AU,7.0,2.0,1.0,HIGH,manual_override_corrected
-Prof Ingrid Margaret Winship,A5076928530,Ingrid Winship,The Royal Melbourne Hospital,AU,496.0,60.0,1.0,HIGH,manual_override_corrected
-Prof Rodney Daniel Sinclair,A5035044854,Rodney Sinclair,The University of Melbourne,AU,847.0,76.0,1.0,HIGH,manual_override_corrected
-Dr Orli  Wargon,A5040403743,Orli Wargon,UNSW Sydney,AU,77.0,26.0,1.0,HIGH,restored_manual_review
-Dr Kurosh  Parsi,A5071771484,Kurosh Parsi,St. Vincent's Birmingham,US,121.0,27.0,1.0,HIGH,restored_manual_review
+acd_name,openalex_id,openalex_display_name,last_known_institution,institution_country,works_count,h_index,total_citations,aunz_ever,confidence,resolution_method,split_ids
+A/Prof Anne Howard,A5074376223,Anne Howard,The Royal Melbourne Hospital,AU,198.0,16.0,,1.0,HIGH,restored_manual_review,
+A/Prof Douglas Gin,A5085969478,Douglas Chan Su Gin,Alfred Health,AU,2.0,1.0,,1.0,HIGH,manual_override_corrected,
+A/Prof Gayle Fischer,A5044429182,Gayle Fischer,The University of Sydney,AU,294.0,39.0,,1.0,HIGH,manual_override_corrected,
+Adj A/Prof Gregory Siller,A5041267982,Gregory Siller,Princess Alexandra Hospital,AU,8.0,8.0,,1.0,HIGH,manual_override_corrected,
+Dr Aakriti  Gupta,A5016354767,Aakriti Gupta,Royal Adelaide Hospital,AU,12.0,0.0,,1.0,HIGH,pass2_global,
+Dr Aaron James Robinson,A5105758110,Aaron James Robinson,Bangor University,GB,4.0,2.0,,0.0,HIGH,manual_override_corrected,
+Dr Adam Thomas Sheridan,A5031507930,Adam T Sheridan,The Alfred Hospital,AU,15.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Adrian Cheow Yang See,A5031668156,Adrian See,Institut national de recherche en sciences et technologies du numérique,FR,8.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Adrian Wah-Ying Mar,A5049644243,Adrian Mar,Monash Health,AU,43.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Alain Khoi Tran,A5037615804,Alain Khoi Tran,Skin Health Institute,AU,6.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Alan Michael Donnelly,A5005092540,Alan M Donnelly,Fremantle Hospital,AU,1.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Alana Jane Tuxen,A5112171476,A Tuxen,Royal Children's Hospital,AU,8.0,5.0,,1.0,HIGH,manual_override_corrected,
+Dr Alexander James Tedman,A5050672966,Alexander Tedman,The University of Sydney,AU,3.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Alexandra Louise Varol,A5111640823,Alexandra Varol,Liverpool Hospital,AU,4.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Alexis Daniel Lara Rivero,A5126815191,Alexis Daniel Lara Rivero,UNSW Sydney,AU,1.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Alice Louise Rudd,A5073136865,Alice Rudd,Geelong Hospital,AU,5.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Alvand  Amiri,A5000468851,Alvand Amiri,The George Institute for Global Health,AU,1.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Alvin Heong On Chong,A5135112067,Alvin H. Chong,St Vincent's Hospital Melbourne,AU,1.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Amanda  Glanz,A5034001319,Amanda Glanz,The University of Sydney,AU,7.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Amanda Jayne Dore,A5089222759,Amanda Dore,Children's Health Queensland Hospital and Health Service,AU,5.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Amanda Mary Godbolt,A5044499142,Amanda Godbolt,Royal Brisbane and Women's Hospital,AU,10.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Anastasios  Stavrakoglou,A5014189689,Anastasios Stavrakoglou,Alfred Health,AU,9.0,0.0,,1.0,HIGH,pass2_global,
+Dr Andrea  Jopp-McKay,A5076155144,A.G. Jopp-Mckay,The University of Sydney,AU,12.0,6.0,,1.0,HIGH,manual_override_corrected,
+Dr Andrea  Tomizawa,A5007381136,Andrea Tomizawa,,,1.0,0.0,,0.0,HIGH,manual_override_corrected,
+Dr Andrew Campbell Satchell,A5085949418,Andrew C. Satchell,Dubbo Hospital,AU,10.0,0.0,,1.0,HIGH,pass2_global,
+Dr Andrew Chih-Chieh Chen,A5043282205,Andrew Chih‐Chieh Chen,,,3.0,2.0,,0.0,HIGH,manual_override_corrected,
+Dr Andrew Peter Jevtic,A5111467713,Andrew Jevtic,Royal Hobart Hospital,AU,6.0,0.0,,1.0,HIGH,pass2_global,
+Dr Andrew William Swarbrick,A5028545621,Andrew W Swarbrick,Sir Charles Gairdner Hospital,AU,3.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Angelica  Tjokrowidjaja,A5089133510,Angelica Tjokrowidjaja,Liverpool Hospital,AU,1.0,0.0,,1.0,HIGH,pass2_global,
+Dr Anina Kaisli-Maaria Fitzgibbon,A5087893215,Anina Fitzgibbon,Monash Health,AU,4.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Anita Lee Lasocki,A5067871273,Anita Lasocki,St Vincent's Hospital Melbourne,AU,6.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Ann Radha Boyapati,A5087756316,Ann Boyapati,Monash Health,AU,6.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Ann-Maree  Kurzydlo,A5098506751,Ann‐Maree Kurzydlo,Royal Australian and New Zealand College of Radiologists,AU,1.0,1.0,,1.0,HIGH,manual_override_corrected,
+Dr Anna  Braue,A5055259312,Anna Braue,The Royal Melbourne Hospital,AU,18.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Annabel Irene Stevenson,A5111284685,Annabel Stevenson,Royal Adelaide Hospital,AU,7.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Anne Elizabeth Lewis,A5027321419,Anne Elizabeth Lewis,,,1.0,0.0,,0.0,HIGH,manual_override_corrected,
+Dr Anne Rosemary Halbert,A5110509081,Anne Halbert,The University of Western Australia,AU,38.0,18.0,,1.0,HIGH,restored_manual_review,
+Dr Annette Lisa Pearce,A5113596658,Annette Pearce,South Australian Research and Development Institute,AU,5.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Annette Rachel Hamori Wegman,A5031958269,Annette Wegman,Prince of Wales Hospital,AU,3.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Annika  Smith,A5055174077,Annika Smith,The University of Sydney,AU,6.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Anosha  Yazdabadi,A5112395904,Anosha Yazdabadi,Eastern Health,AU,7.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Anthea Frances Mulcahy,A5011620047,Anthea Mulcahy,Box Hill Hospital,AU,5.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Antoinette  Ciconte,A5060567618,Antoinette Ciconte,Box Hill Hospital,AU,10.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Antonia Maria Laino,A5075245713,Antonia Laino,The University of Queensland,AU,9.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Arabella Helen Wallett,A5079840138,Arabella Wallett,Royal Adelaide Hospital,AU,11.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Artiene Hagob John Tatian,A5030580904,Artiene Tatian,UNSW Sydney,AU,26.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Asoka Kumarihamy Herat,A5007414126,Asoka Herat,Mater Adult Hospital,AU,3.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Austen Kathleen Anderson,A5044786864,Austen Anderson,Royal Perth Hospital,AU,15.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Benjamin James Carew,A5072524473,Benjamin Carew,Mater Adult Hospital,AU,6.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Benjamin Silas Daniel,A5086530387,Benjamin S. Daniel,UNSW Sydney,AU,2.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Bernadette Mary Ricciardo,A5023383113,Bernadette Ricciardo,The University of Western Australia,AU,33.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Bert Markou Pruim,A5089262289,Bert Pruim,Royal Darwin Hospital,AU,4.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Bishakha  Rajagopalan,A5052370797,B Rajagopalan,Ballarat Health Services,AU,25.0,6.0,,1.0,HIGH,manual_override_corrected,
+Dr Bonita Choy,A5042286929,Bonita Choy,The University of Sydney,AU,9.0,6.0,,1.0,HIGH,manual_override_corrected,
+Dr Bonnie Anne Fergie,A5001549444,Bonnie Fergie,Canberra Hospital,AU,4.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Brian John De'ambrosis,A5017467471,Brian De Ambrosis,Princess Alexandra Hospital,AU,1.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Brogan Kelly Salence,A5072061828,Brogan Kelly Salence,Gosford Hospital,AU,7.0,0.0,,1.0,HIGH,pass2_global,
+Dr Bruce Colin Leslie McGeorge,A5002455975,Bruce C.L. McGeorge,Royal Darwin Hospital,AU,4.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Bruce James Tate,A5011520227,Bruce Tate,Skin Health Institute,AU,28.0,16.0,,1.0,HIGH,restored_manual_review,
+Dr Bruna  Melhoranse Gouveia,A5079604816,Bruna Melhoranse Gouveia,The University of Sydney,AU,28.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Bruno  Blaya Alvarez,A5013822061,Bruno Blaya Alvarez,St Vincent's Hospital Sydney,AU,2.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Bryan Ka Chiu Pang,A5038823958,Bryan K. Pang,Liverpool Hospital,AU,11.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Burcu  Kim,A5014705000,Burcu Kim,The University of Sydney,AU,2.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Carol Chiu Yen Oh Adib,A5086133541,Carol Chiu Yen Oh Adib,,,1.0,0.0,,0.0,HIGH,manual_override_corrected,
+Dr Caroline Hsien-Feng Thoo,A5082011926,Caroline HF Thoo,Skin and Cancer Foundation,AU,1.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Casey Jane Rowe,A5066375948,Casey Rowe,The University of Queensland,AU,27.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Cassandra  Chaptini,A5028799593,Cassandra Chaptini,South Australia Pathology,AU,7.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Catherine Frances Faulkner,A5041996671,Catherine Faulkner,,,9.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Catherine Luisa Orana Black,A5077841778,Catherine L. Black,Royal Adelaide Hospital,AU,2.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Cathy Yunjia Zhao,A5087237583,Cathy Zhao,The University of Sydney,AU,76.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Celestine Chu Wen Wong,A5080338163,Celestine Wong,The Royal Melbourne Hospital,AU,20.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Charles Xie,A5110680680,Charles Xie,Peter MacCallum Cancer Centre,AU,9.0,7.0,,1.0,HIGH,manual_override_corrected,
+Dr Charlotte Emily Forrest,A5112073981,Charlotte E. Forrest,Royal Adelaide Hospital,AU,4.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Charlotte Lucinda Thomas,A5001516708,Charlotte L Thomas,The University of Sydney,AU,18.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Chasari  Tancharoen,A5003143667,Chasari Tancharoen,St Vincent's Hospital Melbourne,AU,10.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Chris Khachadour Jalilian,A5076740912,Chris Jalilian,Monash Health,AU,14.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Christina Alexandra Saywell,A5028631511,Christina A Saywell,Bankstown Lidcombe Hospital,AU,1.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Christopher Hudson Heyes,A5087287678,Christopher Heyes,The Royal Melbourne Hospital,AU,6.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Christopher John McCormack,A5059028953,Christopher McCormack,The University of Melbourne,AU,98.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Christopher John Quirk,A5110220825,Christopher J Quirk,Melanoma Institute Australia,AU,23.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Christopher John Tyson,A5083400870,Christopher John Tyson,,,1.0,0.0,,0.0,HIGH,manual_override_corrected,
+Dr Christopher Ramon Kearney,A5087584896,Christopher R Kearney,,,3.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Claire Elizabeth Grills,A5018031642,Claire Grills,Royal Children's Hospital,AU,13.0,7.0,,1.0,HIGH,manual_override_corrected,
+Dr Claire Margaret Felmingham,A5076757971,Claire Felmingham,Australian Regenerative Medicine Institute,AU,17.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Clare Conway Schofield,A5067290175,Clare Schofield,,,6.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Clare Koh,A5069869788,Clare Koh,Sydney Children's Hospital,AU,2.0,2.0,,1.0,HIGH,manual_override_corrected,
+Dr Clare Penelope Tait,A5038048309,Clare P Tait,Hollywood Orthopaedic Group,AU,21.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Claudia Elizabeth Spence Curchin,A5057296414,Claudia Curchin,Princess Alexandra Hospital,AU,10.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Colin Gek Ghee Ooi,A5052368133,Colin Ooi,Royal Adelaide Hospital,AU,8.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Colin Soo-Chee Ong,A5053053678,Colin S. Ong,,,13.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Con  Dolianitis,A5041754617,Con Dolianitis,The Royal Melbourne Hospital,AU,35.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Corinne  Maiolo,A5008470898,Corinne Maiolo,South Australia Pathology,AU,7.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Crystal Nicole Williams,A5103049140,Crystal Williams,Townsville Hospital,AU,20.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Dana Rose-Marie Louise Slape,A5007841453,Dana Slape,Camden and Campbelltown Hospitals,AU,3.0,2.0,,1.0,HIGH,manual_override_corrected,
+Dr Daram Singh,A5000916743,Daram Singh,Royal Perth Hospital,AU,3.0,2.0,,1.0,HIGH,manual_override_corrected,
+Dr David  Burdon-Jones,A5036020524,David Burdon‐Jones,Western Health,AU,9.0,6.0,,1.0,HIGH,manual_override_corrected,
+Dr David Charles Orchard,A5082259725,David Orchard,Royal Children's Hospital,AU,79.0,18.0,,1.0,HIGH,restored_manual_review,
+Dr David Yu Shun Wong,A5015945824,David Yu-Shun Wong,South Eastern Sydney Local Health District,AU,1.0,1.0,,1.0,HIGH,manual_override_corrected,
+Dr Davin Sui Lim,A5110273729,Davin Lim,Queensland Health,AU,27.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Dean Jeremy Choong,A5051830872,Dean Jeremy Choong,Fiona Stanley Hospital,AU,5.0,0.0,,1.0,HIGH,pass2_global,
+Dr Deanna Alicia Wong,A5111814389,Deanna A Wong,,,6.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Derek  Davies,A5016069556,Derek Davies,Calvary Mater Newcastle Hospital,AU,5.0,0.0,,1.0,HIGH,pass2_global,
+Dr Dev Ruhunage Tilakaratne,A5018532317,Dev Tilakaratne,Royal Darwin Hospital,AU,18.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Devita  Surjana,A5043017139,Devita Surjana,Advanced Dermatology,US,15.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Diana Louise Norris,A5102068039,Diana Norris,St Vincent's Hospital Melbourne,AU,3.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Diana Marie Rubel,A5112556598,Diana Rubel,Australian National University,AU,59.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Diona Lee Damian,A5109680281,Diona L. Damian,The University of Sydney,AU,106.0,37.0,4766,1.0,HIGH,manual_override_corrected,"[""A5040089794""]"
+Dr Dorota  Long,A5059461335,Dorota Long,Flinders Medical Centre,AU,4.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Dougal Francis Coates,A5036783494,Dougal Coates,CSIRO Manufacturing,AU,9.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Du-Chien Jean Marie Tan,A5011050671,Jean-Marie Tan,The University of Queensland,AU,6.0,3.0,,1.0,HIGH,manual_override_corrected,
+Dr Duncan Graham Stanford,A5123953838,Duncan Graham Stanford,University of Wollongong,AU,1.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Edmund Pei Yi Wee,A5047279488,Edmund Wee,Cancer Council Western Australia,AU,2.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Edwina Millicent Lamrock,A5037160452,Edwina Lamrock,John Hunter Hospital,AU,6.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Eleni  Yiasemides,A5027682688,Eleni Yiasemides,,,13.0,0.0,,1.0,HIGH,pass2_global,
+Dr Eleni Peta Anthony,A5061738470,Eleni Anthony,Box Hill Hospital,AU,10.0,3.0,,1.0,HIGH,manual_override_corrected,
+Dr Elizabeth  Dawes-Higgs,A5087327012,Elizabeth Dawes‐Higgs,Northern Sydney Local Health District,AU,6.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Elizabeth Mary Christou,A5025070185,Elizabeth M Christou,Sydney Children's Hospital,AU,6.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Elizabeth Mary Willsteed,A5079553235,Elizabeth Willsteed,,,13.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Elizabeth Teng Yoke Chow,A5112840266,Elizabeth T Chow,Liverpool Hospital,AU,7.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Emma Louise Haverhoek,A5022577585,Emma Haverhoek,Royal Adelaide Hospital,AU,1.0,0.0,,1.0,HIGH,pass2_global,
+Dr Emma Louise Hiscutt,A5032010584,Emma Hiscutt,The Alfred Hospital,AU,13.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Er Tsing Vivian Tng,A5010131410,Er Tsing Vivian Tng,John Hunter Hospital,AU,6.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Eric  Waine,A5026164600,Éric Denis translated by Oliver Waine,,,1.0,0.0,,0.0,HIGH,manual_override_corrected,
+Dr Erin Kelly McMeniman,A5080054407,Erin McMeniman,Queensland University of Technology,AU,82.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Erin Mullan,A5079690275,Erin Mullan,,,3.0,2.0,,0.0,HIGH,manual_override_corrected,
+Dr Eshini Ishanka Perera,A5085834804,Eshini Perera,The University of Melbourne,AU,25.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Esther Hong,A5128245715,Esther Hong,The University of Sydney,AU,2.0,0.0,,1.0,HIGH,reresolution_proportional_v1,
+Dr Fatemeh  Arianejad,A5036395362,Fatemeh Arianejad,Gosford Hospital,AU,2.0,0.0,,1.0,HIGH,pass2_global,
+Dr Fiona Jane Bruce,A5051286688,Fiona Bruce,Australasian College of Dermatologists,AU,14.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Flora Yuk-Han Poon,A5101922477,Flora Poon,Monash Health,AU,19.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Frances Joan Tefany,A5064796906,Frances J. Tefany,St Vincent's Hospital Sydney,AU,5.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Francis Yi Xing Lai,A5084117414,Francis Yi Xing Lai,Monash Health,AU,40.0,0.0,,1.0,HIGH,pass2_global,
+Dr Frank  Isaacs,A5020373437,Frank Isaacs,St Vincent's Hospital Sydney,AU,8.0,0.0,,1.0,HIGH,pass2_global,
+Dr Friyana Keiku Bhabha,A5057697105,Friyana Bhabha,Peter MacCallum Cancer Centre,AU,16.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Gary Raymond Moloney,A5019564463,Gary R. Moloney,Sir Charles Gairdner Hospital,AU,4.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Gayle Loraine Ross,A5034456513,Gayle Ross,The Royal Melbourne Hospital,AU,103.0,17.0,,1.0,HIGH,restored_manual_review,
+Dr Genevieve Marie Sadler,A5071873118,Genevieve Sadler,Sir Charles Gairdner Hospital,AU,10.0,0.0,,1.0,HIGH,pass2_global,
+Dr George Andrew Varigos,A5108082559,George A. Varigos,The Royal Melbourne Hospital,AU,53.0,22.0,,1.0,HIGH,manual_override_corrected,
+Dr Georgia Frances Farrah,A5010910372,Georgia Farrah,Princess Margaret Hospital for Children,AU,4.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Georgina Ruth Lyons,A5022304711,Georgina Lyons,The Alfred Hospital,AU,5.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Germana  Consuegra Romero,A5010162713,Germana Consuegra Romero,Westmead Hospital,AU,4.0,0.0,,1.0,HIGH,pass2_global,
+Dr Gerrie Becker,A5010032534,Gerrie J. Becker,Coffs Harbour City Council,AU,1.0,1.0,,1.0,HIGH,manual_override_corrected,
+Dr Gian Dial Singh,A5109942501,Gian D. Singh,Royal Perth Hospital,AU,1.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Gilberto Moreno Bonilla,A5057848257,Gilberto Moreno Bonilla,The University of Sydney,AU,17.0,4.0,,1.0,HIGH,manual_override_corrected,
+Dr Glen Christopher Foxton,A5025720209,Glen Foxton,Cancer Council Western Australia,AU,3.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Glenda Kaye Wood,A5000971949,Glenda Wood,Prince of Wales Hospital,AU,12.0,0.0,,1.0,HIGH,pass2_global,
+Dr Glenn  Parham,A5066496800,Glenn Parham,Fremantle Hospital,AU,1.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Graham Alistair Thom,A5112614892,Graham Thom,Royal Perth Hospital,AU,13.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Gwyneth Natalie Tsun Wong,A5076539938,Gwyneth Natalie Wong,Footscray Hospital,AU,8.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Haady  Fallah,A5078953014,Haady Fallah,Concord Repatriation General Hospital,AU,13.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Hans Peter Soyer,A5033462323,H. Peter Soyer,Translational Research Institute,AU,1217.0,87.0,,1.0,HIGH,manual_override_corrected,
+Dr Harini  Rajgopal Bala,A5072742930,Harini Rajgopal Bala,Skin Health Institute,AU,19.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Harvey Ronald Smith,A5058201255,H. R. Smith,University Hospitals Bristol NHS Foundation Trust,AU,46.0,18.0,,1.0,HIGH,manual_override_corrected,
+Dr Heba A.T. Jibreal,A5005859470,Heba Jibreal,Children's Health Queensland Hospital and Health Service,AU,4.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Helen Louise Saunders,A5034761041,Helen Saunders,St Vincent's Hospital Melbourne,AU,1.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Helena  Collgros Totosaus,A5091809379,Helena Collgros Totosaus,,,1.0,1.0,,0.0,HIGH,manual_override_corrected,
+Dr Helena Anne Lolatgis,A5018300338,Helena Lolatgis,,,4.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Helmut  Schaider,A5079759046,Helmut Schaider,The University of Queensland,AU,198.0,0.0,,1.0,HIGH,pass2_global,
+Dr Hope Vu Dinh,A5011730685,Hope Dinh,The Alfred Hospital,AU,12.0,0.0,,1.0,HIGH,pass2_global,
+Dr Howard Mark Studniberg,A5072136399,Howard M. Studniberg,,,3.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Hsien Wern Herbert Chan,A5039904993,Hsien W. Herbert Chan,The University of Sydney,AU,1.0,0.0,,1.0,HIGH,pass2_global,
+Dr Ian Douglas McCrossin,A5014146539,Ian McCrossin,Ingham Institute,AU,20.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Ilsphi  Browne,A5108998151,Ilsphi Browne,Cairns Hospital,AU,2.0,0.0,,1.0,HIGH,pass2_global,
+Dr Irene  Grigoris,A5087219559,Irene Grigoris,,,3.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Jacinta Mary Opie,A5029579969,Jacinta Opie,Mercy Hospital for Women,AU,8.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Jacqueline  Matulich,A5085088674,Jacqueline Matulich,Royal North Shore Hospital,AU,4.0,0.0,,1.0,HIGH,pass2_global,
+Dr James Michael Butler,A5100839584,James Michael Butler,,,4.0,1.0,,0.0,HIGH,manual_override_corrected,
+Dr Jamie Andrew Von Nida,A5014928991,Jamie Von Nida,Sir Charles Gairdner Hospital,AU,10.0,0.0,,1.0,HIGH,pass2_global,
+Dr Jeffrey Alan Wayte,A5040819265,Jeffrey Wayte,Royal Adelaide Hospital,AU,7.0,0.0,,1.0,HIGH,pass2_global,
+Dr Jemima  Fisher,A5053957923,Jemima Fisher,Prince of Wales Hospital,AU,2.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Jennifer Louise Cahill,A5026790915,Jennifer Cahill,Skin Health Institute,AU,48.0,17.0,,1.0,HIGH,restored_manual_review,
+Dr Jenny  Nicolopoulos,A5021107172,Jenny Nicolopoulos,The Royal Melbourne Hospital,AU,22.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Jenny  Tu,A5075018055,Jenny Tu,,,12.0,0.0,,1.0,HIGH,pass2_global,
+Dr Jeremy Paul Banky,A5036323982,Jeremy P Banky,The Alfred Hospital,AU,5.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Jesse James Johnston,A5091847142,Jesse James Johnston,,,1.0,1.0,,0.0,HIGH,manual_override_corrected,
+Dr Jill Ann Cargnello,A5090723553,Jill A Cargnello,,,10.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Jillian  Wells,A5046545387,Jillian Wells,The University of Sydney,AU,24.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Jo-Ann  See,A5103339855,Jo‐Ann See,University of Sydney,AU,29.0,0.0,,1.0,HIGH,pass2_global,
+Dr Johanna Merilyn Kuchel,A5040114857,Johanna M. Kuchel,Churchill Hospital,GB,11.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Johannes Steffen Kern,A5036841737,Johannes S. Kern,Monash Alfred Psychiatry Research centre,AU,219.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr John  Frewen,A5048693221,John Frewen,Sinclair Dermatology,AU,18.0,4.0,,1.0,HIGH,manual_override_corrected,
+Dr John Anthony Pagliaro,A5031278243,John Pagliaro,CSIRO Manufacturing,AU,8.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr John Chit Su,A5137797462,John C Su,Box Hill Hospital,AU,1.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr John Peter Relic,A5058208118,John Relic,John Hunter Hospital,AU,22.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr John Walter Frew,A5024756062,John W. Frew,The University of Sydney,AU,284.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr John William Kelly,A5103679722,John W Kelly,The Alfred Hospital,AU,29.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Joseph  Konya,A5041037832,Joseph Konya,,,8.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Josephine Margaret Yeatman,A5007925200,Josephine M Yeatman,,,8.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Joshua Angelo Elakis,A5005735274,Joshua Angelo Elakis,Deakin University,AU,2.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Josie Yeatman,A5035494788,Josie Yeatman,Austin Hospital,AU,1.0,1.0,,1.0,HIGH,manual_override_corrected,
+Dr Joy Sue Ming Yee,A5041848444,Joy Yee,Royal Children's Hospital,AU,1.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Judith Mary Cole,A5020967828,Judith M. Cole,St John of God Subiaco Hospital,AU,22.0,10.0,,1.0,HIGH,manual_override_corrected,
+Dr Julia Emma Joy Rhodes,A5012538350,Julia Emma Joy Rhodes,,,2.0,2.0,,0.0,HIGH,manual_override_corrected,
+Dr Juliana  Miglio Bensabat Junger,A5010836097,Juliana Miglio Bensabat Junger,,,1.0,0.0,,0.0,HIGH,manual_override_corrected,
+Dr Karen Elizabeth Behne,A5038861642,Karen Behne,Royal Brisbane and Women's Hospital,AU,2.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Karen Julie Koh,A5058835394,Karen J Koh,Women's and Children's Hospital,AU,3.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Karl Heinz Rodins,A5054849995,Karl Rodins,,,16.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Karolina Louisa Suzanna Kerkemeyer,A5018566549,Karolina Louisa Suzanna Kerkemeyer,University College London Hospitals NHS Foundation Trust,GB,20.0,0.0,,1.0,HIGH,pass2_global,
+Dr Karyn Rae Lun,A5047279560,Karyn Lun,Townsville Hospital,AU,15.0,0.0,,1.0,HIGH,pass2_global,
+Dr Kate DeAmbrosis,A5075556725,Kate DeAmbrosis,Mater Misericordiae Hospital,AU,1.0,1.0,,1.0,HIGH,manual_override_corrected,
+Dr Kate Margaret Newland,A5077981810,Kate Newland,Flinders Medical Centre,AU,16.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Katherine Julienne Allnutt,A5070852939,Katherine J. Allnutt,Royal Prince Alfred Hospital,AU,6.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Katherine Sarah Armour,A5086779083,Katherine Armour,Skin Health Institute,AU,15.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Kathryn Maree De Ambrosis,A5056801236,Kathryn De Ambrosis,Royal Brisbane and Women's Hospital,AU,1.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Katie Huong Le,A5021570594,Katie Le,Children's Hospital at Westmead,AU,3.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Kavita  Enjeti,A5119124695,Kavita Enjeti,,,1.0,0.0,,0.0,HIGH,manual_override_corrected,
+Dr Ken Joseph Gudmundsen,A5018379944,Ken J. Gudmundsen,Skin and Cancer Foundation,AU,7.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Kendall Katie Sharpe,A5013987995,Kendall Katie Sharpe,Gold Coast Hospital,AU,3.0,0.0,,1.0,HIGH,pass2_global,
+Dr Keng-Ee  Thai,A5035955354,Keng‐Ee Thai,Concord Repatriation General Hospital,AU,16.0,0.0,,1.0,HIGH,pass2_global,
+Dr Kerry Ann Crotty,A5035643981,Kerry A. Crotty,,,58.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Kurt Aaron Josef Gebauer,A5069967041,Kurt Gebauer,Fremantle Hospital,AU,92.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Kyoko  Shirato,A5016674239,Kyoko Shirato,Royal Adelaide Hospital,AU,5.0,0.0,,1.0,HIGH,pass2_global,
+Dr Lachlan John Warren,A5075404345,Lachlan Warren,Women's and Children's Hospital,AU,25.0,0.0,,1.0,HIGH,pass2_global,
+Dr Lara  Trindade De Carvalho,A5066500109,Lara Trindade de Carvalho,Sinclair Dermatology,AU,20.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Laura  Scardamaglia,A5063349330,Laura Scardamaglia,The Royal Melbourne Hospital,AU,62.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Lauren Cordelia Young,A5109870477,Lauren Cordelia Young,City Eye Centre,AU,2.0,0.0,,1.0,HIGH,pass2_global,
+Dr Lee Mei Yap,A5109236701,Lee‐Mei Yap,St Vincent's Hospital Melbourne,AU,2.0,0.0,,1.0,HIGH,pass2_global,
+Dr Leith Banney,A5066107659,Leith Banney,The University of Queensland,AU,25.0,9.0,,1.0,HIGH,manual_override_corrected,
+Dr Lena Alexandra Beatrix Von Schuckmann,A5041437740,Lena A. von Schuckmann,The University of Queensland,AU,41.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Lena My Thanh Ly,A5103245638,Lena Ly,Eastern Health,AU,9.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Leona Wan Yi Yip,A5072554499,Leona Yip,Queensland Health,AU,40.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Linda  Chan,A5009374536,Linda Chan,Westmead Hospital,AU,18.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Linda Katherine Martin,A5043969975,Linda K. Martin,The University of Sydney,AU,103.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Lisa Abbott,A5013223539,Lisa M. Abbott,Melanoma Institute Australia,AU,26.0,9.0,,1.0,HIGH,restored_manual_review,
+Dr Lisa Michelle Byrom,A5082195945,Lisa Byrom,The University of Queensland,AU,33.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Lizbeth Ruth Aragones Wheeler,A5051873726,Lizbeth Ruth Wheeler,UNSW Sydney,AU,1.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Lucy Kate Pitney,A5021814612,Lucy Pitney,,,5.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Ludi  Ge,A5007265383,Ludi Ge,The University of Sydney,AU,17.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Lynda Jane Spelman,A5019091788,Lynda Spelman,Queensland Children’s Medical Research Institute,AU,131.0,0.0,,1.0,HIGH,pass2_global,
+Dr Maddie Gorji,A5089295636,Maddie Gorji,UNSW Sydney,AU,2.0,2.0,,1.0,HIGH,manual_override_corrected,
+Dr Mahdieh  Gorji,A5053330550,Mahdieh Gorji,Prince of Wales Hospital,AU,16.0,0.0,,1.0,HIGH,pass2_global,
+Dr Margit Marisa Polcz,A5004010783,Margit Polcz,Royal Prince Alfred Hospital,AU,23.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Margot Julie Whitfeld,A5070811297,Margot Whitfeld,St Vincent's Hospital Sydney,AU,82.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Maria  Jones-Caballero,A5018033064,María Jones‐Caballero,The University of Sydney,AU,50.0,0.0,,1.0,HIGH,pass2_global,
+Dr Mark  Cicchiello,A5010663231,Mark Cicchiello,The Alfred Hospital,AU,1.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Matheen  Mohamed,A5018075216,Matheen Mohamed,St Vincent's Hospital Melbourne,AU,8.0,3.0,,1.0,HIGH,manual_override_corrected,
+Dr Matthew David Howard,A5071927070,Matthew Howard,Eastern Health,AU,29.0,10.0,,1.0,HIGH,manual_override_corrected,
+Dr Matthew James Lin,A5078377550,Matthew James Lin,Royal Prince Alfred Hospital,AU,2.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Matthew James Palmer,A5103728443,James Matthew Palmer,,,1.0,0.0,,0.0,HIGH,manual_override_corrected,
+Dr Matthew John Warren,A5104018617,Matthew John Warren,,,1.0,1.0,,0.0,HIGH,manual_override_corrected,
+Dr Matthew Paul Hishon,A5110522916,Matthew Hishon,The University of Queensland,AU,3.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Matthew Sang-Woo Cho,A5064124613,Matthew Cho,Royal Adelaide Hospital,AU,2.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr May-Lian  Lee,A5110252023,May‐Lian Lee,Royal North Shore Hospital,AU,7.0,0.0,,1.0,HIGH,pass2_global,
+Dr Mei Mui Tam,A5009396651,Mei Tam,St Vincent's Hospital Melbourne,AU,30.0,15.0,,1.0,HIGH,restored_manual_review,
+Dr Mei-Heng  Tan,A5108662434,Mei‐Heng Tan,UNSW Sydney,AU,30.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Melissa Nicole Manahan,A5001457265,Melissa N Manahan,Princess Alexandra Hospital,AU,8.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Michael George Freeman,A5101421797,Michael Freeman,Bond University,AU,9.0,0.0,,1.0,HIGH,pass2_global,
+Dr Michael John Bannister,A5079139897,Michael J Bannister,Skin and Cancer Foundation,AU,2.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Michaela  Zallmann,A5079806847,Michaela Zallmann,Alfred Health,AU,7.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Michelle Anne Rodrigues,A5136024776,Michelle Rodrigues,Royal Children's Hospital,AU,1.0,0.0,,1.0,HIGH,pass2_global,
+Dr Michelle Yvonne McRae,A5006951454,Michelle Yvonne McRae,The University of Sydney,AU,7.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Millicent Heather Osti,A5070832993,Millicent H. Osti,St Vincent's Hospital Melbourne,AU,12.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Monisha  Gupta,A5079821873,Monisha Gupta,Camden and Campbelltown Hospitals,AU,7.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Munther Shabib Ghanim Zureigat,A5050792257,Munther Zureigat,Royal Prince Alfred Hospital,AU,3.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr My Co Tran,A5051251797,My Co Tran,The University of Queensland,AU,1.0,1.0,,1.0,HIGH,manual_override_corrected,
+Dr Nelly  Jang,A5031981183,Nelly Jang,Royal North Shore Hospital,AU,1.0,0.0,,1.0,HIGH,pass2_global,
+Dr Nerilee Ann Wall,A5061129503,Nerilee Wall,Children's Health Queensland Hospital and Health Service,AU,5.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Nghi Tu Huynh,A5111866510,Nghi T Huynh,Sydney Local Health District,AU,16.0,0.0,,1.0,HIGH,pass2_global,
+Dr Niamh Anna O'Sullivan,A5111502123,Niamh‐Anna O'Sullivan,Fiona Stanley Hospital,AU,3.0,2.0,,1.0,HIGH,manual_override_corrected,
+Dr Nicholas  Aspres,A5044209875,Nicholas Aspres,,,5.0,0.0,,1.0,HIGH,pass2_global,
+Dr Nikki Rae Adler,A5007918003,Nikki R. Adler,The Alfred Hospital,AU,69.0,15.0,,1.0,HIGH,manual_override_corrected,
+Dr Nina Yvette Wines,A5019409622,Nina Wines,,,19.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Niranthari  Chinniah,A5012005259,Niranthari Chinniah,The University of Sydney,AU,8.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Nisansala Mahenthi Nagodavithana,A5012112653,Nisansala Mahenthi Nagodavithana,Sir Charles Gairdner Hospital,AU,1.0,0.0,,1.0,HIGH,pass2_global,
+Dr Nita Sally Agar,A5103341737,Nita Agar,Royal Prince Alfred Hospital,AU,15.0,8.0,,1.0,HIGH,manual_override_corrected,
+Dr Olivia Jean Milne,A5089361198,Olivia Jean Milne,Monash Health,AU,1.0,0.0,,1.0,HIGH,pass2_global,
+Dr Parastoo  Banan,A5038997376,Parastoo Banan,Translational Research Institute,AU,17.0,0.0,,1.0,HIGH,pass2_global,
+Dr Pascale Rovel Guitera,A5102807820,Pascale Guitera,The University of Sydney,AU,25.0,0.0,,1.0,HIGH,pass2_global,
+Dr Patricia Margaret Lowe,A5087214355,Patricia Lowe,Royal Prince Alfred Hospital,AU,56.0,17.0,,1.0,HIGH,manual_override_corrected,
+Dr Patrick Campbell Walker,A5018705454,Patrick C. Walker,Repatriation General Hospital,AU,2.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Patrick David Mahar,A5050098623,Patrick Mahar,Royal Children's Hospital,AU,72.0,0.0,,1.0,HIGH,pass2_global,
+Dr Paul  Armenores,A5051861833,Paul Armenores,Repatriation General Hospital,AU,5.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Penny Poh Lu Lim,A5110425484,Penny Poh Lu Lim,Skin and Cancer Foundation,AU,1.0,0.0,,1.0,HIGH,pass2_global,
+Dr Peter Anthony Foley,A5000398504,Peter Foley,Skin Health Institute,AU,299.0,51.0,,1.0,HIGH,manual_override_corrected,
+Dr Philip Sion Bekhor,A5010144658,Philip Bekhor,Royal Children's Hospital,AU,43.0,0.0,,1.0,HIGH,pass2_global,
+Dr Philip Tong,A5058283254,Philip L. Tong,Garvan Institute of Medical Research,AU,40.0,12.0,,1.0,HIGH,manual_override_corrected,
+Dr Philippa Ruth Dickison,A5023714138,Philippa Ruth Dickison,,,1.0,0.0,,0.0,HIGH,manual_override_corrected,
+Dr Phillip  Artemi,A5025353701,Phillip Artemi,,,7.0,0.0,,1.0,HIGH,pass2_global,
+Dr Phillip Keith Dwyer,A5030705806,Phillip Dwyer,Skin and Cancer Foundation,AU,3.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Priska Barbara Brodbeck McDonald,A5079035758,Priska BB McDonald,Royal Children's Hospital,AU,2.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Priyamvada  Sobarun,A5072396572,Priyamvada Sobarun,The University of Queensland,AU,2.0,0.0,,1.0,HIGH,pass2_global,
+Dr Quynh Van Le,A5078053983,Quynh Le,The Alfred Hospital,AU,3.0,2.0,,1.0,HIGH,manual_override_corrected,
+Dr Rachael Barbra Davenport,A5074170272,Rachael Davenport,St Vincent's Hospital Melbourne,AU,13.0,0.0,,1.0,HIGH,pass2_global,
+Dr Ramez Ihab Barsoum,A5025985792,Ramez Barsoum,Royal Brisbane and Women's Hospital,AU,7.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Rashi  Malesu,A5087679293,Rashi Malesu,John Hunter Hospital,AU,1.0,0.0,,1.0,HIGH,pass2_global,
+Dr Raymond Alexander Cocciolone,A5034870896,Raymond Alexander Cocciolone,Launceston General Hospital,AU,1.0,1.0,,1.0,HIGH,manual_override_corrected,
+Dr Rebecca  Dunn,A5052005265,Rebecca Dunn,Priory Hospital Cheadle Royal,GB,20.0,0.0,,1.0,HIGH,pass2_global,
+Dr Rebecca Bronwyn Saunderson,A5088798986,Rebecca B. Saunderson,The University of Sydney,AU,44.0,13.0,,1.0,HIGH,reresolution_orcid_verified,
+Dr Renae Alison Howes,A5019997202,Renae A. Howes,Skin and Cancer Foundation,AU,4.0,0.0,,1.0,HIGH,pass2_global,
+Dr Richard Anthony Wittal,A5036106926,Richard A. Wittal,Liverpool Hospital,AU,9.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Robert Bruce Stephens,A5079625663,Robert B. Stephens,Royal North Shore Hospital,AU,4.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Robert Ian Kelly,A5128190418,Robert I Kelly,St Vincent's Hospital Melbourne,AU,1.0,0.0,,1.0,HIGH,pass2_global,
+Dr Robert Rosen,A5042482468,Robert Rosen,Boston Children's Hospital,US,60.0,15.0,,1.0,HIGH,reresolution_proportional_v1,
+Dr Rochelle  Gild,A5032935976,Rochelle Gild,Princess Alexandra Hospital,AU,3.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Romuald Taras Czechowicz,A5009993214,Romuald T Czechowicz,Royal Adelaide Hospital,AU,2.0,0.0,,1.0,HIGH,pass2_global,
+Dr Rose Congwei Liu,A5083646511,Rose Congwei Liu,The University of Sydney,AU,2.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Rosemary Louise Nixon,A5068020081,Rosemary Nixon,Skin Health Institute,AU,276.0,37.0,,1.0,HIGH,manual_override_corrected,
+Dr Russell Hills,A5004986152,Russell J. Hills,Wesley Hospital,AU,2.0,2.0,,1.0,HIGH,manual_override_corrected,
+Dr Ryan William Toholka,A5033563079,Ryan Toholka,Royal Children's Hospital,AU,12.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Sally Beth Ball,A5043189734,Sally Ball,South Australia Pathology,AU,13.0,0.0,,1.0,HIGH,pass2_global,
+Dr Sally Elizabeth De Zwaan,A5053162408,Sally Elizabeth de Zwaan,Royal Prince Alfred Hospital,AU,2.0,0.0,,1.0,HIGH,pass2_global,
+Dr Salvatore  Scuderi,A5016001248,Salvatore Scuderi,Royal Brisbane and Women's Hospital,AU,7.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Sam  Kalouche,A5060033451,Sam Kalouche,The University of Sydney,AU,2.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Samantha  Eisman,A5003739980,Samantha Eisman,Sinclair Dermatology,AU,49.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Samantha Jane Davidson,A5044679433,Samantha J Davidson,Gold Coast Health,AU,2.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Samantha Leigh Conias,A5038709365,Samantha Conias,Toowoomba Hospital,AU,2.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Samuel Antranig Der Sarkissian,A5103920109,Samuel Antranig Der Sarkissian,University of Wollongong,AU,3.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Sara  Sabourirad,A5040861495,Sara Sabourirad,,,13.0,3.0,,1.0,HIGH,reresolution_proportional_v1,
+Dr Sara Lee De Menezes,A5089259052,Sara Lee de Menezes,Apple (Israel),IL,13.0,5.0,,1.0,HIGH,reresolution_proportional_v1,
+Dr Sara Marie Tritton,A5071415854,Sara M. Tritton,Princess Alexandra Hospital,AU,8.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Sarah  Shen,A5016825200,Sarah Shen,St Vincent's Hospital Melbourne,AU,20.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Sarah Jessica Strathie Page,A5056014271,Sarah Strathie Page,Princess Margaret Hospital for Children,AU,4.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Sarah Kirsten McDonald,A5063609999,S McDonald,Prince of Wales Hospital,AU,4.0,2.0,,1.0,HIGH,manual_override_corrected,
+Dr Sarah Kym Morton,A5102900465,Sarah Morton,Royal Brisbane and Women's Hospital,AU,15.0,6.0,,1.0,HIGH,manual_override_corrected,
+Dr Sarah Louise Smithson,A5019074628,Sarah Smithson,Royal Women's Hospital,AU,9.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Sarath Naidu Bodapati,A5082896435,Sarath Bodapati,Royal Brisbane and Women's Hospital,AU,7.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Sarvjit  Kumari,A5038651212,Sarvjit Kumari,,,1.0,1.0,,0.0,HIGH,manual_override_corrected,
+Dr Scott Andrew Webber,A5026353724,Scott A Webber,Queensland Health,AU,6.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Senhong  Lee,A5001658092,Senhong Lee,Eastern Health,AU,41.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Shallu  Khurana,A5032876676,Shallu Khurana,Blacktown & Mount Druitt Hospital,AU,4.0,2.0,,1.0,HIGH,manual_override_corrected,
+Dr Shelley Ji Eun  Hwang,A5081030831,Shelley Ji Eun Hwang,Australian National University,AU,24.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Shevya Manjri Tiwari,A5027316612,Shevya Manjri Tiwari,,,12.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Shien-Ning  Chee,A5085950363,Shien‐Ning Chee,The University of Sydney,AU,14.0,0.0,,1.0,HIGH,pass2_global,
+Dr Shireen Kaur Sidhu,A5102708468,Shireen Sidhu,Royal Adelaide Hospital,AU,35.0,0.0,,1.0,HIGH,pass2_global,
+Dr Shivam  Kapila,A5010673351,Shivam Kapila,Migration Institute of Australia,AU,19.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Shobha  Joseph,A5019135138,Shobha Joseph,Sinclair Dermatology,AU,4.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Shueh-Wei  Lim,A5003894150,Shueh Wei Lim,Royal Adelaide Hospital,AU,2.0,2.0,,1.0,HIGH,manual_override_corrected,
+Dr Shui Lyn  Koh,A5039354130,Shui-Lyn Claire Koh,,,1.0,1.0,,0.0,HIGH,manual_override_corrected,
+Dr Shyamala Claire Huilgol,A5040989235,Shyamala C. Huilgol,Royal Adelaide Hospital,AU,118.0,0.0,,1.0,HIGH,pass2_global,
+Dr Shyamalar  Gunatheesan,A5014180417,Shyamalar Gunatheesan,,,6.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Simon Anthony Yong Gee,A5015375282,Simon Yong Gee,Mater Health Services,AU,1.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Simone Goldinger,A5008000580,Simone M. Goldinger,The University of Queensland,AU,177.0,41.0,,1.0,HIGH,manual_override_corrected,
+Dr Stephanie Clare Blake,A5007091648,Stephanie Blake,Royal Prince Alfred Hospital,AU,11.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Stephanie Marisa Tizi,A5025208944,Stephanie Tizi,Skin and Cancer Foundation,AU,1.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Stephen James Gilmore,A5041331818,Stephen Gilmore,The University of Queensland,AU,50.0,0.0,,1.0,HIGH,pass2_global,
+Dr Steven  Kossard,A5086060602,Steven Kossard,Royal College of Pathologists of Australasia,AU,208.0,0.0,,1.0,HIGH,pass2_global,
+Dr Su-Lin  Chan,A5086053373,Su‐Lin Chan,,,3.0,2.0,,0.0,HIGH,manual_override_corrected,
+Dr Sudipta  Daly,A5101648549,Sudipta Daly,CSIRO Manufacturing,AU,1.0,1.0,,1.0,HIGH,manual_override_corrected,
+Dr Sue Yen Michelle Goh,A5010985671,Michelle Goh,The University of Melbourne,AU,79.0,19.0,,1.0,HIGH,manual_override_corrected,
+Dr Sujith Prasad Wannia Kumarasinghe,A5113754890,Sujith Prasad Kumarasinghe,The University of Western Australia,AU,38.0,0.0,,1.0,HIGH,pass2_global,
+Dr Supriya  Venugopal,A5041927161,Supriya S. Venugopal,UNSW Sydney,AU,24.0,11.0,,1.0,HIGH,manual_override_corrected,
+Dr Susan Jade Robertson,A5103468894,Susan J. Robertson,Ministry of Health,MY,3.0,0.0,,1.0,HIGH,pass2_global,
+Dr Tania Maree Zappala,A5007515796,Tania Zappala,The University of Queensland,AU,15.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Tanumay  Raychaudhury,A5059857804,Tanumay Raychaudhury,Blacktown & Mount Druitt Hospital,AU,13.0,0.0,,1.0,HIGH,pass2_global,
+Dr Terence Sui Chern Poon,A5080804883,Terence S. C. Poon,,,11.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Tevi Wain,A5003509511,Tevi Wain,Royal Prince Alfred Hospital,AU,5.0,4.0,,1.0,HIGH,manual_override_corrected,
+Dr Themis  Getsos Colla,A5081949803,Themis Getsos Colla,Sinclair Dermatology,AU,6.0,4.0,,1.0,HIGH,manual_override_corrected,
+Dr Theone  Papps,A5051188931,Theone Papps,Royal North Shore Hospital,AU,6.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Theresa Margaret Skender-Kalnenas,A5034315388,Theresa M Skender-Kalnenas,Hollywood Orthopaedic Group,AU,3.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Thevaki  Wain,A5006758936,Thevaki Wain,Royal Prince Alfred Hospital,AU,3.0,0.0,,1.0,HIGH,pass2_global,
+Dr Thomas Anthony Delaney,A5021373029,Thomas A Delaney,Royal Perth Hospital,AU,26.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Thomas Macdonald Pitney,A5069342594,Thomas Pitney,Queensland Health,AU,10.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Timothy Gilbert Elliott,A5010913402,Timothy Gilbert Elliott,Skin and Cancer Foundation,AU,3.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Tom  Kovitwanichkanont,A5006275678,Tom Kovitwanichkanont,Fundación Juan March,ES,19.0,0.0,,1.0,HIGH,pass2_global,
+Dr Tony Philip Caccetta,A5073520236,Tony Caccetta,The University of Western Australia,AU,15.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Tristan  Blake,A5113608502,Tristan Blake,Mater Health Services,AU,13.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Vanathy  Varathan,A5038845308,Vanathy Varathan,Sinclair Dermatology,AU,3.0,2.0,,1.0,HIGH,manual_override_corrected,
+Dr Vanessa Anne Morgan,A5060294600,Vanessa Morgan,The Royal Melbourne Hospital,AU,25.0,0.0,,1.0,HIGH,pass2_global,
+Dr Vanessa Leonie Paddon,A5079511119,Vanessa L. Paddon,Royal Prince Alfred Hospital,AU,1.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Victoria Anne Snaidr,A5084495986,Victoria A. Snaidr,Royal Prince Alfred Hospital,AU,7.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Victoria Jane Mar,A5054196193,Victoria Mar,Australian Regenerative Medicine Institute,AU,158.0,24.0,,1.0,HIGH,manual_override_corrected,
+Dr Victoria Louise Venning,A5056152244,Victoria L Venning,The University of Sydney,AU,24.0,0.0,,1.0,HIGH,pass2b_coauth_bootstrap,
+Dr Warren  Weightman,A5058634597,Warren Weightman,Queen Elizabeth Hospital,AU,37.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr William John Ryman,A5083968131,William Ryman,Royal North Shore Hospital,AU,22.0,0.0,,1.0,HIGH,pass2_global,
+Dr Yee Jen Tai,A5034837652,Yee J Tai,Australasian College of Dermatologists,AU,9.0,0.0,,1.0,HIGH,pass2_global,
+Dr Yin Yin Vun,A5004730122,Yin Vun,Princess Alexandra Hospital,AU,12.0,9.0,,1.0,HIGH,manual_override_corrected,
+Dr Yong Chern  Kho,A5020525594,Yong Chern Kho,St Vincent's Hospital Sydney,AU,7.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Yu-Chuan  Lee,A5012670374,Y S Lee,Flinders Medical Centre,AU,7.0,3.0,,1.0,HIGH,manual_override_corrected,
+Dr Yvonne Bao Ngoc Nguyen,A5113805189,Yvonne Bao Ngoc Nguyen,,,2.0,0.0,,0.0,HIGH,manual_override_corrected,
+Dr Yvonne Yu-Ping Lee,A5006281551,Yvonne Y Lee,Cairns Hospital,AU,1.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Zachary Graham Boyce,A5003117287,Zachary Boyce,Cairns Hospital,AU,2.0,0.0,,1.0,HIGH,pass3_llm_high,
+Dr Zahra  Assarian,A5055870509,Zahra Assarian,St Vincent's Hospital Melbourne,AU,5.0,0.0,,1.0,HIGH,pass1_targeted,
+Dr Zhi Mei  Low,A5078588503,Zhi Mei Low,The Royal Melbourne Hospital,AU,13.0,0.0,,1.0,HIGH,pass1_targeted,
+Miss Emily  Forward,A5037816337,Emily Forward,Royal Prince Alfred Hospital,AU,15.0,0.0,,1.0,HIGH,pass1_targeted,
+Prof Deirdre Frances Murrell,A5000758369,Dédée F. Murrell,Sutherland Hospital,IN,779.0,69.0,,1.0,HIGH,manual_override_corrected,
+Prof Deshan Sebaratnam,A5005957821,Deshan F. Sebaratnam,Liverpool Hospital,AU,172.0,25.0,,1.0,HIGH,manual_override_corrected,
+Prof Dédée Murrell,A5015473226,Dédée Murrell,UNSW Sydney,AU,7.0,2.0,,1.0,HIGH,manual_override_corrected,
+Prof Ingrid Margaret Winship,A5076928530,Ingrid Winship,The Royal Melbourne Hospital,AU,496.0,60.0,,1.0,HIGH,manual_override_corrected,
+Prof Rodney Daniel Sinclair,A5035044854,Rodney Sinclair,The University of Melbourne,AU,847.0,76.0,,1.0,HIGH,manual_override_corrected,
+Dr Orli  Wargon,A5040403743,Orli Wargon,UNSW Sydney,AU,77.0,26.0,,1.0,HIGH,restored_manual_review,
+Dr Kurosh  Parsi,A5071771484,Kurosh Parsi,St. Vincent's Birmingham,US,121.0,27.0,,1.0,HIGH,restored_manual_review,
