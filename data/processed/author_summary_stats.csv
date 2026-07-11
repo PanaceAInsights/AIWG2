@@ -120,7 +120,7 @@ Dr Elizabeth Mary Willsteed,A5079553235,Elizabeth Willsteed,,,13.0,0.0,1.0,HIGH,
 Dr Elizabeth Teng Yoke Chow,A5112840266,Elizabeth T Chow,Liverpool Hospital,AU,7.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap,must,7.0,154.0,5.0,0.6934571428571428,0.5407,0.1428571428571428,0.1428571428571428,0.2857142857142857,0.2857142857142857,0.0,1992.0,2022.0,0.0,6.0,85.7,46.60574412532637,57.78688524590165,38.642297650130544,30.87431693989071,39.07103825136612,41.39344262295082,154.0
 Dr Emma Louise Haverhoek,A5022577585,Emma Haverhoek,Royal Adelaide Hospital,AU,1.0,0.0,1.0,HIGH,pass2_global,must,1.0,45.0,1.0,1.2918,1.2918,0.0,0.0,1.0,0.0,0.0,2008.0,2008.0,0.0,1.0,100.0,6.78851174934726,31.967213114754102,38.642297650130544,11.74863387978142,13.797814207650273,41.39344262295082,45.0
 Dr Emma Louise Hiscutt,A5032010584,Emma Hiscutt,The Alfred Hospital,AU,13.0,0.0,1.0,HIGH,pass3_llm_high,must,13.0,112.0,3.0,2.1823,0.624,0.6153846153846154,0.7692307692307693,0.3076923076923077,0.0769230769230769,15.0,2008.0,2026.0,0.0,10.0,76.9,63.83812010443864,49.86338797814208,38.642297650130544,87.43169398907104,92.34972677595628,97.1311475409836,112.0
-Dr Er Tsing Vivian Tng,A5010131410,Er Tsing Vivian Tng,John Hunter Hospital,AU,6.0,0.0,1.0,HIGH,pass1_targeted,must,6.0,29.0,0.0,0.6457166666666667,0.57455,0.3333333333333333,0.0,0.1666666666666666,0.3333333333333333,0.0,2018.0,2022.0,0.0,6.0,100.0,41.38381201044387,25.546448087431692,38.642297650130544,57.240437158469945,13.797814207650273,41.39344262295082,29.0
+Dr Er Tsing Vivian Tng,A5010131410,Er Tsing Vivian Tng,John Hunter Hospital,AU,6.0,0.0,1.0,HIGH,pass1_targeted,must,6.0,29.0,0.0,0.6457166666666667,0.57455,0.3333333333333333,0.0,0.1666666666666666,0.3333333333333333,0.0,2018.0,2022.0,0.0,6.0,100.0,41.38381201044387,25.54644808743169,38.642297650130544,57.240437158469945,13.797814207650273,41.39344262295082,29.0
 Dr Eric  Waine,A5026164600,Éric Denis translated by Oliver Waine,,,1.0,0.0,0.0,HIGH,manual_override_corrected,must,1.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,2018.0,2018.0,0.0,0.0,0.0,6.78851174934726,2.459016393442623,38.642297650130544,11.74863387978142,13.797814207650273,41.39344262295082,0.0
 Dr Erin Kelly McMeniman,A5080054407,Erin McMeniman,Queensland University of Technology,AU,82.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap,must,82.0,1056.0,19.0,1.2964103896103896,0.1443,0.2804878048780488,0.1707317073170731,0.0853658536585365,0.4268292682926829,12.0,2007.0,2026.0,0.0,78.0,95.1,92.81984334203656,89.34426229508196,38.642297650130544,48.63387978142077,44.80874316939891,96.17486338797814,1056.0
 Dr Erin Mullan,A5079690275,Erin Mullan,,,3.0,2.0,0.0,HIGH,manual_override_corrected,must,3.0,21.0,2.0,0.3102333333333333,0.0,0.0,0.6666666666666666,0.6666666666666666,0.3333333333333333,0.0,2011.0,2025.0,0.0,3.0,100.0,25.06527415143603,20.62841530054645,83.28981723237598,11.74863387978142,89.89071038251366,41.39344262295082,21.0
@@ -289,7 +289,7 @@ Dr Rebecca  Dunn,A5052005265,Rebecca Dunn,Priory Hospital Cheadle Royal,GB,20.0,
 Dr Rebecca Bronwyn Saunderson,A5088798986,Rebecca B. Saunderson,The University of Sydney,AU,44.0,13.0,1.0,HIGH,reresolution_orcid_verified,must,44.0,,,,,,,,,,,,,,,87.72845953002611,,92.68929503916448,,,,
 Dr Renae Alison Howes,A5019997202,Renae A. Howes,Skin and Cancer Foundation,AU,4.0,0.0,1.0,HIGH,pass2_global,must,4.0,73.0,2.0,0.990775,0.86375,0.0,0.0,1.0,0.0,0.0,2006.0,2008.0,0.0,4.0,100.0,31.59268929503917,41.939890710382514,38.642297650130544,11.74863387978142,13.797814207650273,41.39344262295082,73.0
 Dr Richard Anthony Wittal,A5036106926,Richard A. Wittal,Liverpool Hospital,AU,9.0,0.0,1.0,HIGH,pass2b_coauth_bootstrap,must,9.0,279.0,6.0,1.1092222222222223,1.0658,0.2222222222222222,0.3333333333333333,0.2222222222222222,0.2222222222222222,0.0,1989.0,2025.0,0.0,9.0,100.0,54.43864229765013,70.76502732240438,38.642297650130544,41.2568306010929,65.84699453551912,41.39344262295082,279.0
-Dr Robert Bruce Stephens,A5079625663,Robert B. Stephens,Royal North Shore Hospital,AU,4.0,0.0,1.0,HIGH,pass3_llm_high,must,4.0,29.0,1.0,0.3836,0.3979,0.0,0.0,0.75,0.0,0.0,1964.0,1999.0,0.0,3.0,75.0,31.59268929503917,25.546448087431692,38.642297650130544,11.74863387978142,13.797814207650273,41.39344262295082,29.0
+Dr Robert Bruce Stephens,A5079625663,Robert B. Stephens,Royal North Shore Hospital,AU,4.0,0.0,1.0,HIGH,pass3_llm_high,must,4.0,29.0,1.0,0.3836,0.3979,0.0,0.0,0.75,0.0,0.0,1964.0,1999.0,0.0,3.0,75.0,31.59268929503917,25.54644808743169,38.642297650130544,11.74863387978142,13.797814207650273,41.39344262295082,29.0
 Dr Robert Ian Kelly,A5128190418,Robert I Kelly,St Vincent's Hospital Melbourne,AU,1.0,0.0,1.0,HIGH,pass2_global,must,1.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,2026.0,2026.0,0.0,1.0,100.0,6.78851174934726,2.459016393442623,38.642297650130544,11.74863387978142,96.99453551912568,41.39344262295082,0.0
 Dr Robert Rosen,A5042482468,Robert Rosen,Boston Children's Hospital,US,60.0,15.0,1.0,HIGH,reresolution_proportional_v1,must,60.0,,,,,,,,,,,,,,,90.33942558746736,,93.21148825065274,,,,
 Dr Rochelle  Gild,A5032935976,Rochelle Gild,Princess Alexandra Hospital,AU,3.0,0.0,1.0,HIGH,pass1_targeted,must,3.0,109.0,2.0,1.7440999999999998,2.2502,0.0,0.0,1.0,0.0,0.0,2008.0,2012.0,0.0,3.0,100.0,25.06527415143603,48.90710382513661,38.642297650130544,11.74863387978142,13.797814207650273,41.39344262295082,109.0
@@ -380,3 +380,62 @@ Prof Ingrid Margaret Winship,A5076928530,Ingrid Winship,The Royal Melbourne Hosp
 Prof Rodney Daniel Sinclair,A5035044854,Rodney Sinclair,The University of Melbourne,AU,847.0,76.0,1.0,HIGH,manual_override_corrected,must,843.0,23661.0,376.0,2.602160794547707,0.7925,0.325,0.5231316725978647,0.2158956109134045,0.4519572953736654,0.0,1970.0,2026.0,0.0,560.0,66.4,99.73890339425589,99.72677595628416,99.73890339425589,54.23497267759563,84.15300546448088,41.39344262295082,23661.0
 Dr Orli  Wargon,A5040403743,Orli Wargon,UNSW Sydney,AU,77.0,26.0,1.0,HIGH,restored_manual_review,must,77.0,,,,,,,,,,,,,,,91.77545691906003,,96.99738903394255,,,,
 Dr Kurosh  Parsi,A5071771484,Kurosh Parsi,St. Vincent's Birmingham,US,121.0,27.0,1.0,HIGH,restored_manual_review,must,121.0,,,,,,,,,,,,,,,95.4308093994778,,97.5195822454308,,,,
+Dr Adrian Cheok Kean Lim,A5103697520,Adrian Lim,The University of Sydney,AU,30.0,10.0,1.0,MEDIUM,firstlast_reresolution,,30.0,,,,,,,,,,,,,,,,,,,,,
+Dr Alexander Douglas Gee Chien Gin,A5008356402,Alexander Gin,Alfred Health,AU,9.0,5.0,1.0,MEDIUM,firstlast_reresolution,,9.0,,,,,,,,,,,,,,,,,,,,,
+Dr Alexander Michael Coe,A5029714609,Alexander Coe,The University of Queensland,AU,16.0,3.0,1.0,MEDIUM,firstlast_reresolution,,16.0,,,,,,,,,,,,,,,,,,,,,
+Dr Amy Patricia Kline,A5031781832,Amy S. Kline,,,4.0,3.0,1.0,MEDIUM,firstlast_reresolution,,4.0,,,,,,,,,,,,,,,,,,,,,
+Dr Andrew Robert MacKenzie-Wood,A5133878993,Andrew MacKenzie-Wood,Skin and Cancer Foundation,AU,1.0,0.0,1.0,MEDIUM,firstlast_reresolution,,1.0,,,,,,,,,,,,,,,,,,,,,
+Dr Ashling Frances McNally,A5089243241,Ashling McNally,Royal Adelaide Hospital,AU,4.0,2.0,1.0,MEDIUM,firstlast_reresolution,,4.0,,,,,,,,,,,,,,,,,,,,,
+Dr Bonnie Clowance  Swan,A5028581543,Bonnie C Swan,Guy's and St Thomas' NHS Foundation Trust,GB,3.0,2.0,1.0,MEDIUM,firstlast_reresolution,,3.0,,,,,,,,,,,,,,,,,,,,,
+Dr Catriona Ann Hayes,A5018010522,C Hayes,Prince of Wales Hospital,AU,4.0,2.0,1.0,MEDIUM,firstlast_reresolution,,4.0,,,,,,,,,,,,,,,,,,,,,
+Dr Christopher Matthew Duguid,A5064131644,C.M. Duguid,The University of Sydney,AU,7.0,5.0,1.0,MEDIUM,firstlast_reresolution,,7.0,,,,,,,,,,,,,,,,,,,,,
+Dr Clare Ruth Sheamala Patterson,A5025506319,Clare Patterson,Memorial Sloan Kettering Cancer Center,US,16.0,8.0,1.0,MEDIUM,firstlast_reresolution,,16.0,,,,,,,,,,,,,,,,,,,,,
+Dr Colin John Singer,A5007719812,Colin Singer,Edith Cowan University,AU,1.0,1.0,1.0,MEDIUM,firstlast_reresolution,,1.0,,,,,,,,,,,,,,,,,,,,,
+Dr Gary John Holmes,A5071103911,G. Alden Holmes,Loma Linda University,US,6.0,3.0,1.0,MEDIUM,firstlast_reresolution,,6.0,,,,,,,,,,,,,,,,,,,,,
+Dr Geetha Priya Sivapirabu,A5078956548,G. Sivapirabu,Sydney Children's Hospital,AU,3.0,3.0,1.0,MEDIUM,firstlast_reresolution,,3.0,,,,,,,,,,,,,,,,,,,,,
+Dr Godfrey Howard Wagner,A5080159961,G. Wagner,Greenslopes Private Hospital,AU,15.0,4.0,1.0,MEDIUM,firstlast_reresolution,,15.0,,,,,,,,,,,,,,,,,,,,,
+Dr Gregory James Butler,A5085641163,G. G. Butler,Royal Brisbane and Women's Hospital,AU,16.0,5.0,1.0,MEDIUM,firstlast_reresolution,,16.0,,,,,,,,,,,,,,,,,,,,,
+Dr Hilary Meredith Enid Brown,A5101522942,Hilary Brown,Barwon Health,AU,15.0,8.0,1.0,MEDIUM,firstlast_reresolution,,15.0,,,,,,,,,,,,,,,,,,,,,
+Dr Hugh Alexander Roberts,A5053951594,H. R. S. Roberts,Canterbury District Health Board,NZ,6.0,4.0,1.0,MEDIUM,firstlast_reresolution,,6.0,,,,,,,,,,,,,,,,,,,,,
+Dr Ian David Hamann,A5011765170,Ian Hamann,,,11.0,7.0,1.0,MEDIUM,firstlast_reresolution,,11.0,,,,,,,,,,,,,,,,,,,,,
+Dr Ivan Joseph Simmons,A5110141387,Imani Simmons,South Australia Pathology,AU,10.0,6.0,1.0,MEDIUM,firstlast_reresolution,,10.0,,,,,,,,,,,,,,,,,,,,,
+Dr Janet Hye Yeon Kim,A5041643227,Janet Kim,,,7.0,4.0,1.0,MEDIUM,firstlast_reresolution,,7.0,,,,,,,,,,,,,,,,,,,,,
+Dr Joel Jonathan Sze-Ming Chan,A5014701073,Joel Ern Zher Chan,The University of Adelaide,AU,11.0,5.0,1.0,MEDIUM,firstlast_reresolution,,11.0,,,,,,,,,,,,,,,,,,,,,
+Dr Kate Louise-Anne Borchard,A5048235616,Kate Borchard,Apple (Israel),IL,18.0,7.0,1.0,MEDIUM,firstlast_reresolution,,18.0,,,,,,,,,,,,,,,,,,,,,
+Dr Kimble Mark Opie,A5030645025,Kimble M Opie,Royal Perth Hospital,AU,2.0,2.0,1.0,MEDIUM,firstlast_reresolution,,2.0,,,,,,,,,,,,,,,,,,,,,
+Dr Kirsty Josephine Leigh Wark,A5038236129,Kirsty Wark,John Hunter Hospital,AU,10.0,4.0,1.0,MEDIUM,firstlast_reresolution,,10.0,,,,,,,,,,,,,,,,,,,,,
+Dr Kristyn Sharee Deen,A5026020808,Kristyn Deen,Mater Misericordiae Hospital,AU,6.0,5.0,1.0,MEDIUM,firstlast_reresolution,,6.0,,,,,,,,,,,,,,,,,,,,,
+Dr Leah Monique Wilson,A5110226979,Leah Wilson,The University of Western Australia,AU,5.0,4.0,1.0,MEDIUM,firstlast_reresolution,,5.0,,,,,,,,,,,,,,,,,,,,,
+Dr Li-Chuen Francesca Wong,A5009928824,Li‐Chuen Wong,The University of Sydney,AU,27.0,14.0,1.0,MEDIUM,firstlast_reresolution,,27.0,,,,,,,,,,,,,,,,,,,,,
+Dr Linda Julie Bingham,A5046389671,Linda Bingham,Royal Children's Hospital,AU,6.0,3.0,1.0,MEDIUM,firstlast_reresolution,,6.0,,,,,,,,,,,,,,,,,,,,,
+Dr Louise Claire O'Halloran,A5029456684,Louise O'Halloran,Royal Perth Hospital,AU,3.0,1.0,1.0,MEDIUM,firstlast_reresolution,,3.0,,,,,,,,,,,,,,,,,,,,,
+Dr Loy Kiat Alvin Chia,A5069107758,Loy Chuan Chia,University of Queensland,AU,1.0,1.0,1.0,MEDIUM,firstlast_reresolution,,1.0,,,,,,,,,,,,,,,,,,,,,
+Dr Mark Scott Saywell,A5059124769,Mark S Saywell,The University of Queensland,AU,1.0,1.0,1.0,MEDIUM,firstlast_reresolution,,1.0,,,,,,,,,,,,,,,,,,,,,
+Dr Michael Joseph Sladden,A5079591924,Michael J Sladden,Launceston General Hospital,AU,94.0,23.0,1.0,MEDIUM,firstlast_reresolution,,94.0,,,,,,,,,,,,,,,,,,,,,
+Dr Narelle Ruth Bleasel,A5059866144,Narelle R Bleasel,Royal Hobart Hospital,AU,5.0,5.0,1.0,MEDIUM,firstlast_reresolution,,5.0,,,,,,,,,,,,,,,,,,,,,
+Dr Natalie Chuen-Ying Ling,A5040187199,Natalie Ling Yum Sin,UNSW Sydney,AU,1.0,1.0,1.0,MEDIUM,firstlast_reresolution,,1.0,,,,,,,,,,,,,,,,,,,,,
+Dr Paul Gregory Chee,A5043311406,Paul Chee,John Hunter Hospital,AU,17.0,6.0,1.0,MEDIUM,firstlast_reresolution,,17.0,,,,,,,,,,,,,,,,,,,,,
+Dr Peter Anthony Hogan,A5009522236,P Hogan,The University of Sydney,AU,35.0,10.0,1.0,MEDIUM,firstlast_reresolution,,35.0,,,,,,,,,,,,,,,,,,,,,
+Dr Philip Dilip Gian Singh,A5075002930,Philip Singh,The University of Queensland,AU,2.0,2.0,1.0,MEDIUM,firstlast_reresolution,,2.0,,,,,,,,,,,,,,,,,,,,,
+Dr Phoebe Rebecca Gwendolen Star,A5050707865,Phoebe Star,The University of Sydney,AU,20.0,8.0,1.0,MEDIUM,firstlast_reresolution,,20.0,,,,,,,,,,,,,,,,,,,,,
+Dr Rachael May Anforth,A5111386686,Rachael Anforth,Australian National University,AU,25.0,14.0,1.0,MEDIUM,firstlast_reresolution,,25.0,,,,,,,,,,,,,,,,,,,,,
+Dr Rachel Nicole Manifold,A5088448677,Rachel Manifold,Flinders Medical Centre,AU,2.0,1.0,1.0,MEDIUM,firstlast_reresolution,,2.0,,,,,,,,,,,,,,,,,,,,,
+Dr Ragini Arunbhai Ghiya,A5113192455,Ragini Ghiya,Sinclair Dermatology,AU,14.0,4.0,1.0,MEDIUM,firstlast_reresolution,,14.0,,,,,,,,,,,,,,,,,,,,,
+Dr Richard Paul Armati,A5012245025,R. P. Armati,,,9.0,4.0,1.0,MEDIUM,firstlast_reresolution,,9.0,,,,,,,,,,,,,,,,,,,,,
+Dr Rodney Stuart Hannaford,A5006909713,Rodney Hannaford,Mona Vale Hospital,AU,10.0,4.0,1.0,MEDIUM,firstlast_reresolution,,10.0,,,,,,,,,,,,,,,,,,,,,
+Dr Samra Louise Saikal,A5019713050,Samra L. Saikal,Liverpool Hospital,AU,6.0,5.0,1.0,MEDIUM,firstlast_reresolution,,6.0,,,,,,,,,,,,,,,,,,,,,
+Dr Samuel Sebastian Zagarella,A5014142163,Samuel Zagarella,The University of Sydney,AU,42.0,11.0,1.0,MEDIUM,firstlast_reresolution,,42.0,,,,,,,,,,,,,,,,,,,,,
+Dr Sarah Elizabeth  Gamboni,A5041459098,Sarah E Gamboni,Skin and Cancer Foundation,AU,5.0,4.0,1.0,MEDIUM,firstlast_reresolution,,5.0,,,,,,,,,,,,,,,,,,,,,
+Dr Sarah Katrina Brennand,A5073346509,Sarah Brennand,Skin Health Institute,AU,9.0,6.0,1.0,MEDIUM,firstlast_reresolution,,9.0,,,,,,,,,,,,,,,,,,,,,
+Dr Simon Christopher Tucker,A5103214135,Simon Tucker,Cairns Hospital,AU,27.0,10.0,1.0,MEDIUM,firstlast_reresolution,,27.0,,,,,,,,,,,,,,,,,,,,,
+Dr Stephanie Jan Rea,A5067355662,S. Rea,Princess Alexandra Hospital,AU,7.0,4.0,1.0,MEDIUM,firstlast_reresolution,,7.0,,,,,,,,,,,,,,,,,,,,,
+Dr Stephen Edmund Donoghue,A5083377904,S. Donoghue,Concord Repatriation General Hospital,AU,4.0,2.0,1.0,MEDIUM,firstlast_reresolution,,4.0,,,,,,,,,,,,,,,,,,,,,
+Dr Swaranjali Vijaya Jain,A5021045633,Swaranjali V. Jain,Canberra Hospital,AU,13.0,7.0,1.0,MEDIUM,firstlast_reresolution,,13.0,,,,,,,,,,,,,,,,,,,,,
+Dr Todd Playford Wiadrowski,A5047095022,Todd P Wiadrowski,Royal Adelaide Hospital,AU,4.0,3.0,1.0,MEDIUM,firstlast_reresolution,,4.0,,,,,,,,,,,,,,,,,,,,,
+Dr Troy Anthony Darben,A5105803834,Troy Darben,Mater Misericordiae Hospital,AU,1.0,1.0,1.0,MEDIUM,firstlast_reresolution,,1.0,,,,,,,,,,,,,,,,,,,,,
+Dr Vanessa Marguerite Palmer,A5028530328,Vanessa Palmer,Liverpool Hospital,AU,3.0,1.0,1.0,MEDIUM,firstlast_reresolution,,3.0,,,,,,,,,,,,,,,,,,,,,
+Dr Vijaya Lakshmi  Chitreddy,A5008965263,Vijaya Chitreddy,Sinclair Dermatology,AU,10.0,7.0,1.0,MEDIUM,firstlast_reresolution,,10.0,,,,,,,,,,,,,,,,,,,,,
+Dr William Charles Cranwell,A5049111451,William Cranwell,Queensland Health,AU,40.0,10.0,1.0,MEDIUM,firstlast_reresolution,,40.0,,,,,,,,,,,,,,,,,,,,,
+Miss Dallas Victoria Gramp,A5015043809,Dallas Gramp,Gold Coast Hospital,AU,4.0,3.0,1.0,MEDIUM,firstlast_reresolution,,4.0,,,,,,,,,,,,,,,,,,,,,
+Dr Geoffrey Kwo X'iong Lee,A5101567391,Geoffrey Lee,The University of Sydney,AU,84.0,21.0,1.0,HIGH,orcid_manual,,84.0,,,,,,,,,,,,,,,,,,,,,
+Dr Stephen Peter Shumack,A5051075012,Stephen Shumack,Royal North Shore Hospital,AU,142.0,33.0,1.0,HIGH,manual_derm_restore,,142.0,,,,,,,,,,,,,,,,,,,,,
