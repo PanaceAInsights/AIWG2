@@ -214,12 +214,16 @@ def profile_tile_clicked(n_clicks_list):
     Input("global-filters", "data"),
 )
 def apply_roster_filters(search_value: str, scope: str, gf: dict):
-    """Re-render tile grid (page 1) and update pagination on filter change."""
+    """Re-render tile grid (page 1) and update pagination on filter change.
+
+    PERFORMANCE: stores only a cache key (short hash) in the browser store,
+    not the full 757KB JSON. The actual DataFrame is cached server-side.
+    """
     import math as _math
-    from .pages.profiles import _build_tiles, PAGE_SIZE
+    from .pages.profiles import _build_tiles, PAGE_SIZE, _cache_key, _cache_put
     authors = data.load_authors().copy()
     if authors.empty:
-        return [], "[]", 1, 1
+        return [], "", 1, 1
     summary = data.load_summary()
     _want = ["acd_name", "pub_count", "citation_count", "h_index",
              "fwci_mean", "oa_rate", "grants_count", "derm_relevance_rate",
@@ -227,7 +231,6 @@ def apply_roster_filters(search_value: str, scope: str, gf: dict):
     if not summary.empty:
         _available = [c for c in _want if c in summary.columns]
         if "acd_name" in _available and "acd_name" in authors.columns:
-            # Drop columns from authors that also exist in summary to avoid _x/_y suffixes
             _overlap = [c for c in _available if c != "acd_name" and c in authors.columns]
             authors = authors.drop(columns=_overlap, errors="ignore")
             authors = authors.merge(summary[_available], on="acd_name", how="left")
@@ -256,8 +259,10 @@ def apply_roster_filters(search_value: str, scope: str, gf: dict):
         ["accepted", "h_index"], ascending=[False, False], na_position="last"
     ).reset_index(drop=True)
     total_pages = max(1, _math.ceil(len(authors) / PAGE_SIZE))
-    store_data  = authors.to_json(orient="records")
-    return _build_tiles(authors, 1), store_data, total_pages, 1
+    # Cache server-side, only send the key to browser
+    key = _cache_key(scope or "all", search_value or "", gf)
+    _cache_put(key, authors)
+    return _build_tiles(authors, 1), key, total_pages, 1
 
 
 @callback(
@@ -267,12 +272,30 @@ def apply_roster_filters(search_value: str, scope: str, gf: dict):
     prevent_initial_call=True,
 )
 def paginate_profiles(page: int, store_data: str):
-    """Render the requested page of tiles from the cached author store."""
-    import json
-    from .pages.profiles import _build_tiles, PAGE_SIZE
+    """Render the requested page of tiles from server-side cache.
+
+    PERFORMANCE: No JSON parsing — just looks up the cached DataFrame by key.
+    """
+    from .pages.profiles import _build_tiles, PAGE_SIZE, _cache_get, _PAGINATION_CACHE
     if not store_data:
         return no_update
-    authors = pd.DataFrame(json.loads(store_data))
+    authors = _cache_get(store_data)
+    if authors is None:
+        # Cache miss (e.g. after server restart) — rebuild from default
+        authors = data.load_authors().copy()
+        summary = data.load_summary()
+        _want = ["acd_name", "pub_count", "citation_count", "h_index",
+                 "fwci_mean", "oa_rate", "grants_count", "derm_relevance_rate",
+                 "intl_collab_rate", "clinical_expertise", "research_expertise"]
+        if not summary.empty:
+            _available = [c for c in _want if c in summary.columns]
+            if "acd_name" in _available:
+                _overlap = [c for c in _available if c != "acd_name" and c in authors.columns]
+                authors = authors.drop(columns=_overlap, errors="ignore")
+                authors = authors.merge(summary[_available], on="acd_name", how="left")
+        authors = authors.sort_values(
+            ["accepted", "h_index"], ascending=[False, False], na_position="last"
+        ).reset_index(drop=True)
     return _build_tiles(authors, page or 1)
 
 
