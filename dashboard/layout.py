@@ -26,6 +26,7 @@ NAV = [
     ("/experts",       "Expert Finder",    "tabler:user-search"),
     ("/methodology",   "Methodology",      "tabler:file-text"),
     ("/explorer",      "Data Explorer",    "tabler:database-search"),
+    ("/compare",       "Compare & Rank",   "tabler:arrows-sort"),
 ]
 
 

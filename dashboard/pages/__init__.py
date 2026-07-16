@@ -6,6 +6,7 @@ The REGISTRY maps URL paths to page modules.
 from . import (
     overview, profiles, publications, impact, collaboration,
     funding, benchmarking, trials, heatmap, experts, methodology, explorer,
+    compare,
     chatbot,  # noqa: F401 — imported for floating widget, not as a page
 )
 
@@ -22,4 +23,5 @@ REGISTRY = {
     "/experts":       experts,
     "/methodology":   methodology,
     "/explorer":      explorer,
+    "/compare":       compare,
 }
